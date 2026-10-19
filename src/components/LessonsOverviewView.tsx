@@ -16,7 +16,7 @@ import {
   X
 } from 'lucide-react';
 import { bookmapDatabase, UnitData } from '../data/bookmapData';
-import { isUnitUnlockedForGrade, PERMS_EVENT } from '../services/teacherContentService';
+import { isUnitUnlockedForGrade, PERMS_EVENT, getUnitsForGrade } from '../services/teacherContentService';
 
 interface LessonsOverviewViewProps {
   selectedGrade: string;
@@ -42,7 +42,7 @@ export const LessonsOverviewView: React.FC<LessonsOverviewViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [semesterFilter, setSemesterFilter] = useState<'all' | 'term1' | 'term2'>('all');
   const [lockedUnitNotice, setLockedUnitNotice] = useState<{ unitName: string; unitNumber: number } | null>(null);
-  const [, setPermsVersion] = useState(0);
+  const [permsVersion, setPermsVersion] = useState(0);
 
   // Listen to live teacher permission changes and unit unlocking events
   React.useEffect(() => {
@@ -51,11 +51,13 @@ export const LessonsOverviewView: React.FC<LessonsOverviewViewProps> = ({
     window.addEventListener('ecovoice_unit_completed', handlePerms);
     window.addEventListener('ecovoice_practiced_words_updated', handlePerms);
     window.addEventListener('ecovoice_practiced_sentences_updated', handlePerms);
+    window.addEventListener('ecovoice_custom_units_updated', handlePerms);
     return () => {
       window.removeEventListener(PERMS_EVENT, handlePerms);
       window.removeEventListener('ecovoice_unit_completed', handlePerms);
       window.removeEventListener('ecovoice_practiced_words_updated', handlePerms);
       window.removeEventListener('ecovoice_practiced_sentences_updated', handlePerms);
+      window.removeEventListener('ecovoice_custom_units_updated', handlePerms);
     };
   }, []);
 
@@ -78,14 +80,9 @@ export const LessonsOverviewView: React.FC<LessonsOverviewViewProps> = ({
     return match ? match[0] : null;
   }, [studentClass]);
 
-  // Current grade data from bookmap database
-  const gradeData = useMemo(() => {
-    return bookmapDatabase.grades[selectedGrade] || bookmapDatabase.grades['4'] || bookmapDatabase.grades['3'];
-  }, [selectedGrade]);
-
   const unitsList: UnitData[] = useMemo(() => {
-    return gradeData?.units || [];
-  }, [gradeData]);
+    return getUnitsForGrade(selectedGrade);
+  }, [selectedGrade, permsVersion]);
 
   // Total vocabulary and sentence count for this grade
   const totalVocab = useMemo(() => {

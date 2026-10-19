@@ -104,7 +104,8 @@ import {
   isUnitUnlockedForGrade,
   isUnitFullyCompleted,
   getHighestUnlockedUnit,
-  markUnitCompleted
+  markUnitCompleted,
+  getUnitsForGrade
 } from './services/teacherContentService';
 import { 
   signInWithGoogle, 
@@ -119,6 +120,7 @@ import {
   subscribeToFirestoreClasses,
   subscribeToFirestoreUnitPermissions,
   subscribeToFirestoreCustomVisuals,
+  subscribeToFirestoreCustomUnits,
   syncGoogleUserToFirestore,
   syncUserToFirestore,
   ADMIN_EMAIL,
@@ -230,6 +232,13 @@ export default function App() {
   const [speechSuccess, setSpeechSuccess] = useState<boolean | null>(null);
 
   const [accent, setAccent] = useState<'US' | 'UK'>('US');
+  const [customUnitsTrigger, setCustomUnitsTrigger] = useState<number>(0);
+
+  useEffect(() => {
+    const handleUpdate = () => setCustomUnitsTrigger(prev => prev + 1);
+    window.addEventListener('ecovoice_custom_units_updated', handleUpdate);
+    return () => window.removeEventListener('ecovoice_custom_units_updated', handleUpdate);
+  }, []);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [recognizedTranscript, setRecognizedTranscript] = useState<string>('');
   const [pronunciationEvaluation, setPronunciationEvaluation] = useState<PronunciationEvaluationResult | null>(null);
@@ -499,7 +508,14 @@ export default function App() {
       }
     });
 
-    // 7. Firebase Auth listener
+    // 7. Real-time Firestore custom units listener
+    const unsubUnits = subscribeToFirestoreCustomUnits((units) => {
+      if (units) {
+        window.dispatchEvent(new CustomEvent('ecovoice_custom_units_updated', { detail: { units } }));
+      }
+    });
+
+    // 8. Firebase Auth listener
     const unsubAuth = subscribeToAuthState(async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -525,6 +541,7 @@ export default function App() {
       unsubClasses();
       unsubPerms();
       unsubVisuals();
+      unsubUnits();
       unsubAuth();
     };
   }, [isLoggedIn, userRole, userName]);
@@ -1064,9 +1081,10 @@ export default function App() {
   };
 
   // Dynamic curriculum resolution
-  const currentGradeData = bookmapDatabase.grades[selectedGrade] || bookmapDatabase.grades['3'];
-  const availableUnits = currentGradeData.units;
-  const currentUnit = availableUnits.find(u => u.unitKey === selectedUnitKey) || availableUnits[0];
+  const availableUnits = useMemo(() => {
+    return getUnitsForGrade(selectedGrade);
+  }, [selectedGrade, customUnitsTrigger]);
+  const currentUnit = availableUnits.find(u => u.unitKey === selectedUnitKey) || availableUnits[0] || { unitKey: selectedUnitKey, unitName: 'Unit', vocabulary: [], sentences: [] };
   const availableLessons = currentUnit.lessons || [];
 
   const rawVocabList = useMemo(() => {
@@ -3205,7 +3223,7 @@ export default function App() {
                 <span className="hidden sm:inline">Lesson:</span>
               </div>
               <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto">
-                {availableLessons.map((l) => (
+                {availableLessons.map((l: any) => (
                   <button
                     key={l.lessonNumber}
                     type="button"

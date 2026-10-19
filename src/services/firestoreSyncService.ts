@@ -41,6 +41,7 @@ const CLASSES_COL = 'classes';
 const ACTIVITIES_COL = 'activities';
 const VISUALS_COL = 'customVisuals';
 const UNIT_PERMS_COL = 'unitPermissions';
+const UNITS_COL = 'customUnits';
 
 /**
  * Helper to generate consistent student ID
@@ -554,6 +555,66 @@ export function subscribeToFirestoreCustomVisuals(callback: (visuals: Record<str
       },
       (error) => {
         console.warn('Custom visuals listener error:', error);
+      }
+    );
+  } catch (error) {
+    return () => {};
+  }
+}
+
+/**
+ * 19. Save Custom Unit to Firestore
+ */
+export async function saveCustomUnitToFirestore(grade: string, unit: any): Promise<void> {
+  const docId = `${grade}_${unit.unitKey}`;
+  const cleanUnit = sanitizeForFirestore({
+    ...unit,
+    grade,
+    updatedAt: new Date().toISOString()
+  });
+  const ref = doc(db, UNITS_COL, docId);
+  try {
+    await setDoc(ref, cleanUnit, { merge: true });
+  } catch (error) {
+    console.warn('Failed to save custom unit to Firestore:', error);
+  }
+}
+
+/**
+ * 20. Delete Custom Unit from Firestore
+ */
+export async function deleteCustomUnitFromFirestore(grade: string, unitKey: string): Promise<void> {
+  const docId = `${grade}_${unitKey}`;
+  const ref = doc(db, UNITS_COL, docId);
+  try {
+    await deleteDoc(ref);
+  } catch (error) {
+    console.warn('Failed to delete custom unit from Firestore:', error);
+  }
+}
+
+/**
+ * 21. Subscribe to Real-Time Custom Units from Firestore
+ */
+export function subscribeToFirestoreCustomUnits(callback: (unitsMap: Record<string, any>) => void): () => void {
+  try {
+    return onSnapshot(
+      collection(db, UNITS_COL),
+      (snapshot) => {
+        const map: Record<string, any> = {};
+        snapshot.forEach((docSnap) => {
+          map[docSnap.id] = docSnap.data();
+        });
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('ecovoice_custom_units', JSON.stringify(map));
+            window.dispatchEvent(new CustomEvent('ecovoice_custom_units_updated', { detail: { units: map } }));
+          }
+        } catch {}
+        callback(map);
+      },
+      (error) => {
+        console.warn('Custom units listener error:', error);
       }
     );
   } catch (error) {

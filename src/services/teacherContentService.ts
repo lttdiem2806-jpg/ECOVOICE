@@ -13,7 +13,9 @@ import {
   saveCustomVisualToFirestore,
   deleteCustomVisualFromFirestore,
   saveStudentToFirestore,
-  deleteStudentFromFirestore
+  deleteStudentFromFirestore,
+  saveCustomUnitToFirestore,
+  deleteCustomUnitFromFirestore
 } from './firestoreSyncService';
 
 export interface CustomVisual {
@@ -1619,4 +1621,113 @@ export function setAllUnitsPermission(grade: string, unitKeys: string[], isUnloc
   } catch (e) {
     console.warn('Firestore unit permissions sync warning:', e);
   }
+}
+
+// -------------------------------------------------------------
+// 6. CUSTOM UNITS MANAGEMENT (LocalStorage & Firestore)
+// -------------------------------------------------------------
+const UNITS_STORAGE_KEY = 'ecovoice_custom_units';
+export const UNITS_EVENT = 'ecovoice_custom_units_updated';
+
+export function getCustomUnits(): Record<string, any> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(UNITS_STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+export function saveCustomUnit(grade: string, unit: any): void {
+  if (typeof window === 'undefined') return;
+  const store = getCustomUnits();
+  const key = `${grade}_${unit.unitKey}`;
+  const updatedUnit = {
+    ...unit,
+    grade,
+    updatedAt: Date.now()
+  };
+  store[key] = updatedUnit;
+  localStorage.setItem(UNITS_STORAGE_KEY, JSON.stringify(store));
+  window.dispatchEvent(new CustomEvent(UNITS_EVENT, { detail: { grade, unitKey: unit.unitKey } }));
+
+  try {
+    saveCustomUnitToFirestore(grade, updatedUnit);
+  } catch (e) {
+    console.warn('Firestore custom unit save warning:', e);
+  }
+}
+
+export function deleteCustomUnit(grade: string, unitKey: string): void {
+  if (typeof window === 'undefined') return;
+  const store = getCustomUnits();
+  const key = `${grade}_${unitKey}`;
+  const targetUnit = store[key] || { unitKey, grade };
+  const updatedUnit = {
+    ...targetUnit,
+    unitKey,
+    grade,
+    isDeleted: true,
+    updatedAt: Date.now()
+  };
+  store[key] = updatedUnit;
+  localStorage.setItem(UNITS_STORAGE_KEY, JSON.stringify(store));
+  window.dispatchEvent(new CustomEvent(UNITS_EVENT, { detail: { grade, unitKey, isDeleted: true } }));
+
+  try {
+    saveCustomUnitToFirestore(grade, updatedUnit);
+  } catch (e) {
+    console.warn('Firestore custom unit delete warning:', e);
+  }
+}
+
+export function getUnitsForGrade(grade: string): any[] {
+  const gData = bookmapDatabase.grades[grade] || bookmapDatabase.grades['3'];
+  const baseUnits = gData?.units ? [...gData.units] : [];
+  const customStore = getCustomUnits();
+
+  const merged: any[] = [];
+  const handledKeys = new Set<string>();
+
+  // 1. Process base units with modifications or deletions
+  baseUnits.forEach(bu => {
+    const key = `${grade}_${bu.unitKey}`;
+    const custom = customStore[key];
+    if (custom) {
+      if (custom.isDeleted) return; // Hidden/Deleted
+      merged.push({
+        ...bu,
+        ...custom,
+        unitKey: bu.unitKey
+      });
+    } else {
+      merged.push(bu);
+    }
+    handledKeys.add(bu.unitKey);
+  });
+
+  // 2. Process custom-added units
+  Object.entries(customStore).forEach(([docKey, custom]) => {
+    if (custom.grade !== grade) return;
+    if (custom.isDeleted) return;
+    if (handledKeys.has(custom.unitKey)) return;
+
+    merged.push({
+      unitKey: custom.unitKey,
+      unitNumber: custom.unitNumber || (merged.length + 1),
+      unitName: custom.unitName || 'Custom Unit',
+      unitFullName: custom.unitFullName || `Unit ${custom.unitNumber || (merged.length + 1)}: ${custom.unitName || 'Custom Unit'}`,
+      theme: custom.theme || 'Custom Unit Theme',
+      vocabulary: custom.vocabulary || [],
+      sentences: custom.sentences || [],
+      isCustomAdded: true,
+      ...custom
+    });
+  });
+
+  // Sort by unitNumber ascending
+  merged.sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+  return merged;
 }

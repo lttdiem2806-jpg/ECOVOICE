@@ -102,7 +102,13 @@ service cloud.firestore {
       allow write: if true;
     }
 
-    // 7. Test connection collection
+    // 7. Custom Units collection (Teacher custom unit creation, edit, deletion for Grade 3, 4, 5)
+    match /customUnits/{unitId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 8. Test connection collection
     match /test/{docId} {
       allow read, write: if true;
     }

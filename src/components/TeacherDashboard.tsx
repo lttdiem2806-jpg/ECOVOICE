@@ -89,7 +89,11 @@ import {
   syncClassesWithStudentData,
   ASSIGNMENT_TYPE_OPTIONS,
   getAssignmentDisplayInfo,
-  isAssignmentForStudent
+  isAssignmentForStudent,
+  getUnitsForGrade,
+  saveCustomUnit,
+  deleteCustomUnit,
+  UNITS_EVENT
 } from '../services/teacherContentService';
 
 interface TeacherDashboardProps {
@@ -328,6 +332,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [addLessonImageUrl, setAddLessonImageUrl] = useState<string>('');
   const [addLessonIcon, setAddLessonIcon] = useState<string>('🌱');
 
+  // Modal State for Adding / Editing Custom Unit
+  const [showAddEditUnitModal, setShowAddEditUnitModal] = useState<boolean>(false);
+  const [editingUnitObj, setEditingUnitObj] = useState<any | null>(null);
+  const [unitFormNumber, setUnitFormNumber] = useState<number>(21);
+  const [unitFormName, setUnitFormName] = useState<string>('');
+  const [unitFormFullName, setUnitFormFullName] = useState<string>('');
+  const [unitFormTheme, setUnitFormTheme] = useState<string>('');
+  const [unitFormUnlocked, setUnitFormUnlocked] = useState<boolean>(true);
+
   // Listen to LocalStorage & Firestore real-time updates
   useEffect(() => {
     const handleUpdate = () => {
@@ -339,22 +352,26 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     };
     window.addEventListener('ecovoice_custom_visuals_updated', handleUpdate);
     window.addEventListener('ecovoice_unit_permissions_updated', handleUpdate);
+    window.addEventListener('ecovoice_custom_units_updated', handleUpdate);
     window.addEventListener('ecovoice_perms_updated', handleUpdate);
     window.addEventListener('ecovoice_classes_updated', handleUpdate);
     window.addEventListener('ecovoice_assignments_updated', handleUpdate);
     window.addEventListener(ASSIGNMENTS_EVENT, handleUpdate);
     window.addEventListener(CLASSES_EVENT, handleUpdate);
     window.addEventListener(STUDENTS_EVENT, handleUpdate);
+    window.addEventListener(UNITS_EVENT, handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
       window.removeEventListener('ecovoice_custom_visuals_updated', handleUpdate);
       window.removeEventListener('ecovoice_unit_permissions_updated', handleUpdate);
+      window.removeEventListener('ecovoice_custom_units_updated', handleUpdate);
       window.removeEventListener('ecovoice_perms_updated', handleUpdate);
       window.removeEventListener('ecovoice_classes_updated', handleUpdate);
       window.removeEventListener('ecovoice_assignments_updated', handleUpdate);
       window.removeEventListener(ASSIGNMENTS_EVENT, handleUpdate);
       window.removeEventListener(CLASSES_EVENT, handleUpdate);
       window.removeEventListener(STUDENTS_EVENT, handleUpdate);
+      window.removeEventListener(UNITS_EVENT, handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };
   }, []);
@@ -371,7 +388,50 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   // Grade Data & Units for Illustrations & Unit Access
   const gradeData = bookmapDatabase.grades[selectedGrade];
-  const unitsList = gradeData?.units || [];
+  const unitsList = useMemo(() => getUnitsForGrade(selectedGrade), [selectedGrade, customVisuals]);
+
+  // Handle Add or Edit Custom Unit Form Submit
+  const handleSaveUnitForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!unitFormName.trim()) {
+      showToast('Vui lòng nhập Tên Unit tiếng Anh!', 'error');
+      return;
+    }
+
+    const unitNum = Number(unitFormNumber) || 1;
+    const unitKey = editingUnitObj?.unitKey || `unit_${unitNum}`;
+    const unitFullName = unitFormFullName.trim() || `Unit ${unitNum}: ${unitFormName.trim()}`;
+    const theme = unitFormTheme.trim() || 'Custom Unit Theme';
+
+    const unitDataToSave = {
+      unitKey,
+      unitNumber: unitNum,
+      unitName: unitFormName.trim(),
+      unitFullName,
+      theme,
+      vocabulary: editingUnitObj?.vocabulary || [],
+      sentences: editingUnitObj?.sentences || [],
+      lessons: editingUnitObj?.lessons || []
+    };
+
+    saveCustomUnit(selectedGrade, unitDataToSave);
+    toggleUnitPermission(selectedGrade, unitKey, unitFormUnlocked);
+
+    setShowAddEditUnitModal(false);
+    setEditingUnitObj(null);
+    setUnitFormName('');
+    setUnitFormFullName('');
+    setUnitFormTheme('');
+    showToast(`Đã ${editingUnitObj ? 'cập nhật' : 'tạo mới'} ${unitFullName} thành công!`, 'success');
+  };
+
+  // Handle Delete Unit
+  const handleDeleteUnit = (unitKey: string, unitFullName: string) => {
+    if (confirm(`Bạn có chắc chắn muốn XÓA ${unitFullName} khỏi Khối ${selectedGrade} không?`)) {
+      deleteCustomUnit(selectedGrade, unitKey);
+      showToast(`Đã xóa ${unitFullName} thành công!`, 'info');
+    }
+  };
 
   useEffect(() => {
     if (unitsList.length > 0 && !unitsList.some(u => u.unitKey === selectedUnitKey)) {
@@ -388,7 +448,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       return currentUnit.vocabulary;
     }
     const combined: VocabularyItem[] = [];
-    currentUnit.lessons?.forEach(l => {
+    currentUnit.lessons?.forEach((l: any) => {
       if (l.vocabulary) combined.push(...l.vocabulary);
     });
     return combined;
@@ -400,7 +460,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       return currentUnit.sentences;
     }
     const combined: SentenceStructure[] = [];
-    currentUnit.lessons?.forEach(l => {
+    currentUnit.lessons?.forEach((l: any) => {
       if (l.sentences) combined.push(...l.sentences);
     });
     return combined;
@@ -423,7 +483,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     }> = [];
 
     if (filterType === 'all' || filterType === 'vocab') {
-      currentUnitVocab.forEach(v => {
+      currentUnitVocab.forEach((v: any) => {
         const custom = customVisuals[v.id] || customVisuals[`WORD_${v.word?.toUpperCase()}`];
         if (onlyCustomized && !custom) return;
 
@@ -453,7 +513,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     }
 
     if (filterType === 'all' || filterType === 'sentence') {
-      currentUnitSentences.forEach(s => {
+      currentUnitSentences.forEach((s: any) => {
         const custom = customVisuals[s.id];
         if (onlyCustomized && !custom) return;
 
@@ -2803,23 +2863,40 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   Phân quyền & Khóa / Mở bài học (Unit Access)
                 </h2>
                 <p className="text-xs text-emerald-800">
-                  Điều phối tiến độ học tập: Mở các Unit theo tuần và tạm khóa các Unit chưa giảng dạy
+                  Điều phối tiến độ học tập: Mở các Unit theo tuần, quản lý Thêm/Sửa/Xóa Unit và tạm khóa Unit
                 </p>
               </div>
 
-              {/* Unlock All / Lock All */}
-              <div className="flex items-center gap-2">
+              {/* Add Unit & Unlock All / Lock All */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => {
+                    const nextNum = unitsList.length + 1;
+                    setEditingUnitObj(null);
+                    setUnitFormNumber(nextNum);
+                    setUnitFormName('');
+                    setUnitFormFullName(`Unit ${nextNum}: `);
+                    setUnitFormTheme('');
+                    setUnitFormUnlocked(true);
+                    setShowAddEditUnitModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] text-white text-xs font-black cursor-pointer transition-all shadow-xs flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Thêm Unit mới</span>
+                </button>
+
                 <button
                   onClick={() => handleSetAllUnits(true)}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 text-xs font-bold cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 text-xs font-bold cursor-pointer"
                 >
                   <Unlock className="w-3.5 h-3.5 inline mr-1" />
-                  <span>Mở tất cả 20 Unit</span>
+                  <span>Mở tất cả Unit</span>
                 </button>
 
                 <button
                   onClick={() => handleSetAllUnits(false)}
-                  className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 text-xs font-bold cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 text-xs font-bold cursor-pointer"
                 >
                   <Lock className="w-3.5 h-3.5 inline mr-1" />
                   <span>Khóa toàn bộ</span>
@@ -2829,7 +2906,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
             {/* Grade Switcher */}
             <div className="bg-white rounded-3xl p-4 border-2 border-[#86c898] shadow-xs flex items-center justify-between gap-3">
-              <span className="text-xs font-bold text-emerald-950">Chọn khối lớp áp dụng phân quyền:</span>
+              <span className="text-xs font-bold text-emerald-950">Chọn khối lớp áp dụng phân quyền & quản lý Unit:</span>
               <div className="flex items-center gap-2">
                 {(['3', '4', '5'] as const).map(g => (
                   <button
@@ -2847,7 +2924,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               </div>
             </div>
 
-            {/* Units Grid with Lock/Unlock Switches */}
+            {/* Units Grid with Lock/Unlock Switches, Edit and Delete */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
               {unitsList.map(u => {
                 const isUnitUnlocked = unitPermissions[`${selectedGrade}_${u.unitKey}`] !== undefined
@@ -2864,11 +2941,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-black uppercase text-emerald-700">
-                          Unit {u.unitNumber}
-                        </span>
-                        <h4 className="text-sm font-black text-emerald-950 leading-snug">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-black uppercase text-emerald-700">
+                            Unit {u.unitNumber}
+                          </span>
+                          {u.isCustomAdded && (
+                            <span className="px-1.5 py-0.2 rounded-md text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                              Mới tạo
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-sm font-black text-emerald-950 leading-snug truncate">
                           {u.unitName}
                         </h4>
                         <p className="text-[11px] text-emerald-800 font-semibold line-clamp-1 mt-0.5">
@@ -2883,23 +2967,49 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-emerald-100">
-                      <span className={`text-[11px] font-black ${
+                    <div className="flex items-center justify-between pt-2 border-t border-emerald-100 gap-1">
+                      <span className={`text-[11px] font-black shrink-0 ${
                         isUnitUnlocked ? 'text-emerald-700' : 'text-gray-500'
                       }`}>
-                        {isUnitUnlocked ? 'Đang mở cho học sinh' : 'Tạm khóa'}
+                        {isUnitUnlocked ? 'Đang mở' : 'Tạm khóa'}
                       </span>
 
-                      <button
-                        onClick={() => handleToggleUnit(u.unitKey, isUnitUnlocked)}
-                        className={`px-3 py-1 rounded-xl text-xs font-black cursor-pointer transition-all ${
-                          isUnitUnlocked
-                            ? 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100'
-                            : 'bg-emerald-700 text-white hover:bg-emerald-800'
-                        }`}
-                      >
-                        {isUnitUnlocked ? 'Khóa Unit' : 'Mở khóa'}
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleToggleUnit(u.unitKey, isUnitUnlocked)}
+                          className={`px-2.5 py-1 rounded-xl text-xs font-black cursor-pointer transition-all ${
+                            isUnitUnlocked
+                              ? 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100'
+                              : 'bg-emerald-700 text-white hover:bg-emerald-800'
+                          }`}
+                        >
+                          {isUnitUnlocked ? 'Khóa' : 'Mở khóa'}
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setEditingUnitObj(u);
+                            setUnitFormNumber(u.unitNumber || 1);
+                            setUnitFormName(u.unitName || '');
+                            setUnitFormFullName(u.unitFullName || '');
+                            setUnitFormTheme(u.theme || '');
+                            setUnitFormUnlocked(isUnitUnlocked);
+                            setShowAddEditUnitModal(true);
+                          }}
+                          className="p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 cursor-pointer transition-colors"
+                          title="Chỉnh sửa thông tin Unit"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteUnit(u.unitKey, u.unitFullName || u.unitName)}
+                          className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer transition-colors"
+                          title="Xóa Unit khỏi danh sách"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                   </div>
@@ -3154,7 +3264,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     setAsgGrade(nextG);
                     // Bắt buộc đồng bộ ô 'Lớp nhận bài' về mặc định khi chuyển khối
                     setAsgClass('Tất cả các lớp');
-                    const units = bookmapDatabase.grades[nextG]?.units || [];
+                    const units = getUnitsForGrade(nextG);
                     if (units.length > 0) {
                       setAsgUnitKey(units[0].unitKey);
                       if (!asgTitle || asgTitle.startsWith('Luyện tập ')) {
@@ -3199,7 +3309,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   onChange={(e) => {
                     const selectedKey = e.target.value;
                     setAsgUnitKey(selectedKey);
-                    const units = bookmapDatabase.grades[asgGrade]?.units || [];
+                    const units = getUnitsForGrade(asgGrade);
                     const matched = units.find(u => u.unitKey === selectedKey);
                     if (matched && (!asgTitle || asgTitle.startsWith('Luyện tập '))) {
                       setAsgTitle(`Luyện tập ${matched.unitFullName} - ${asgLesson}`);
@@ -3207,7 +3317,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   }}
                   className="px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
                 >
-                  {(bookmapDatabase.grades[asgGrade]?.units || []).map((u) => (
+                  {getUnitsForGrade(asgGrade).map((u) => (
                     <option key={u.unitKey} value={u.unitKey}>
                       {u.unitFullName || `Unit ${u.unitNumber}: ${u.unitName}`}
                     </option>
@@ -3225,7 +3335,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   onChange={(e) => {
                     const selectedLesson = e.target.value;
                     setAsgLesson(selectedLesson);
-                    const units = bookmapDatabase.grades[asgGrade]?.units || [];
+                    const units = getUnitsForGrade(asgGrade);
                     const matched = units.find(u => u.unitKey === asgUnitKey);
                     if (matched && (!asgTitle || asgTitle.startsWith('Luyện tập '))) {
                       setAsgTitle(`Luyện tập ${matched.unitFullName} - ${selectedLesson}`);
@@ -4153,7 +4263,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     onChange={(e) => {
                       const g = e.target.value as '3' | '4' | '5';
                       setAddLessonGrade(g);
-                      const gUnits = bookmapDatabase.grades[g]?.units || [];
+                      const gUnits = getUnitsForGrade(g);
                       if (gUnits.length > 0) {
                         setAddLessonUnitKey(gUnits[0].unitKey);
                       }
@@ -4178,9 +4288,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     onChange={(e) => setAddLessonUnitKey(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
                   >
-                    {(bookmapDatabase.grades[addLessonGrade]?.units || []).map(u => (
+                    {getUnitsForGrade(addLessonGrade).map(u => (
                       <option key={u.unitKey} value={u.unitKey}>
-                        {u.unitFullName}
+                        {u.unitFullName || `Unit ${u.unitNumber}: ${u.unitName}`}
                       </option>
                     ))}
                   </select>
@@ -4284,6 +4394,160 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 >
                   <Check className="w-4 h-4" />
                   <span>Thêm Bài học mới</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: THÊM / CHỈNH SỬA UNIT (ADD / EDIT UNIT) */}
+      {showAddEditUnitModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-[#f2faf5] rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative border-[3px] border-[#86c898] flex flex-col gap-4">
+            
+            <div className="flex items-center justify-between border-b border-emerald-200 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 shadow-2xs">
+                  <BookOpen className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-emerald-950 font-display">
+                    {editingUnitObj ? `Chỉnh sửa Unit (Khối ${selectedGrade})` : `Thêm Unit mới (Khối ${selectedGrade})`}
+                  </h3>
+                  <p className="text-[11px] text-emerald-800 font-medium">
+                    {editingUnitObj ? 'Cập nhật tên, tiêu đề và chủ đề của Unit' : 'Tạo Unit mới cho chương trình học và phân quyền mở khóa'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowAddEditUnitModal(false);
+                  setEditingUnitObj(null);
+                }}
+                className="p-1 rounded-full hover:bg-emerald-100 text-emerald-800 cursor-pointer transition-colors"
+                title="Đóng"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveUnitForm} className="flex flex-col gap-3.5">
+              
+              {/* Row 1: Số thứ tự Unit & Tên tiếng Anh */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1 col-span-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Số Unit (STT):
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    required
+                    value={unitFormNumber}
+                    onChange={(e) => {
+                      const num = Number(e.target.value) || 1;
+                      setUnitFormNumber(num);
+                      if (!editingUnitObj && unitFormName) {
+                        setUnitFormFullName(`Unit ${num}: ${unitFormName}`);
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1 col-span-2">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Tên Unit tiếng Anh (Short Name): *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={unitFormName}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      setUnitFormName(name);
+                      if (!editingUnitObj) {
+                        setUnitFormFullName(`Unit ${unitFormNumber}: ${name}`);
+                      }
+                    }}
+                    placeholder="VD: My Eco Garden, Weather & Seasons..."
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Tên đầy đủ Unit (Unit Full Name) */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-emerald-950">
+                  Tên đầy đủ Unit (Unit Full Name): *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={unitFormFullName}
+                  onChange={(e) => setUnitFormFullName(e.target.value)}
+                  placeholder="VD: Unit 21: My Eco Garden"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                />
+              </div>
+
+              {/* Row 3: Chủ đề & Mô tả tiếng Việt (Theme / Description) */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-emerald-950">
+                  Chủ đề / Mô tả tiếng Việt (Theme & Description):
+                </label>
+                <input
+                  type="text"
+                  value={unitFormTheme}
+                  onChange={(e) => setUnitFormTheme(e.target.value)}
+                  placeholder="VD: Khu vườn sinh thái & Môi trường sống (Eco Garden & Habitat)"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                />
+              </div>
+
+              {/* Row 4: Trạng thái phân quyền Mở khóa */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <div>
+                  <span className="text-xs font-black text-emerald-950 block">Trạng thái phân quyền ban đầu:</span>
+                  <span className="text-[11px] text-emerald-800 font-medium block">
+                    {unitFormUnlocked ? 'Học sinh có thể truy cập bài học ngay' : 'Tạm khóa Unit này đối với học sinh'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUnitFormUnlocked(!unitFormUnlocked)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer transition-all ${
+                    unitFormUnlocked
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-rose-100 text-rose-800 border border-rose-300'
+                  }`}
+                >
+                  {unitFormUnlocked ? 'Đang Mở khóa' : 'Đang Tạm khóa'}
+                </button>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-emerald-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddEditUnitModal(false);
+                    setEditingUnitObj(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-gray-300 font-bold text-xs text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] text-white font-extrabold text-xs shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{editingUnitObj ? 'Lưu thay đổi' : 'Tạo Unit mới'}</span>
                 </button>
               </div>
 

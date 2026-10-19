@@ -23,6 +23,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { bookmapDatabase, UnitData } from '../data/bookmapData';
+import { getUnitsForGrade } from '../services/teacherContentService';
 import { 
   isUnitUnlockedForGrade, 
   isUnitFullyCompleted, 
@@ -100,10 +101,12 @@ export const StudentProgressDashboard: React.FC<StudentProgressDashboardProps> =
   const [activityList, setActivityList] = useState<StudentActivityItem[]>(() => getStudentActivities(effectiveStudentName, selectedGrade));
   const [practicedWordsSet, setPracticedWordsSet] = useState<Set<string>>(() => getStudentPracticedWords(effectiveStudentName, selectedGrade));
   const [practicedSentencesSet, setPracticedSentencesSet] = useState<Set<string>>(() => getStudentPracticedSentences(effectiveStudentName, selectedGrade));
+  const [unitsUpdateCount, setUnitsUpdateCount] = useState<number>(0);
 
   useEffect(() => {
     const handleUpdate = () => {
       setActivityList(getStudentActivities(effectiveStudentName, selectedGrade));
+      setUnitsUpdateCount(c => c + 1);
     };
     const handleWordsUpdate = () => {
       setPracticedWordsSet(getStudentPracticedWords(effectiveStudentName, selectedGrade));
@@ -122,6 +125,7 @@ export const StudentProgressDashboard: React.FC<StudentProgressDashboardProps> =
     window.addEventListener('ecovoice_guest_points_updated', handleUpdate);
     window.addEventListener('ecovoice_guest_trees_updated', handleUpdate);
     window.addEventListener('ecovoice_student_accounts_updated', handleUpdate);
+    window.addEventListener('ecovoice_custom_units_updated', handleUpdate);
     return () => {
       window.removeEventListener('ecovoice_student_activity_updated', handleUpdate);
       window.removeEventListener('ecovoice_practiced_words_updated', handleWordsUpdate);
@@ -129,17 +133,13 @@ export const StudentProgressDashboard: React.FC<StudentProgressDashboardProps> =
       window.removeEventListener('ecovoice_guest_points_updated', handleUpdate);
       window.removeEventListener('ecovoice_guest_trees_updated', handleUpdate);
       window.removeEventListener('ecovoice_student_accounts_updated', handleUpdate);
+      window.removeEventListener('ecovoice_custom_units_updated', handleUpdate);
     };
   }, [effectiveStudentName, isGuestMode, userRole, selectedGrade]);
 
-  // Current grade data from bookmap database
-  const gradeData = useMemo(() => {
-    return bookmapDatabase.grades[selectedGrade] || bookmapDatabase.grades['4'] || bookmapDatabase.grades['3'];
-  }, [selectedGrade]);
-
   const unitsList: UnitData[] = useMemo(() => {
-    return gradeData.units || [];
-  }, [gradeData]);
+    return getUnitsForGrade(selectedGrade);
+  }, [selectedGrade, unitsUpdateCount]);
 
   // Determine if user is in Guest Mode
   const isGuest = useMemo(() => {
