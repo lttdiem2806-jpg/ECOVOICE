@@ -2407,20 +2407,25 @@ export default function App() {
             </button>
 
             <div 
-              className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:opacity-90 transition-opacity shrink-0 whitespace-nowrap" 
+              className="flex items-center gap-2 sm:gap-2.5 cursor-pointer hover:opacity-90 transition-opacity shrink-0" 
               onClick={() => playSoundEffect('click')}
             >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-200/80 flex items-center justify-center text-emerald-800 shadow-inner shrink-0 border border-[#86c898]">
-              <svg viewBox="0 0 36 36" className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-600 fill-current">
-                <path d="M14 6 C8 12 8 22 18 26 C28 22 28 12 22 6 C19 12 17 12 14 6 Z" fill="#22c55e" />
-                <path d="M8 18 C4 22 4 28 10 30 C16 28 16 22 12 18 C10 22 9 22 8 18 Z" fill="#15803d" />
-              </svg>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-200/80 flex items-center justify-center text-emerald-800 shadow-inner shrink-0 border border-[#86c898]">
+                <svg viewBox="0 0 36 36" className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-600 fill-current">
+                  <path d="M14 6 C8 12 8 22 18 26 C28 22 28 12 22 6 C19 12 17 12 14 6 Z" fill="#22c55e" />
+                  <path d="M8 18 C4 22 4 28 10 30 C16 28 16 22 12 18 C10 22 9 22 8 18 Z" fill="#15803d" />
+                </svg>
+              </div>
+              <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+                <span className="text-xl sm:text-2xl lg:text-[26px] font-black tracking-tight text-emerald-950 font-display whitespace-nowrap">
+                  ECO<span className="text-emerald-700">-VOICE</span>
+                </span>
+                <span className="text-xs sm:text-sm md:text-base lg:text-[17px] font-extrabold text-emerald-800 font-sans whitespace-nowrap">
+                  (AI Pronunciation and Eco-Learning Companion)
+                </span>
+              </div>
             </div>
-            <span className="text-xl sm:text-2xl lg:text-[26px] font-black tracking-tight text-emerald-950 font-display whitespace-nowrap shrink-0">
-              ECO<span className="text-emerald-700">-VOICE</span>
-            </span>
           </div>
-        </div>
 
         {/* Right User Bar: Greetings, Eco Points, Trees, Login */}
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm font-semibold text-emerald-950 shrink-0">
@@ -4118,13 +4123,18 @@ export default function App() {
               {/* Header with Close */}
               <div className="flex items-center justify-between pb-3 border-b border-[#2d8552] mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-800 border border-[#86efac]">
+                  <div className="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-800 border border-[#86efac] shrink-0">
                     <svg viewBox="0 0 36 36" className="w-5 h-5 text-emerald-600 fill-current">
                       <path d="M14 6 C8 12 8 22 18 26 C28 22 28 12 22 6 Z" fill="#22c55e" />
                       <path d="M8 18 C4 22 4 28 10 30 C16 28 16 22 12 18 C10 22 9 22 8 18 Z" fill="#15803d" />
                     </svg>
                   </div>
-                  <span className="font-black text-lg text-emerald-50 font-display">ECO-VOICE</span>
+                  <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+                    <span className="font-black text-lg text-emerald-50 font-display">ECO-VOICE</span>
+                    <span className="text-xs sm:text-sm text-emerald-200 font-extrabold tracking-tight">
+                      (AI Pronunciation and Eco-Learning Companion)
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
