@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for student, teacher, or guest",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["student", "teacher", "guest"] },
+        "className": { "type": "string", "maxLength": 50 },
+        "grade": { "type": "string", "enum": ["3", "4", "5"] },
+        "ecoPoints": { "type": "number" },
+        "trees": { "type": "number" },
+        "score": { "type": "number" },
+        "lastPractice": { "type": "string", "maxLength": 100 },
+        "assignmentsCompleted": { "type": "number" },
+        "practicedWords": { "type": "array" },
+        "practicedSentences": { "type": "array" },
+        "updatedAt": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "name", "role"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Homework or task created by teacher for a class",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 500 },
+        "grade": { "type": "string", "enum": ["3", "4", "5"] },
+        "targetClass": { "type": "string", "maxLength": 50 },
+        "rewardEP": { "type": "number" },
+        "dueDate": { "type": "string", "maxLength": 100 },
+        "isGame": { "type": "boolean" },
+        "gameId": { "type": "string", "maxLength": 100 },
+        "gameName": { "type": "string", "maxLength": 100 },
+        "unitKey": { "type": "string", "maxLength": 50 },
+        "unitName": { "type": "string", "maxLength": 150 },
+        "createdAt": { "type": "string", "maxLength": 100 },
+        "createdBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "title", "grade", "targetClass", "rewardEP"]
+    },
+    "StudentActivity": {
+      "title": "StudentActivity",
+      "description": "Log of student practice activity or milestone",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "userName": { "type": "string", "maxLength": 100 },
+        "type": { "type": "string", "enum": ["speaking_vocab", "speaking_sentence", "eco_game", "badge_unlocked", "tree_planted"] },
+        "titleEn": { "type": "string", "maxLength": 200 },
+        "titleVi": { "type": "string", "maxLength": 200 },
+        "detailEn": { "type": "string", "maxLength": 500 },
+        "detailVi": { "type": "string", "maxLength": 500 },
+        "epAwarded": { "type": "number" },
+        "score": { "type": "number" },
+        "timestamp": { "type": "string", "maxLength": 100 },
+        "icon": { "type": "string", "maxLength": 20 },
+        "badgeColor": { "type": "string", "maxLength": 50 },
+        "grade": { "type": "string", "maxLength": 10 }
+      },
+      "required": ["id", "type", "titleVi", "epAwarded"]
+    },
+    "CustomVisual": {
+      "title": "CustomVisual",
+      "description": "Custom visual or teaching resource uploaded by teacher",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "targetKey": { "type": "string", "maxLength": 128 },
+        "imageUrl": { "type": "string", "maxLength": 2000 },
+        "uploadedAt": { "type": "string", "maxLength": 100 },
+        "uploadedBy": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "targetKey", "imageUrl"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles and gamification records for students and teachers"
+    },
+    "/assignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/Assignment" },
+      "description": "Assignments created by teachers"
+    },
+    "/activities/{activityId}": {
+      "schema": { "$ref": "#/entities/StudentActivity" },
+      "description": "Public timeline activities and achievements for all students"
+    },
+    "/customVisuals/{visualId}": {
+      "schema": { "$ref": "#/entities/CustomVisual" },
+      "description": "Custom visual resources set by teachers for units/games"
+    }
+  }
+}

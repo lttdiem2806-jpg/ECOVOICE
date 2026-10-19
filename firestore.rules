@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny all unhandled paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'lttdiem2806@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher')
+      );
+    }
+
+    function isValidUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.role in ['student', 'teacher', 'guest'];
+    }
+
+    function isValidAssignment(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.grade in ['3', '4', '5'] &&
+             data.rewardEP is number;
+    }
+
+    function isValidActivity(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.type is string &&
+             data.titleVi is string && data.titleVi.size() <= 200 &&
+             data.epAwarded is number;
+    }
+
+    function isValidCustomVisual(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.targetKey is string && data.targetKey.size() <= 128 &&
+             data.imageUrl is string && data.imageUrl.size() <= 2000;
+    }
+
+    // 1. Users collection (Student & Teacher profiles, gamification, EP, trees)
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isValidId(userId) && isValidUser(request.resource.data);
+      allow update: if isValidId(userId) && (
+        isOwner(userId) || isAdmin() || (
+          // Allow student progress increments (EP, trees, practiced words)
+          request.resource.data.id == resource.data.id &&
+          request.resource.data.role == resource.data.role
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // 2. Assignments collection (Teacher assignments for classes)
+    match /assignments/{assignmentId} {
+      allow read: if true;
+      allow create: if isValidId(assignmentId) && isValidAssignment(request.resource.data);
+      allow update: if isValidId(assignmentId) && isValidAssignment(request.resource.data);
+      allow delete: if isAdmin() || isSignedIn();
+    }
+
+    // 3. Activities collection (Timeline and practice milestones)
+    match /activities/{activityId} {
+      allow read: if true;
+      allow create: if isValidId(activityId) && isValidActivity(request.resource.data);
+      allow update: if isValidId(activityId) && isValidActivity(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // 4. Custom Visuals collection (Teacher custom unit visuals)
+    match /customVisuals/{visualId} {
+      allow read: if true;
+      allow write: if isValidId(visualId) && (isAdmin() || isSignedIn());
+    }
+
+    // 5. Test connection collection
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

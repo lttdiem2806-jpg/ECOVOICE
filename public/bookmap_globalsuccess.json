@@ -1,0 +1,4051 @@
+{
+  "grades": {
+    "3": {
+      "grade": 3,
+      "gradeTitle": "Tiếng Anh 3 - Global Success",
+      "curriculum": "Chương trình Giáo dục phổ thông 2018",
+      "publisher": "Nhà xuất bản Giáo dục Việt Nam",
+      "description": "Chương trình 20 Unit học kỳ 1 và học kỳ 2 cho học sinh Lớp 3",
+      "units": [
+        {
+          "unitNumber": 1,
+          "unitKey": "unit_1",
+          "unitName": "Hello",
+          "unitFullName": "1. Hello",
+          "theme": "Greetings & Introductions",
+          "vocabulary": [
+            {
+              "id": "g3_u1_1",
+              "word": "HELLO",
+              "phonetic": "/həˈləʊ/",
+              "meaning": "Xin chào",
+              "speechText": "Hello",
+              "colorHex": "#10b981",
+              "icon": "👋",
+              "sentence": "Hello, my name is Mai.",
+              "sentenceVi": "Xin chào, tên mình là Mai."
+            },
+            {
+              "id": "g3_u1_2",
+              "word": "HI",
+              "phonetic": "/haɪ/",
+              "meaning": "Chào bạn",
+              "speechText": "Hi",
+              "colorHex": "#3b82f6",
+              "icon": "🙋",
+              "sentence": "Hi, I am Ben.",
+              "sentenceVi": "Chào bạn, mình là Ben."
+            },
+            {
+              "id": "g3_u1_3",
+              "word": "GOODBYE",
+              "phonetic": "/ˌɡʊdˈbaɪ/",
+              "meaning": "Tạm biệt",
+              "speechText": "Goodbye",
+              "colorHex": "#f59e0b",
+              "icon": "👋",
+              "sentence": "Goodbye, see you again.",
+              "sentenceVi": "Tạm biệt, hẹn gặp lại bạn."
+            },
+            {
+              "id": "g3_u1_4",
+              "word": "BYE",
+              "phonetic": "/baɪ/",
+              "meaning": "Tạm biệt (thân mật)",
+              "speechText": "Bye",
+              "colorHex": "#ef4444",
+              "icon": "🚶",
+              "sentence": "Bye, have a nice day!",
+              "sentenceVi": "Tạm biệt, chúc bạn một ngày vui vẻ!"
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u1_s1",
+              "structure": "Hello, I'm [Name].",
+              "meaning": "Chào và tự giới thiệu tên mình",
+              "example": "Hello, I'm Nam.",
+              "exampleVi": "Xin chào, mình là Nam.",
+              "speechText": "Hello, I'm Nam."
+            },
+            {
+              "id": "g3_u1_s2",
+              "structure": "Hi, [Name]. How are you?",
+              "meaning": "Chào và hỏi thăm sức khỏe",
+              "example": "Hi, Mai. How are you? - I'm fine, thanks.",
+              "exampleVi": "Chào Mai. Bạn có khỏe không? - Mình khỏe, cảm ơn bạn.",
+              "speechText": "How are you? I'm fine, thank you."
+            }
+          ]
+        },
+        {
+          "unitNumber": 2,
+          "unitKey": "unit_2",
+          "unitName": "Our names",
+          "unitFullName": "2. Our names",
+          "theme": "Personal Information",
+          "vocabulary": [
+            {
+              "id": "g3_u2_1",
+              "word": "NAME",
+              "phonetic": "/neɪm/",
+              "meaning": "Tên",
+              "speechText": "Name",
+              "colorHex": "#8b5cf6",
+              "icon": "🏷️",
+              "sentence": "What is your name?",
+              "sentenceVi": "Tên bạn là gì?"
+            },
+            {
+              "id": "g3_u2_2",
+              "word": "SPELL",
+              "phonetic": "/spel/",
+              "meaning": "Đánh vần",
+              "speechText": "Spell",
+              "colorHex": "#ec4899",
+              "icon": "🔤",
+              "sentence": "How do you spell your name?",
+              "sentenceVi": "Bạn đánh vần tên như thế nào?"
+            },
+            {
+              "id": "g3_u2_3",
+              "word": "WHAT",
+              "phonetic": "/wɒt/",
+              "meaning": "Cái gì / Là gì",
+              "speechText": "What",
+              "colorHex": "#06b6d4",
+              "icon": "❓",
+              "sentence": "What is this?",
+              "sentenceVi": "Đây là cái gì?"
+            },
+            {
+              "id": "g3_u2_4",
+              "word": "MY",
+              "phonetic": "/maɪ/",
+              "meaning": "Của tôi / Của mình",
+              "speechText": "My",
+              "colorHex": "#10b981",
+              "icon": "🌟",
+              "sentence": "My name is Linh.",
+              "sentenceVi": "Tên mình là Linh."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u2_s1",
+              "structure": "What's your name? - My name's [Name].",
+              "meaning": "Hỏi và đáp tên của một người",
+              "example": "What's your name? - My name's Mary.",
+              "exampleVi": "Tên của bạn là gì? - Tên mình là Mary.",
+              "speechText": "What's your name? My name's Mary."
+            },
+            {
+              "id": "g3_u2_s2",
+              "structure": "How do you spell your name? - [L-I-N-H].",
+              "meaning": "Hỏi và đánh vần tên",
+              "example": "How do you spell your name? - M-A-I.",
+              "exampleVi": "Bạn đánh vần tên bạn thế nào? - M-A-I.",
+              "speechText": "How do you spell your name? M-A-I."
+            }
+          ]
+        },
+        {
+          "unitNumber": 3,
+          "unitKey": "unit_3",
+          "unitName": "Our friends",
+          "unitFullName": "3. Our friends",
+          "theme": "Friends & Companions",
+          "vocabulary": [
+            {
+              "id": "g3_u3_1",
+              "word": "FRIEND",
+              "phonetic": "/frend/",
+              "meaning": "Bạn bè",
+              "speechText": "Friend",
+              "colorHex": "#3b82f6",
+              "icon": "🤝",
+              "sentence": "This is my friend Lucy.",
+              "sentenceVi": "Đây là bạn Lucy của mình."
+            },
+            {
+              "id": "g3_u3_2",
+              "word": "THIS",
+              "phonetic": "/ðɪs/",
+              "meaning": "Đây là / Cái này (ở gần)",
+              "speechText": "This",
+              "colorHex": "#10b981",
+              "icon": "👉",
+              "sentence": "This is Bill.",
+              "sentenceVi": "Đây là bạn Bill."
+            },
+            {
+              "id": "g3_u3_3",
+              "word": "THAT",
+              "phonetic": "/ðæt/",
+              "meaning": "Đó là / Kia là (ở xa)",
+              "speechText": "That",
+              "colorHex": "#f59e0b",
+              "icon": "👉",
+              "sentence": "That is Mary.",
+              "sentenceVi": "Kia là bạn Mary."
+            },
+            {
+              "id": "g3_u3_4",
+              "word": "YES",
+              "phonetic": "/jes/",
+              "meaning": "Đúng / Vâng",
+              "speechText": "Yes",
+              "colorHex": "#16a34a",
+              "icon": "✅",
+              "sentence": "Yes, it is.",
+              "sentenceVi": "Đúng vậy."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u3_s1",
+              "structure": "This is my friend, [Name].",
+              "meaning": "Giới thiệu bạn bè ở gần",
+              "example": "This is my friend, Ba.",
+              "exampleVi": "Đây là bạn của mình, Ba.",
+              "speechText": "This is my friend, Ba."
+            },
+            {
+              "id": "g3_u3_s2",
+              "structure": "Is that [Name]? - Yes, it is. / No, it isn't.",
+              "meaning": "Hỏi xác nhận người ở đằng xa",
+              "example": "Is that Mary? - Yes, it is.",
+              "exampleVi": "Kia có phải là Mary không? - Đúng rồi.",
+              "speechText": "Is that Mary? Yes, it is."
+            }
+          ]
+        },
+        {
+          "unitNumber": 4,
+          "unitKey": "unit_4",
+          "unitName": "Our bodies",
+          "unitFullName": "4. Our bodies",
+          "theme": "Body Parts",
+          "vocabulary": [
+            {
+              "id": "g3_u4_1",
+              "word": "FACE",
+              "phonetic": "/feɪs/",
+              "meaning": "Khuôn mặt",
+              "speechText": "Face",
+              "colorHex": "#f97316",
+              "icon": "😊",
+              "sentence": "Touch your face.",
+              "sentenceVi": "Hãy chạm vào khuôn mặt của bạn."
+            },
+            {
+              "id": "g3_u4_2",
+              "word": "HAND",
+              "phonetic": "/hænd/",
+              "meaning": "Bàn tay",
+              "speechText": "Hand",
+              "colorHex": "#8b5cf6",
+              "icon": "✋",
+              "sentence": "Wash your hands.",
+              "sentenceVi": "Hãy rửa đôi bàn tay của bạn."
+            },
+            {
+              "id": "g3_u4_3",
+              "word": "EYE",
+              "phonetic": "/aɪ/",
+              "meaning": "Mắt",
+              "speechText": "Eye",
+              "colorHex": "#3b82f6",
+              "icon": "👁️",
+              "sentence": "Open your eyes.",
+              "sentenceVi": "Hãy mở mắt ra."
+            },
+            {
+              "id": "g3_u4_4",
+              "word": "NOSE",
+              "phonetic": "/nəʊz/",
+              "meaning": "Mũi",
+              "speechText": "Nose",
+              "colorHex": "#ec4899",
+              "icon": "👃",
+              "sentence": "Touch your nose.",
+              "sentenceVi": "Hãy chạm vào mũi của bạn."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u4_s1",
+              "structure": "Touch your [body part].",
+              "meaning": "Ra lệnh/hướng dẫn chạm vào bộ phận cơ thể",
+              "example": "Touch your face.",
+              "exampleVi": "Hãy chạm vào khuôn mặt của bạn.",
+              "speechText": "Touch your face."
+            },
+            {
+              "id": "g3_u4_s2",
+              "structure": "Open / Close your [eyes/mouth].",
+              "meaning": "Hướng dẫn mở/nhắm mắt hoặc miệng",
+              "example": "Open your eyes, please.",
+              "exampleVi": "Làm ơn hãy mở mắt ra.",
+              "speechText": "Open your eyes, please."
+            }
+          ]
+        },
+        {
+          "unitNumber": 5,
+          "unitKey": "unit_5",
+          "unitName": "My hobbies",
+          "unitFullName": "5. My hobbies",
+          "theme": "Hobbies & Interests",
+          "vocabulary": [
+            {
+              "id": "g3_u5_1",
+              "word": "SINGING",
+              "phonetic": "/ˈsɪŋ.ɪŋ/",
+              "meaning": "Hát / Ca hát",
+              "speechText": "Singing",
+              "colorHex": "#ec4899",
+              "icon": "🎤",
+              "sentence": "My hobby is singing.",
+              "sentenceVi": "Sở thích của mình là ca hát."
+            },
+            {
+              "id": "g3_u5_2",
+              "word": "DANCING",
+              "phonetic": "/ˈdɑːn.sɪŋ/",
+              "meaning": "Nhảy múa / Khiêu vũ",
+              "speechText": "Dancing",
+              "colorHex": "#f59e0b",
+              "icon": "💃",
+              "sentence": "I like dancing.",
+              "sentenceVi": "Mình thích nhảy múa."
+            },
+            {
+              "id": "g3_u5_3",
+              "word": "DRAWING",
+              "phonetic": "/ˈdrɔː.ɪŋ/",
+              "meaning": "Vẽ tranh",
+              "speechText": "Drawing",
+              "colorHex": "#3b82f6",
+              "icon": "🎨",
+              "sentence": "Drawing is fun.",
+              "sentenceVi": "Vẽ tranh thật là vui."
+            },
+            {
+              "id": "g3_u5_4",
+              "word": "SWIMMING",
+              "phonetic": "/ˈswɪm.ɪŋ/",
+              "meaning": "Bơi lội",
+              "speechText": "Swimming",
+              "colorHex": "#06b6d4",
+              "icon": "🏊",
+              "sentence": "I love swimming.",
+              "sentenceVi": "Mình rất thích bơi lội."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u5_s1",
+              "structure": "What's your hobby? - It's [Hobby].",
+              "meaning": "Hỏi và trả lời về sở thích cá nhân",
+              "example": "What's your hobby? - It's singing.",
+              "exampleVi": "Sở thích của bạn là gì? - Là ca hát.",
+              "speechText": "What's your hobby? It's singing."
+            },
+            {
+              "id": "g3_u5_s2",
+              "structure": "I like [Hobby-ing].",
+              "meaning": "Bày tỏ sở thích",
+              "example": "I like drawing trees.",
+              "exampleVi": "Mình thích vẽ cây cối xanh tươi.",
+              "speechText": "I like drawing trees."
+            }
+          ]
+        },
+        {
+          "unitNumber": 6,
+          "unitKey": "unit_6",
+          "unitName": "Our school",
+          "unitFullName": "6. Our school",
+          "theme": "School Environment",
+          "vocabulary": [
+            {
+              "id": "g3_u6_1",
+              "word": "SCHOOL",
+              "phonetic": "/skuːl/",
+              "meaning": "Trường học",
+              "speechText": "School",
+              "colorHex": "#10b981",
+              "icon": "🏫",
+              "sentence": "This is my school.",
+              "sentenceVi": "Đây là ngôi trường của mình."
+            },
+            {
+              "id": "g3_u6_2",
+              "word": "CLASSROOM",
+              "phonetic": "/ˈklɑːs.ruːm/",
+              "meaning": "Phòng học / Lớp học",
+              "speechText": "Classroom",
+              "colorHex": "#3b82f6",
+              "icon": "🚪",
+              "sentence": "Our classroom is big.",
+              "sentenceVi": "Phòng học của chúng mình rất rộng."
+            },
+            {
+              "id": "g3_u6_3",
+              "word": "LIBRARY",
+              "phonetic": "/ˈlaɪ.brər.i/",
+              "meaning": "Thư viện",
+              "speechText": "Library",
+              "colorHex": "#8b5cf6",
+              "icon": "📚",
+              "sentence": "We read books in the library.",
+              "sentenceVi": "Chúng mình đọc sách ở thư viện."
+            },
+            {
+              "id": "g3_u6_4",
+              "word": "PLAYGROUND",
+              "phonetic": "/ˈpleɪ.ɡraʊnd/",
+              "meaning": "Sân chơi / Sân trường",
+              "speechText": "Playground",
+              "colorHex": "#f59e0b",
+              "icon": "⚽",
+              "sentence": "Let us go to the playground.",
+              "sentenceVi": "Chúng mình cùng ra sân trường nào."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u6_s1",
+              "structure": "Is this / that our school? - Yes, it is.",
+              "meaning": "Hỏi xác nhận địa điểm trong trường",
+              "example": "Is this our school? - Yes, it is.",
+              "exampleVi": "Đây có phải là trường của chúng mình không? - Đúng vậy.",
+              "speechText": "Is this our school? Yes, it is."
+            },
+            {
+              "id": "g3_u6_s2",
+              "structure": "Let's go to the [place].",
+              "meaning": "Rủ bạn cùng đến một địa điểm trong trường",
+              "example": "Let's go to the library.",
+              "exampleVi": "Chúng mình cùng vào thư viện nhé.",
+              "speechText": "Let's go to the library."
+            }
+          ]
+        },
+        {
+          "unitNumber": 7,
+          "unitKey": "unit_7",
+          "unitName": "Classroom instructions",
+          "unitFullName": "7. Classroom instructions",
+          "theme": "Classroom Rules & Actions",
+          "vocabulary": [
+            {
+              "id": "g3_u7_1",
+              "word": "OPEN",
+              "phonetic": "/ˈəʊ.pən/",
+              "meaning": "Mở ra",
+              "speechText": "Open",
+              "colorHex": "#10b981",
+              "icon": "📖",
+              "sentence": "Open your book, please.",
+              "sentenceVi": "Làm ơn hãy mở sách ra."
+            },
+            {
+              "id": "g3_u7_2",
+              "word": "CLOSE",
+              "phonetic": "/kləʊz/",
+              "meaning": "Đóng lại / Gấp lại",
+              "speechText": "Close",
+              "colorHex": "#ef4444",
+              "icon": "📕",
+              "sentence": "Close your book, please.",
+              "sentenceVi": "Làm ơn hãy gấp sách lại."
+            },
+            {
+              "id": "g3_u7_3",
+              "word": "STAND UP",
+              "phonetic": "/stænd ʌp/",
+              "meaning": "Đứng lên",
+              "speechText": "Stand up",
+              "colorHex": "#3b82f6",
+              "icon": "🧍",
+              "sentence": "Stand up, please.",
+              "sentenceVi": "Mời các em đứng lên."
+            },
+            {
+              "id": "g3_u7_4",
+              "word": "SIT DOWN",
+              "phonetic": "/sɪt daʊn/",
+              "meaning": "Ngồi xuống",
+              "speechText": "Sit down",
+              "colorHex": "#f59e0b",
+              "icon": "🪑",
+              "sentence": "Sit down, please.",
+              "sentenceVi": "Mời các em ngồi xuống."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u7_s1",
+              "structure": "May I [action]? - Yes, you can. / No, you can't.",
+              "meaning": "Xin phép giáo viên làm điều gì",
+              "example": "May I come in? - Yes, you can.",
+              "exampleVi": "Em xin phép vào lớp ạ? - Được, em vào đi.",
+              "speechText": "May I come in? Yes, you can."
+            },
+            {
+              "id": "g3_u7_s2",
+              "structure": "[Action], please.",
+              "meaning": "Câu mệnh lệnh lịch sự trong lớp học",
+              "example": "Speak English, please.",
+              "exampleVi": "Làm ơn hãy nói tiếng Anh.",
+              "speechText": "Speak English, please."
+            }
+          ]
+        },
+        {
+          "unitNumber": 8,
+          "unitKey": "unit_8",
+          "unitName": "My school things",
+          "unitFullName": "8. My school things",
+          "theme": "School Stationery",
+          "vocabulary": [
+            {
+              "id": "g3_u8_1",
+              "word": "PEN",
+              "phonetic": "/pen/",
+              "meaning": "Bút mực",
+              "speechText": "Pen",
+              "colorHex": "#3b82f6",
+              "icon": "🖊️",
+              "sentence": "I have a green pen.",
+              "sentenceVi": "Mình có một chiếc bút mực màu xanh."
+            },
+            {
+              "id": "g3_u8_2",
+              "word": "PENCIL",
+              "phonetic": "/ˈpen.səl/",
+              "meaning": "Bút chì",
+              "speechText": "Pencil",
+              "colorHex": "#f59e0b",
+              "icon": "✏️",
+              "sentence": "This is my pencil.",
+              "sentenceVi": "Đây là chiếc bút chì của mình."
+            },
+            {
+              "id": "g3_u8_3",
+              "word": "RULER",
+              "phonetic": "/ˈruː.lər/",
+              "meaning": "Thước kẻ",
+              "speechText": "Ruler",
+              "colorHex": "#10b981",
+              "icon": "📏",
+              "sentence": "I have a long ruler.",
+              "sentenceVi": "Mình có một chiếc thước kẻ dài."
+            },
+            {
+              "id": "g3_u8_4",
+              "word": "BOOK",
+              "phonetic": "/bʊk/",
+              "meaning": "Quyển sách",
+              "speechText": "Book",
+              "colorHex": "#ec4899",
+              "icon": "📘",
+              "sentence": "Look at my book.",
+              "sentenceVi": "Hãy nhìn vào quyển sách của mình."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u8_s1",
+              "structure": "I have a [school thing].",
+              "meaning": "Nói về đồ dùng học tập mình có",
+              "example": "I have a pencil.",
+              "exampleVi": "Mình có một chiếc bút chì.",
+              "speechText": "I have a pencil."
+            },
+            {
+              "id": "g3_u8_s2",
+              "structure": "Do you have a [school thing]? - Yes, I do.",
+              "meaning": "Hỏi bạn có đồ dùng học tập không",
+              "example": "Do you have a ruler? - Yes, I do.",
+              "exampleVi": "Bạn có thước kẻ không? - Có, mình có.",
+              "speechText": "Do you have a ruler? Yes, I do."
+            }
+          ]
+        },
+        {
+          "unitNumber": 9,
+          "unitKey": "unit_9",
+          "unitName": "Colours",
+          "unitFullName": "9. Colours",
+          "theme": "Colours in Nature & Environment",
+          "vocabulary": [
+            {
+              "id": "g3_u9_1",
+              "word": "RED",
+              "phonetic": "/red/",
+              "meaning": "Màu đỏ",
+              "speechText": "Red",
+              "colorHex": "#ef4444",
+              "icon": "🔴",
+              "sentence": "It is red.",
+              "sentenceVi": "Nó có màu đỏ."
+            },
+            {
+              "id": "g3_u9_2",
+              "word": "BLUE",
+              "phonetic": "/bluː/",
+              "meaning": "Màu xanh dương",
+              "speechText": "Blue",
+              "colorHex": "#3b82f6",
+              "icon": "🔵",
+              "sentence": "The sky is blue.",
+              "sentenceVi": "Bầu trời có màu xanh dương."
+            },
+            {
+              "id": "g3_u9_3",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Màu xanh lá cây",
+              "speechText": "Green",
+              "colorHex": "#10b981",
+              "icon": "🟢",
+              "sentence": "The leaf is green.",
+              "sentenceVi": "Chiếc lá có màu xanh lá cây."
+            },
+            {
+              "id": "g3_u9_4",
+              "word": "YELLOW",
+              "phonetic": "/ˈjel.oʊ/",
+              "meaning": "Màu vàng",
+              "speechText": "Yellow",
+              "colorHex": "#eab308",
+              "icon": "🟡",
+              "sentence": "The sun is yellow.",
+              "sentenceVi": "Mặt trời có màu vàng tươi."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u9_s1",
+              "structure": "What colour is it? - It's [Colour].",
+              "meaning": "Hỏi màu sắc của một vật số ít",
+              "example": "What colour is it? - It's blue.",
+              "exampleVi": "Nó có màu gì thế? - Nó có màu xanh dương.",
+              "speechText": "What colour is it? It's blue."
+            },
+            {
+              "id": "g3_u9_s2",
+              "structure": "What colour are they? - They're [Colour].",
+              "meaning": "Hỏi màu sắc của nhiều vật số nhiều",
+              "example": "What colour are they? - They're green.",
+              "exampleVi": "Chúng có màu gì? - Chúng có màu xanh lá cây.",
+              "speechText": "What colour are they? They're green."
+            }
+          ]
+        },
+        {
+          "unitNumber": 10,
+          "unitKey": "unit_10",
+          "unitName": "Break time activities",
+          "unitFullName": "10. Break time activities",
+          "theme": "Recess Sports & Games",
+          "vocabulary": [
+            {
+              "id": "g3_u10_1",
+              "word": "FOOTBALL",
+              "phonetic": "/ˈfʊt.bɔːl/",
+              "meaning": "Bóng đá",
+              "speechText": "Football",
+              "colorHex": "#10b981",
+              "icon": "⚽",
+              "sentence": "I play football at break time.",
+              "sentenceVi": "Mình chơi bóng đá vào giờ ra chơi."
+            },
+            {
+              "id": "g3_u10_2",
+              "word": "CHESS",
+              "phonetic": "/tʃes/",
+              "meaning": "Cờ vua",
+              "speechText": "Chess",
+              "colorHex": "#8b5cf6",
+              "icon": "♟️",
+              "sentence": "Do you play chess?",
+              "sentenceVi": "Bạn có chơi cờ vua không?"
+            },
+            {
+              "id": "g3_u10_3",
+              "word": "BASKETBALL",
+              "phonetic": "/ˈbɑː.skɪt.bɔːl/",
+              "meaning": "Bóng rổ",
+              "speechText": "Basketball",
+              "colorHex": "#f97316",
+              "icon": "🏀",
+              "sentence": "We love basketball.",
+              "sentenceVi": "Chúng mình rất thích bóng rổ."
+            },
+            {
+              "id": "g3_u10_4",
+              "word": "BADMINTON",
+              "phonetic": "/ˈbæd.mɪn.tən/",
+              "meaning": "Cầu lông",
+              "speechText": "Badminton",
+              "colorHex": "#06b6d4",
+              "icon": "🏸",
+              "sentence": "They play badminton.",
+              "sentenceVi": "Họ chơi cầu lông."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u10_s1",
+              "structure": "What do you do at break time? - I play [Sport].",
+              "meaning": "Hỏi hoạt động trong giờ giải lao",
+              "example": "What do you do at break time? - I play football.",
+              "exampleVi": "Bạn làm gì vào giờ ra chơi? - Mình chơi bóng đá.",
+              "speechText": "What do you do at break time? I play football."
+            },
+            {
+              "id": "g3_u10_s2",
+              "structure": "Do you play [Game]? - Yes, I do. / No, I don't.",
+              "meaning": "Hỏi bạn có chơi trò chơi nào không",
+              "example": "Do you play chess? - Yes, I do.",
+              "exampleVi": "Bạn có chơi cờ vua không? - Có, mình có chơi.",
+              "speechText": "Do you play chess? Yes, I do."
+            }
+          ]
+        },
+        {
+          "unitNumber": 11,
+          "unitKey": "unit_11",
+          "unitName": "My family",
+          "unitFullName": "11. My family",
+          "theme": "Family Members",
+          "vocabulary": [
+            {
+              "id": "g3_u11_1",
+              "word": "FATHER",
+              "phonetic": "/ˈfɑː.ðər/",
+              "meaning": "Bố / Cha",
+              "speechText": "Father",
+              "colorHex": "#3b82f6",
+              "icon": "👨",
+              "sentence": "He is my father.",
+              "sentenceVi": "Bác ấy là bố của mình."
+            },
+            {
+              "id": "g3_u11_2",
+              "word": "MOTHER",
+              "phonetic": "/ˈmʌð.ər/",
+              "meaning": "Mẹ",
+              "speechText": "Mother",
+              "colorHex": "#ec4899",
+              "icon": "👩",
+              "sentence": "She is my mother.",
+              "sentenceVi": "Cô ấy là mẹ của mình."
+            },
+            {
+              "id": "g3_u11_3",
+              "word": "BROTHER",
+              "phonetic": "/ˈbrʌð.ər/",
+              "meaning": "Anh trai / Em trai",
+              "speechText": "Brother",
+              "colorHex": "#10b981",
+              "icon": "👦",
+              "sentence": "My brother is eight.",
+              "sentenceVi": "Em trai mình 8 tuổi."
+            },
+            {
+              "id": "g3_u11_4",
+              "word": "SISTER",
+              "phonetic": "/ˈsɪs.tər/",
+              "meaning": "Chị gái / Em gái",
+              "speechText": "Sister",
+              "colorHex": "#f59e0b",
+              "icon": "👧",
+              "sentence": "My sister is cute.",
+              "sentenceVi": "Em gái mình rất đáng yêu."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u11_s1",
+              "structure": "Who's that? - He's / She's my [Family member].",
+              "meaning": "Hỏi và giới thiệu người thân trong gia đình",
+              "example": "Who's that? - She's my mother.",
+              "exampleVi": "Kia là ai thế? - Đó là mẹ của mình.",
+              "speechText": "Who's that? She's my mother."
+            },
+            {
+              "id": "g3_u11_s2",
+              "structure": "How old is your [brother/sister]? - He's / She's [age].",
+              "meaning": "Hỏi tuổi của người thân",
+              "example": "How old is your sister? - She's seven.",
+              "exampleVi": "Em gái bạn bao nhiêu tuổi? - Em ấy 7 tuổi.",
+              "speechText": "How old is your sister? She's seven."
+            }
+          ]
+        },
+        {
+          "unitNumber": 12,
+          "unitKey": "unit_12",
+          "unitName": "Jobs",
+          "unitFullName": "12. Jobs",
+          "theme": "Professions & Occupations",
+          "vocabulary": [
+            {
+              "id": "g3_u12_1",
+              "word": "TEACHER",
+              "phonetic": "/ˈtiː.tʃər/",
+              "meaning": "Giáo viên",
+              "speechText": "Teacher",
+              "colorHex": "#10b981",
+              "icon": "👩‍🏫",
+              "sentence": "My mother is a teacher.",
+              "sentenceVi": "Mẹ của mình là một giáo viên."
+            },
+            {
+              "id": "g3_u12_2",
+              "word": "DOCTOR",
+              "phonetic": "/ˈdɒk.tər/",
+              "meaning": "Bác sĩ",
+              "speechText": "Doctor",
+              "colorHex": "#ef4444",
+              "icon": "👨‍⚕️",
+              "sentence": "He is a great doctor.",
+              "sentenceVi": "Chú ấy là một bác sĩ giỏi."
+            },
+            {
+              "id": "g3_u12_3",
+              "word": "DRIVER",
+              "phonetic": "/ˈdraɪ.vər/",
+              "meaning": "Tài xế / Lái xe",
+              "speechText": "Driver",
+              "colorHex": "#3b82f6",
+              "icon": "🚌",
+              "sentence": "His father is a driver.",
+              "sentenceVi": "Bố của bạn ấy là tài xế."
+            },
+            {
+              "id": "g3_u12_4",
+              "word": "FARMER",
+              "phonetic": "/ˈfɑː.mər/",
+              "meaning": "Nông dân",
+              "speechText": "Farmer",
+              "colorHex": "#f59e0b",
+              "icon": "🌾",
+              "sentence": "The farmer grows green rice.",
+              "sentenceVi": "Bác nông dân trồng lúa xanh tốt."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u12_s1",
+              "structure": "What's his / her job? - He's / She's a [job].",
+              "meaning": "Hỏi nghề nghiệp của một người",
+              "example": "What's her job? - She's a teacher.",
+              "exampleVi": "Nghề nghiệp của cô ấy là gì? - Cô ấy là giáo viên.",
+              "speechText": "What's her job? She's a teacher."
+            },
+            {
+              "id": "g3_u12_s2",
+              "structure": "Is he / she a [job]? - Yes, he/she is.",
+              "meaning": "Hỏi xác nhận nghề nghiệp",
+              "example": "Is he a doctor? - Yes, he is.",
+              "exampleVi": "Chú ấy có phải bác sĩ không? - Đúng vậy.",
+              "speechText": "Is he a doctor? Yes, he is."
+            }
+          ]
+        },
+        {
+          "unitNumber": 13,
+          "unitKey": "unit_13",
+          "unitName": "My house",
+          "unitFullName": "13. My house",
+          "theme": "Rooms & House Parts",
+          "vocabulary": [
+            {
+              "id": "g3_u13_1",
+              "word": "LIVING ROOM",
+              "phonetic": "/ˈlɪv.ɪŋ ˌruːm/",
+              "meaning": "Phòng khách",
+              "speechText": "Living room",
+              "colorHex": "#3b82f6",
+              "icon": "🛋️",
+              "sentence": "We sit in the living room.",
+              "sentenceVi": "Chúng mình ngồi ở phòng khách."
+            },
+            {
+              "id": "g3_u13_2",
+              "word": "BEDROOM",
+              "phonetic": "/ˈbed.ruːm/",
+              "meaning": "Phòng ngủ",
+              "speechText": "Bedroom",
+              "colorHex": "#8b5cf6",
+              "icon": "🛏️",
+              "sentence": "My bedroom is clean.",
+              "sentenceVi": "Phòng ngủ của mình rất sạch sẽ."
+            },
+            {
+              "id": "g3_u13_3",
+              "word": "KITCHEN",
+              "phonetic": "/ˈkɪtʃ.ən/",
+              "meaning": "Nhà bếp",
+              "speechText": "Kitchen",
+              "colorHex": "#f97316",
+              "icon": "🍳",
+              "sentence": "Mother is in the kitchen.",
+              "sentenceVi": "Mẹ đang ở trong phòng bếp."
+            },
+            {
+              "id": "g3_u13_4",
+              "word": "GARDEN",
+              "phonetic": "/ˈɡɑː.dən/",
+              "meaning": "Khu vườn",
+              "speechText": "Garden",
+              "colorHex": "#10b981",
+              "icon": "🏡",
+              "sentence": "There is a green garden.",
+              "sentenceVi": "Có một khu vườn xanh ngát."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u13_s1",
+              "structure": "Where's [person/item]? - It's / He's in the [room].",
+              "meaning": "Hỏi vị trí của người hoặc vật trong nhà",
+              "example": "Where's father? - He's in the living room.",
+              "exampleVi": "Bố ở đâu thế? - Bố đang ở phòng khách.",
+              "speechText": "Where's father? He's in the living room."
+            },
+            {
+              "id": "g3_u13_s2",
+              "structure": "There is a [room/garden].",
+              "meaning": "Nói về sự hiện diện của phòng hoặc vườn trong nhà",
+              "example": "There is a beautiful garden.",
+              "exampleVi": "Có một khu vườn rất đẹp.",
+              "speechText": "There is a beautiful garden."
+            }
+          ]
+        },
+        {
+          "unitNumber": 14,
+          "unitKey": "unit_14",
+          "unitName": "My bedroom",
+          "unitFullName": "14. My bedroom",
+          "theme": "Bedroom Furniture",
+          "vocabulary": [
+            {
+              "id": "g3_u14_1",
+              "word": "BED",
+              "phonetic": "/bed/",
+              "meaning": "Cái giường",
+              "speechText": "Bed",
+              "colorHex": "#8b5cf6",
+              "icon": "🛏️",
+              "sentence": "My bed is soft.",
+              "sentenceVi": "Giường của mình rất êm."
+            },
+            {
+              "id": "g3_u14_2",
+              "word": "DESK",
+              "phonetic": "/desk/",
+              "meaning": "Bàn học",
+              "speechText": "Desk",
+              "colorHex": "#f59e0b",
+              "icon": "🪵",
+              "sentence": "My book is on the desk.",
+              "sentenceVi": "Sách của mình ở trên bàn học."
+            },
+            {
+              "id": "g3_u14_3",
+              "word": "CHAIR",
+              "phonetic": "/tʃeər/",
+              "meaning": "Cái ghế",
+              "speechText": "Chair",
+              "colorHex": "#10b981",
+              "icon": "🪑",
+              "sentence": "Sit on the chair.",
+              "sentenceVi": "Hãy ngồi lên ghế."
+            },
+            {
+              "id": "g3_u14_4",
+              "word": "DOOR",
+              "phonetic": "/dɔːr/",
+              "meaning": "Cửa ra vào",
+              "speechText": "Door",
+              "colorHex": "#3b82f6",
+              "icon": "🚪",
+              "sentence": "Close the door, please.",
+              "sentenceVi": "Làm ơn đóng cửa lại."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u14_s1",
+              "structure": "Where is my [thing]? - It's on / in the [furniture].",
+              "meaning": "Hỏi vị trí đồ vật trong phòng ngủ",
+              "example": "Where is my pen? - It's on the desk.",
+              "exampleVi": "Chiếc bút của mình ở đâu? - Nó ở trên bàn.",
+              "speechText": "Where is my pen? It's on the desk."
+            },
+            {
+              "id": "g3_u14_s2",
+              "structure": "There are [number] [chairs/beds].",
+              "meaning": "Nói số lượng đồ vật trong phòng",
+              "example": "There are two chairs in my bedroom.",
+              "exampleVi": "Có hai cái ghế trong phòng ngủ của mình.",
+              "speechText": "There are two chairs in my bedroom."
+            }
+          ]
+        },
+        {
+          "unitNumber": 15,
+          "unitKey": "unit_15",
+          "unitName": "At the dining table",
+          "unitFullName": "15. At the dining table",
+          "theme": "Food & Drinks",
+          "vocabulary": [
+            {
+              "id": "g3_u15_1",
+              "word": "RICE",
+              "phonetic": "/raɪs/",
+              "meaning": "Cơm / Gạo",
+              "speechText": "Rice",
+              "colorHex": "#f59e0b",
+              "icon": "🍚",
+              "sentence": "I eat rice for dinner.",
+              "sentenceVi": "Mình ăn cơm vào bữa tối."
+            },
+            {
+              "id": "g3_u15_2",
+              "word": "FISH",
+              "phonetic": "/fɪʃ/",
+              "meaning": "Cá",
+              "speechText": "Fish",
+              "colorHex": "#06b6d4",
+              "icon": "🐟",
+              "sentence": "Would you like some fish?",
+              "sentenceVi": "Bạn có muốn dùng một ít cá không?"
+            },
+            {
+              "id": "g3_u15_3",
+              "word": "CHICKEN",
+              "phonetic": "/ˈtʃɪk.ɪn/",
+              "meaning": "Thịt gà",
+              "speechText": "Chicken",
+              "colorHex": "#f97316",
+              "icon": "🍗",
+              "sentence": "The chicken is delicious.",
+              "sentenceVi": "Món thịt gà rất ngon."
+            },
+            {
+              "id": "g3_u15_4",
+              "word": "WATER",
+              "phonetic": "/ˈwɔː.tər/",
+              "meaning": "Nước lọc",
+              "speechText": "Water",
+              "colorHex": "#3b82f6",
+              "icon": "💧",
+              "sentence": "Drink some water, please.",
+              "sentenceVi": "Làm ơn hãy uống một chút nước."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u15_s1",
+              "structure": "Would you like some [food/drink]? - Yes, please. / No, thanks.",
+              "meaning": "Mời ai dùng món ăn hoặc đồ uống",
+              "example": "Would you like some water? - Yes, please.",
+              "exampleVi": "Bạn có muốn uống nước không? - Vâng, cho mình xin.",
+              "speechText": "Would you like some water? Yes, please."
+            },
+            {
+              "id": "g3_u15_s2",
+              "structure": "What would you like? - I'd like some [food].",
+              "meaning": "Hỏi ai đó muốn dùng món gì",
+              "example": "What would you like? - I'd like some rice.",
+              "exampleVi": "Bạn muốn dùng món gì? - Cho mình một ít cơm.",
+              "speechText": "What would you like? I'd like some rice."
+            }
+          ]
+        },
+        {
+          "unitNumber": 16,
+          "unitKey": "unit_16",
+          "unitName": "My pets",
+          "unitFullName": "16. My pets",
+          "theme": "Pets & Domestic Animals",
+          "vocabulary": [
+            {
+              "id": "g3_u16_1",
+              "word": "DOG",
+              "phonetic": "/dɒɡ/",
+              "meaning": "Con chó",
+              "speechText": "Dog",
+              "colorHex": "#f59e0b",
+              "icon": "🐶",
+              "sentence": "I have a brown dog.",
+              "sentenceVi": "Mình có một chú chó màu nâu."
+            },
+            {
+              "id": "g3_u16_2",
+              "word": "CAT",
+              "phonetic": "/kæt/",
+              "meaning": "Con mèo",
+              "speechText": "Cat",
+              "colorHex": "#ec4899",
+              "icon": "🐱",
+              "sentence": "The cat is sleeping.",
+              "sentenceVi": "Chú mèo đang ngủ."
+            },
+            {
+              "id": "g3_u16_3",
+              "word": "BIRD",
+              "phonetic": "/bɜːd/",
+              "meaning": "Con chim",
+              "speechText": "Bird",
+              "colorHex": "#3b82f6",
+              "icon": "🐦",
+              "sentence": "The bird sings in the green tree.",
+              "sentenceVi": "Chú chim hót trên cành cây xanh."
+            },
+            {
+              "id": "g3_u16_4",
+              "word": "RABBIT",
+              "phonetic": "/ˈræb.ɪt/",
+              "meaning": "Con thỏ",
+              "speechText": "Rabbit",
+              "colorHex": "#10b981",
+              "icon": "🐰",
+              "sentence": "I have two cute rabbits.",
+              "sentenceVi": "Mình có hai chú thỏ đáng yêu."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u16_s1",
+              "structure": "Do you have any pets? - Yes, I have a [pet].",
+              "meaning": "Hỏi bạn có nuôi thú cưng không",
+              "example": "Do you have any pets? - Yes, I have a cat.",
+              "exampleVi": "Bạn có nuôi thú cưng không? - Có, mình có một chú mèo.",
+              "speechText": "Do you have any pets? Yes, I have a cat."
+            },
+            {
+              "id": "g3_u16_s2",
+              "structure": "How many [pets] do you have? - I have [number].",
+              "meaning": "Hỏi số lượng thú cưng đang nuôi",
+              "example": "How many birds do you have? - I have three.",
+              "exampleVi": "Bạn có bao nhiêu chú chim? - Mình có ba con.",
+              "speechText": "How many birds do you have? I have three."
+            }
+          ]
+        },
+        {
+          "unitNumber": 17,
+          "unitKey": "unit_17",
+          "unitName": "Our toys",
+          "unitFullName": "17. Our toys",
+          "theme": "Children Toys",
+          "vocabulary": [
+            {
+              "id": "g3_u17_1",
+              "word": "CAR",
+              "phonetic": "/kɑːr/",
+              "meaning": "Ô tô đồ chơi",
+              "speechText": "Car",
+              "colorHex": "#ef4444",
+              "icon": "🚗",
+              "sentence": "He has a red toy car.",
+              "sentenceVi": "Bạn ấy có một chiếc ô tô đồ chơi màu đỏ."
+            },
+            {
+              "id": "g3_u17_2",
+              "word": "DOLL",
+              "phonetic": "/dɒl/",
+              "meaning": "Búp bê",
+              "speechText": "Doll",
+              "colorHex": "#ec4899",
+              "icon": "🪆",
+              "sentence": "My sister loves her doll.",
+              "sentenceVi": "Em gái mình rất thích búp bê."
+            },
+            {
+              "id": "g3_u17_3",
+              "word": "ROBOT",
+              "phonetic": "/ˈrəʊ.bɒt/",
+              "meaning": "Người máy / Rô bốt",
+              "speechText": "Robot",
+              "colorHex": "#3b82f6",
+              "icon": "🤖",
+              "sentence": "Look at my new robot.",
+              "sentenceVi": "Hãy nhìn chú người máy mới của mình này."
+            },
+            {
+              "id": "g3_u17_4",
+              "word": "KITE",
+              "phonetic": "/kaɪt/",
+              "meaning": "Cái diều",
+              "speechText": "Kite",
+              "colorHex": "#10b981",
+              "icon": "🪁",
+              "sentence": "Fly a kite in the green field.",
+              "sentenceVi": "Thả diều trên cánh đồng xanh mát."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u17_s1",
+              "structure": "What toys do you have? - I have a [toy].",
+              "meaning": "Hỏi bạn có những món đồ chơi nào",
+              "example": "What toys do you have? - I have a robot.",
+              "exampleVi": "Bạn có đồ chơi gì thế? - Mình có một chú người máy.",
+              "speechText": "What toys do you have? I have a robot."
+            },
+            {
+              "id": "g3_u17_s2",
+              "structure": "He / She has [number] [toys].",
+              "meaning": "Nói về số lượng đồ chơi của bạn",
+              "example": "She has two dolls.",
+              "exampleVi": "Bạn ấy có hai con búp bê.",
+              "speechText": "She has two dolls."
+            }
+          ]
+        },
+        {
+          "unitNumber": 18,
+          "unitKey": "unit_18",
+          "unitName": "Playing sports and games",
+          "unitFullName": "18. Playing sports and games",
+          "theme": "Physical Activities",
+          "vocabulary": [
+            {
+              "id": "g3_u18_1",
+              "word": "SKATE",
+              "phonetic": "/skeɪt/",
+              "meaning": "Trượt patin",
+              "speechText": "Skate",
+              "colorHex": "#3b82f6",
+              "icon": "⛸️",
+              "sentence": "I can skate fast.",
+              "sentenceVi": "Mình có thể trượt patin nhanh."
+            },
+            {
+              "id": "g3_u18_2",
+              "word": "SKIP",
+              "phonetic": "/skɪp/",
+              "meaning": "Nhảy dây",
+              "speechText": "Skip",
+              "colorHex": "#ec4899",
+              "icon": "🪢",
+              "sentence": "They are skipping rope.",
+              "sentenceVi": "Các bạn ấy đang nhảy dây."
+            },
+            {
+              "id": "g3_u18_3",
+              "word": "CYCLE",
+              "phonetic": "/ˈsaɪ.kəl/",
+              "meaning": "Đạp xe đạp",
+              "speechText": "Cycle",
+              "colorHex": "#10b981",
+              "icon": "🚲",
+              "sentence": "We cycle in the park.",
+              "sentenceVi": "Chúng mình đạp xe ở công viên."
+            },
+            {
+              "id": "g3_u18_4",
+              "word": "SWIM",
+              "phonetic": "/swɪm/",
+              "meaning": "Bơi",
+              "speechText": "Swim",
+              "colorHex": "#06b6d4",
+              "icon": "🏊",
+              "sentence": "He likes to swim.",
+              "sentenceVi": "Bạn ấy thích bơi lội."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u18_s1",
+              "structure": "What are you doing? - I'm [action-ing].",
+              "meaning": "Hỏi bạn đang làm gì ở hiện tại",
+              "example": "What are you doing? - I'm cycling.",
+              "exampleVi": "Bạn đang làm gì thế? - Mình đang đạp xe.",
+              "speechText": "What are you doing? I'm cycling."
+            },
+            {
+              "id": "g3_u18_s2",
+              "structure": "What are they doing? - They're [action-ing].",
+              "meaning": "Hỏi mọi người đang làm gì",
+              "example": "What are they doing? - They're skating.",
+              "exampleVi": "Họ đang làm gì thế? - Họ đang trượt patin.",
+              "speechText": "What are they doing? They're skating."
+            }
+          ]
+        },
+        {
+          "unitNumber": 19,
+          "unitKey": "unit_19",
+          "unitName": "Outdoor activities",
+          "unitFullName": "19. Outdoor activities",
+          "theme": "Nature & Outdoor Life",
+          "vocabulary": [
+            {
+              "id": "g3_u19_1",
+              "word": "PARK",
+              "phonetic": "/pɑːk/",
+              "meaning": "Công viên",
+              "speechText": "Park",
+              "colorHex": "#10b981",
+              "icon": "🌳",
+              "sentence": "The green park is quiet.",
+              "sentenceVi": "Công viên xanh tươi thật thanh bình."
+            },
+            {
+              "id": "g3_u19_2",
+              "word": "WALKING",
+              "phonetic": "/ˈwɔː.kɪŋ/",
+              "meaning": "Đi bộ dạo mát",
+              "speechText": "Walking",
+              "colorHex": "#f59e0b",
+              "icon": "🚶",
+              "sentence": "We are walking under the trees.",
+              "sentenceVi": "Chúng mình đang đi dạo dưới bóng cây."
+            },
+            {
+              "id": "g3_u19_3",
+              "word": "RUNNING",
+              "phonetic": "/ˈrʌn.ɪŋ/",
+              "meaning": "Chạy bộ",
+              "speechText": "Running",
+              "colorHex": "#ef4444",
+              "icon": "🏃",
+              "sentence": "He is running fast.",
+              "sentenceVi": "Bạn ấy đang chạy rất nhanh."
+            },
+            {
+              "id": "g3_u19_4",
+              "word": "FLYING",
+              "phonetic": "/ˈflaɪ.ɪŋ/",
+              "meaning": "Thả (diều) / Bay",
+              "speechText": "Flying",
+              "colorHex": "#3b82f6",
+              "icon": "🪁",
+              "sentence": "She is flying a kite.",
+              "sentenceVi": "Bạn ấy đang thả một cánh diều."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u19_s1",
+              "structure": "What is he / she doing? - He's / She's [action-ing].",
+              "meaning": "Hỏi người khác đang làm gì ngoài trời",
+              "example": "What is she doing? - She is walking in the park.",
+              "exampleVi": "Cô ấy đang làm gì? - Cô ấy đang đi dạo trong công viên.",
+              "speechText": "What is she doing? She is walking in the park."
+            },
+            {
+              "id": "g3_u19_s2",
+              "structure": "Let's go to the park!",
+              "meaning": "Rủ bạn cùng ra công viên hít thở khí trời",
+              "example": "Let's go to the park together!",
+              "exampleVi": "Chúng mình cùng ra công viên nhé!",
+              "speechText": "Let's go to the park together!"
+            }
+          ]
+        },
+        {
+          "unitNumber": 20,
+          "unitKey": "unit_20",
+          "unitName": "At the zoo",
+          "unitFullName": "20. At the zoo",
+          "theme": "Wild Animals & Zoo Life",
+          "vocabulary": [
+            {
+              "id": "g3_u20_1",
+              "word": "TIGER",
+              "phonetic": "/ˈtaɪ.ɡər/",
+              "meaning": "Con hổ",
+              "speechText": "Tiger",
+              "colorHex": "#f97316",
+              "icon": "🐅",
+              "sentence": "The tiger is strong.",
+              "sentenceVi": "Chú hổ trông thật dũng mãnh."
+            },
+            {
+              "id": "g3_u20_2",
+              "word": "MONKEY",
+              "phonetic": "/ˈmʌŋ.ki/",
+              "meaning": "Con khỉ",
+              "speechText": "Monkey",
+              "colorHex": "#f59e0b",
+              "icon": "🐒",
+              "sentence": "The monkey climbs the tree.",
+              "sentenceVi": "Chú khỉ leo thoăn thoắt trên cây."
+            },
+            {
+              "id": "g3_u20_3",
+              "word": "ELEPHANT",
+              "phonetic": "/ˈel.ɪ.fənt/",
+              "meaning": "Con voi",
+              "speechText": "Elephant",
+              "colorHex": "#64748b",
+              "icon": "🐘",
+              "sentence": "The elephant is very big.",
+              "sentenceVi": "Chú voi rất to lớn."
+            },
+            {
+              "id": "g3_u20_4",
+              "word": "PEACOCK",
+              "phonetic": "/ˈpiː.kɒk/",
+              "meaning": "Con công",
+              "speechText": "Peacock",
+              "colorHex": "#06b6d4",
+              "icon": "🦚",
+              "sentence": "The peacock is beautiful.",
+              "sentenceVi": "Con công xòe đuôi thật đẹp."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g3_u20_s1",
+              "structure": "What animal do you want to see? - I want to see [animals].",
+              "meaning": "Hỏi bạn muốn ngắm con vật nào ở sở thú",
+              "example": "What animal do you want to see? - I want to see monkeys.",
+              "exampleVi": "Bạn muốn xem con vật nào? - Mình muốn xem những chú khỉ.",
+              "speechText": "What animal do you want to see? I want to see monkeys."
+            },
+            {
+              "id": "g3_u20_s2",
+              "structure": "The [animal] is [adjective].",
+              "meaning": "Miêu tả đặc điểm của con thú",
+              "example": "The elephant is big and friendly.",
+              "exampleVi": "Chú voi to lớn và rất thân thiện.",
+              "speechText": "The elephant is big and friendly."
+            }
+          ]
+        }
+      ]
+    },
+    "4": {
+      "grade": 4,
+      "gradeTitle": "Tiếng Anh 4 - Global Success",
+      "curriculum": "Chương trình Giáo dục phổ thông 2018",
+      "publisher": "Nhà xuất bản Giáo dục Việt Nam",
+      "description": "Chương trình 20 Unit học kỳ 1 và học kỳ 2 cho học sinh Lớp 4",
+      "units": [
+        {
+          "unitNumber": 1,
+          "unitKey": "unit_1",
+          "unitName": "My friends",
+          "unitFullName": "1. My friends",
+          "theme": "Countries & Nationalities",
+          "vocabulary": [
+            {
+              "id": "g4_u1_1",
+              "word": "VIETNAM",
+              "phonetic": "/ˌvjetˈnɑːm/",
+              "meaning": "Nước Việt Nam",
+              "speechText": "Vietnam",
+              "colorHex": "#ef4444",
+              "icon": "🇻🇳",
+              "sentence": "I am from Vietnam.",
+              "sentenceVi": "Mình đến từ Việt Nam."
+            },
+            {
+              "id": "g4_u1_2",
+              "word": "AMERICA",
+              "phonetic": "/əˈmer.ɪ.kə/",
+              "meaning": "Nước Mỹ",
+              "speechText": "America",
+              "colorHex": "#3b82f6",
+              "icon": "🇺🇸",
+              "sentence": "He is from America.",
+              "sentenceVi": "Bạn ấy đến từ nước Mỹ."
+            },
+            {
+              "id": "g4_u1_3",
+              "word": "BRITAIN",
+              "phonetic": "/ˈbrɪt.ən/",
+              "meaning": "Nước Anh",
+              "speechText": "Britain",
+              "colorHex": "#8b5cf6",
+              "icon": "🇬🇧",
+              "sentence": "Lucy is from Britain.",
+              "sentenceVi": "Lucy đến từ nước Anh."
+            },
+            {
+              "id": "g4_u1_4",
+              "word": "AUSTRALIA",
+              "phonetic": "/ɒsˈtreɪ.li.ə/",
+              "meaning": "Nước Úc",
+              "speechText": "Australia",
+              "colorHex": "#10b981",
+              "icon": "🇦🇺",
+              "sentence": "Ben lives in Australia.",
+              "sentenceVi": "Ben sống ở nước Úc."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u1_s1",
+              "structure": "Where are you from? - I'm from [Country].",
+              "meaning": "Hỏi quê hương/quốc gia xuất xứ của ai đó",
+              "example": "Where are you from? - I'm from Vietnam.",
+              "exampleVi": "Bạn đến từ đâu? - Mình đến từ Việt Nam.",
+              "speechText": "Where are you from? I'm from Vietnam."
+            },
+            {
+              "id": "g4_u1_s2",
+              "structure": "Where is he/she from? - He/She is from [Country].",
+              "meaning": "Hỏi quê hương của bạn khác",
+              "example": "Where is she from? - She's from Britain.",
+              "exampleVi": "Cô ấy đến từ đâu? - Cô ấy đến từ nước Anh.",
+              "speechText": "Where is she from? She's from Britain."
+            }
+          ]
+        },
+        {
+          "unitNumber": 2,
+          "unitKey": "unit_2",
+          "unitName": "Time and daily routines",
+          "unitFullName": "2. Time and daily routines",
+          "theme": "Telling Time & Routines",
+          "vocabulary": [
+            {
+              "id": "g4_u2_1",
+              "word": "GET UP",
+              "phonetic": "/ɡet ʌp/",
+              "meaning": "Thức dậy",
+              "speechText": "Get up",
+              "colorHex": "#f59e0b",
+              "icon": "⏰",
+              "sentence": "I get up at six o clock.",
+              "sentenceVi": "Mình thức dậy lúc 6 giờ sáng."
+            },
+            {
+              "id": "g4_u2_2",
+              "word": "BREAKFAST",
+              "phonetic": "/ˈbrek.fəst/",
+              "meaning": "Bữa ăn sáng",
+              "speechText": "Breakfast",
+              "colorHex": "#f97316",
+              "icon": "🍳",
+              "sentence": "I have breakfast at six thirty.",
+              "sentenceVi": "Mình ăn sáng lúc 6 giờ 30 phút."
+            },
+            {
+              "id": "g4_u2_3",
+              "word": "GO TO SCHOOL",
+              "phonetic": "/ɡəʊ tuː skuːl/",
+              "meaning": "Đi học",
+              "speechText": "Go to school",
+              "colorHex": "#10b981",
+              "icon": "🎒",
+              "sentence": "We go to school by bicycle.",
+              "sentenceVi": "Chúng mình đi học bằng xe đạp."
+            },
+            {
+              "id": "g4_u2_4",
+              "word": "GO TO BED",
+              "phonetic": "/ɡəʊ tuː bed/",
+              "meaning": "Đi ngủ",
+              "speechText": "Go to bed",
+              "colorHex": "#8b5cf6",
+              "icon": "🛌",
+              "sentence": "I go to bed at nine thirty.",
+              "sentenceVi": "Mình đi ngủ lúc 9 giờ 30 tối."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u2_s1",
+              "structure": "What time is it? - It's [time] o'clock.",
+              "meaning": "Hỏi và trả lời giờ giấc",
+              "example": "What time is it? - It's seven o'clock.",
+              "exampleVi": "Mấy giờ rồi bạn? - Bây giờ là 7 giờ đúng.",
+              "speechText": "What time is it? It's seven o'clock."
+            },
+            {
+              "id": "g4_u2_s2",
+              "structure": "What time do you [routine]? - I [routine] at [time].",
+              "meaning": "Hỏi giờ thực hiện hoạt động thường ngày",
+              "example": "What time do you get up? - I get up at six o'clock.",
+              "exampleVi": "Bạn thức dậy lúc mấy giờ? - Mình thức dậy lúc 6 giờ.",
+              "speechText": "What time do you get up? I get up at six o'clock."
+            }
+          ]
+        },
+        {
+          "unitNumber": 3,
+          "unitKey": "unit_3",
+          "unitName": "My week",
+          "unitFullName": "3. My week",
+          "theme": "Days of the Week",
+          "vocabulary": [
+            {
+              "id": "g4_u3_1",
+              "word": "MONDAY",
+              "phonetic": "/ˈmʌn.deɪ/",
+              "meaning": "Thứ Hai",
+              "speechText": "Monday",
+              "colorHex": "#ef4444",
+              "icon": "📅",
+              "sentence": "Today is Monday.",
+              "sentenceVi": "Hôm nay là Thứ Hai."
+            },
+            {
+              "id": "g4_u3_2",
+              "word": "WEDNESDAY",
+              "phonetic": "/ˈwenz.deɪ/",
+              "meaning": "Thứ Tư",
+              "speechText": "Wednesday",
+              "colorHex": "#3b82f6",
+              "icon": "🗓️",
+              "sentence": "We study English on Wednesday.",
+              "sentenceVi": "Chúng mình học tiếng Anh vào Thứ Tư."
+            },
+            {
+              "id": "g4_u3_3",
+              "word": "FRIDAY",
+              "phonetic": "/ˈfraɪ.deɪ/",
+              "meaning": "Thứ Sáu",
+              "speechText": "Friday",
+              "colorHex": "#10b981",
+              "icon": "🎉",
+              "sentence": "Friday is my favourite day.",
+              "sentenceVi": "Thứ Sáu là ngày mình thích nhất."
+            },
+            {
+              "id": "g4_u3_4",
+              "word": "SUNDAY",
+              "phonetic": "/ˈsʌn.deɪ/",
+              "meaning": "Chủ Nhật",
+              "speechText": "Sunday",
+              "colorHex": "#f59e0b",
+              "icon": "☀️",
+              "sentence": "I plant trees on Sunday.",
+              "sentenceVi": "Mình cùng vun trồng cây xanh vào Chủ Nhật."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u3_s1",
+              "structure": "What day is it today? - It's [Day].",
+              "meaning": "Hỏi hôm nay là thứ mấy",
+              "example": "What day is it today? - It's Monday.",
+              "exampleVi": "Hôm nay là thứ mấy? - Hôm nay là Thứ Hai.",
+              "speechText": "What day is it today? It's Monday."
+            },
+            {
+              "id": "g4_u3_s2",
+              "structure": "What do you do on [Day]s? - I [activity].",
+              "meaning": "Hỏi hoạt động vào các ngày trong tuần",
+              "example": "What do you do on Sundays? - I visit my garden.",
+              "exampleVi": "Bạn làm gì vào các ngày Chủ Nhật? - Mình chăm sóc khu vườn.",
+              "speechText": "What do you do on Sundays? I visit my garden."
+            }
+          ]
+        },
+        {
+          "unitNumber": 4,
+          "unitKey": "unit_4",
+          "unitName": "My birthday party",
+          "unitFullName": "4. My birthday party",
+          "theme": "Months & Birthdays",
+          "vocabulary": [
+            {
+              "id": "g4_u4_1",
+              "word": "JANUARY",
+              "phonetic": "/ˈdʒæn.ju.ə.ri/",
+              "meaning": "Tháng Một",
+              "speechText": "January",
+              "colorHex": "#06b6d4",
+              "icon": "❄️",
+              "sentence": "My birthday is in January.",
+              "sentenceVi": "Sinh nhật mình vào Tháng Một."
+            },
+            {
+              "id": "g4_u4_2",
+              "word": "MAY",
+              "phonetic": "/meɪ/",
+              "meaning": "Tháng Năm",
+              "speechText": "May",
+              "colorHex": "#ec4899",
+              "icon": "🌸",
+              "sentence": "Her birthday is in May.",
+              "sentenceVi": "Sinh nhật bạn ấy vào Tháng Năm."
+            },
+            {
+              "id": "g4_u4_3",
+              "word": "PARTY",
+              "phonetic": "/ˈpɑː.ti/",
+              "meaning": "Bữa tiệc sinh nhật",
+              "speechText": "Party",
+              "colorHex": "#f59e0b",
+              "icon": "🎂",
+              "sentence": "Welcome to my party.",
+              "sentenceVi": "Chào mừng bạn đến với bữa tiệc của mình."
+            },
+            {
+              "id": "g4_u4_4",
+              "word": "PRESENT",
+              "phonetic": "/ˈprez.ənt/",
+              "meaning": "Món quà tặng",
+              "speechText": "Present",
+              "colorHex": "#10b981",
+              "icon": "🎁",
+              "sentence": "This present is for you.",
+              "sentenceVi": "Món quà này dành tặng cho bạn."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u4_s1",
+              "structure": "When's your birthday? - It's in [Month].",
+              "meaning": "Hỏi sinh nhật vào tháng nào",
+              "example": "When's your birthday? - It's in May.",
+              "exampleVi": "Sinh nhật bạn vào khi nào? - Vào Tháng Năm.",
+              "speechText": "When's your birthday? It's in May."
+            },
+            {
+              "id": "g4_u4_s2",
+              "structure": "What do you want for your birthday? - I want a [gift].",
+              "meaning": "Hỏi muốn món quà gì nhân dịp sinh nhật",
+              "example": "What do you want for your birthday? - I want a plant pot.",
+              "exampleVi": "Bạn muốn món quà gì? - Mình muốn một chậu cây xanh.",
+              "speechText": "What do you want for your birthday? I want a plant pot."
+            }
+          ]
+        },
+        {
+          "unitNumber": 5,
+          "unitKey": "unit_5",
+          "unitName": "Things we can do",
+          "unitFullName": "5. Things we can do",
+          "theme": "Abilities & Talents",
+          "vocabulary": [
+            {
+              "id": "g4_u5_1",
+              "word": "CAN",
+              "phonetic": "/kæn/",
+              "meaning": "Có thể",
+              "speechText": "Can",
+              "colorHex": "#10b981",
+              "icon": "💪",
+              "sentence": "I can speak English well.",
+              "sentenceVi": "Mình có thể nói tiếng Anh tốt."
+            },
+            {
+              "id": "g4_u5_2",
+              "word": "SWIM",
+              "phonetic": "/swɪm/",
+              "meaning": "Bơi lội",
+              "speechText": "Swim",
+              "colorHex": "#06b6d4",
+              "icon": "🏊",
+              "sentence": "Can you swim?",
+              "sentenceVi": "Bạn có biết bơi không?"
+            },
+            {
+              "id": "g4_u5_3",
+              "word": "PLAY GUITAR",
+              "phonetic": "/pleɪ ɡɪˈtɑːr/",
+              "meaning": "Chơi đàn ghi-ta",
+              "speechText": "Play guitar",
+              "colorHex": "#f59e0b",
+              "icon": "🎸",
+              "sentence": "He can play guitar.",
+              "sentenceVi": "Bạn ấy biết chơi đàn ghi-ta."
+            },
+            {
+              "id": "g4_u5_4",
+              "word": "COOK",
+              "phonetic": "/kʊk/",
+              "meaning": "Nấu ăn",
+              "speechText": "Cook",
+              "colorHex": "#ef4444",
+              "icon": "🍳",
+              "sentence": "She can cook well.",
+              "sentenceVi": "Cô ấy có thể nấu ăn ngon."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u5_s1",
+              "structure": "Can you [action]? - Yes, I can. / No, I can't.",
+              "meaning": "Hỏi khả năng làm được việc gì",
+              "example": "Can you swim? - Yes, I can.",
+              "exampleVi": "Bạn có biết bơi không? - Có, mình biết bơi.",
+              "speechText": "Can you swim? Yes, I can."
+            },
+            {
+              "id": "g4_u5_s2",
+              "structure": "What can you do? - I can [action].",
+              "meaning": "Hỏi bạn có thể làm được điều gì",
+              "example": "What can you do? - I can play the guitar.",
+              "exampleVi": "Bạn có thể làm gì? - Mình có thể chơi đàn ghi-ta.",
+              "speechText": "What can you do? I can play the guitar."
+            }
+          ]
+        },
+        {
+          "unitNumber": 6,
+          "unitKey": "unit_6",
+          "unitName": "Our school facilities",
+          "unitFullName": "6. Our school facilities",
+          "theme": "Our school facilities",
+          "vocabulary": [
+            {
+              "id": "g4_u6_1",
+              "word": "COMPUTER ROOM",
+              "phonetic": "/kəmˈpjuː.tər ruːm/",
+              "meaning": "Phòng máy tính",
+              "speechText": "COMPUTER ROOM",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "Our computer room is modern.",
+              "sentenceVi": "Phòng máy tính: Our computer room is modern."
+            },
+            {
+              "id": "g4_u6_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u6_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u6_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u6_s1",
+              "structure": "Unit 6 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 6",
+              "example": "Our computer room is modern.",
+              "exampleVi": "Phòng máy tính: Our computer room is modern.",
+              "speechText": "Our computer room is modern."
+            }
+          ]
+        },
+        {
+          "unitNumber": 7,
+          "unitKey": "unit_7",
+          "unitName": "Our timetables",
+          "unitFullName": "7. Our timetables",
+          "theme": "Our timetables",
+          "vocabulary": [
+            {
+              "id": "g4_u7_1",
+              "word": "TIMETABLE",
+              "phonetic": "/ˈtaɪmˌteɪ.bəl/",
+              "meaning": "Thời khóa biểu",
+              "speechText": "TIMETABLE",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "I have English on Tuesdays.",
+              "sentenceVi": "Thời khóa biểu: I have English on Tuesdays."
+            },
+            {
+              "id": "g4_u7_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u7_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u7_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u7_s1",
+              "structure": "Unit 7 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 7",
+              "example": "I have English on Tuesdays.",
+              "exampleVi": "Thời khóa biểu: I have English on Tuesdays.",
+              "speechText": "I have English on Tuesdays."
+            }
+          ]
+        },
+        {
+          "unitNumber": 8,
+          "unitKey": "unit_8",
+          "unitName": "My favourite subjects",
+          "unitFullName": "8. My favourite subjects",
+          "theme": "My favourite subjects",
+          "vocabulary": [
+            {
+              "id": "g4_u8_1",
+              "word": "ENGLISH",
+              "phonetic": "/ˈɪŋ.ɡlɪʃ/",
+              "meaning": "Môn Tiếng Anh",
+              "speechText": "ENGLISH",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "My favourite subject is English.",
+              "sentenceVi": "Môn Tiếng Anh: My favourite subject is English."
+            },
+            {
+              "id": "g4_u8_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u8_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u8_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u8_s1",
+              "structure": "Unit 8 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 8",
+              "example": "My favourite subject is English.",
+              "exampleVi": "Môn Tiếng Anh: My favourite subject is English.",
+              "speechText": "My favourite subject is English."
+            }
+          ]
+        },
+        {
+          "unitNumber": 9,
+          "unitKey": "unit_9",
+          "unitName": "Our sports day",
+          "unitFullName": "9. Our sports day",
+          "theme": "Our sports day",
+          "vocabulary": [
+            {
+              "id": "g4_u9_1",
+              "word": "SPORTS DAY",
+              "phonetic": "/spɔːts deɪ/",
+              "meaning": "Ngày hội thể thao",
+              "speechText": "SPORTS DAY",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "When is sports day?",
+              "sentenceVi": "Ngày hội thể thao: When is sports day?"
+            },
+            {
+              "id": "g4_u9_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u9_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u9_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u9_s1",
+              "structure": "Unit 9 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 9",
+              "example": "When is sports day?",
+              "exampleVi": "Ngày hội thể thao: When is sports day?",
+              "speechText": "When is sports day?"
+            }
+          ]
+        },
+        {
+          "unitNumber": 10,
+          "unitKey": "unit_10",
+          "unitName": "Where were you yesterday?",
+          "unitFullName": "10. Where were you yesterday?",
+          "theme": "Where were you yesterday?",
+          "vocabulary": [
+            {
+              "id": "g4_u10_1",
+              "word": "YESTERDAY",
+              "phonetic": "/ˈjes.tə.deɪ/",
+              "meaning": "Hôm qua",
+              "speechText": "YESTERDAY",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "Where were you yesterday?",
+              "sentenceVi": "Hôm qua: Where were you yesterday?"
+            },
+            {
+              "id": "g4_u10_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u10_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u10_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u10_s1",
+              "structure": "Unit 10 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 10",
+              "example": "Where were you yesterday?",
+              "exampleVi": "Hôm qua: Where were you yesterday?",
+              "speechText": "Where were you yesterday?"
+            }
+          ]
+        },
+        {
+          "unitNumber": 11,
+          "unitKey": "unit_11",
+          "unitName": "My home",
+          "unitFullName": "11. My home",
+          "theme": "My home",
+          "vocabulary": [
+            {
+              "id": "g4_u11_1",
+              "word": "TOWN",
+              "phonetic": "/taʊn/",
+              "meaning": "Thị trấn / Phố nhỏ",
+              "speechText": "TOWN",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "I live in a small green town.",
+              "sentenceVi": "Thị trấn / Phố nhỏ: I live in a small green town."
+            },
+            {
+              "id": "g4_u11_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u11_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u11_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u11_s1",
+              "structure": "Unit 11 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 11",
+              "example": "I live in a small green town.",
+              "exampleVi": "Thị trấn / Phố nhỏ: I live in a small green town.",
+              "speechText": "I live in a small green town."
+            }
+          ]
+        },
+        {
+          "unitNumber": 12,
+          "unitKey": "unit_12",
+          "unitName": "Jobs",
+          "unitFullName": "12. Jobs",
+          "theme": "Jobs",
+          "vocabulary": [
+            {
+              "id": "g4_u12_1",
+              "word": "POLICEMAN",
+              "phonetic": "/pəˈliːs.mən/",
+              "meaning": "Cảnh sát",
+              "speechText": "POLICEMAN",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "He is a friendly policeman.",
+              "sentenceVi": "Cảnh sát: He is a friendly policeman."
+            },
+            {
+              "id": "g4_u12_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u12_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u12_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u12_s1",
+              "structure": "Unit 12 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 12",
+              "example": "He is a friendly policeman.",
+              "exampleVi": "Cảnh sát: He is a friendly policeman.",
+              "speechText": "He is a friendly policeman."
+            }
+          ]
+        },
+        {
+          "unitNumber": 13,
+          "unitKey": "unit_13",
+          "unitName": "Appearance",
+          "unitFullName": "13. Appearance",
+          "theme": "Appearance",
+          "vocabulary": [
+            {
+              "id": "g4_u13_1",
+              "word": "TALL",
+              "phonetic": "/tɔːl/",
+              "meaning": "Cao ráo",
+              "speechText": "TALL",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "My brother is tall and thin.",
+              "sentenceVi": "Cao ráo: My brother is tall and thin."
+            },
+            {
+              "id": "g4_u13_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u13_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u13_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u13_s1",
+              "structure": "Unit 13 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 13",
+              "example": "My brother is tall and thin.",
+              "exampleVi": "Cao ráo: My brother is tall and thin.",
+              "speechText": "My brother is tall and thin."
+            }
+          ]
+        },
+        {
+          "unitNumber": 14,
+          "unitKey": "unit_14",
+          "unitName": "Daily activities",
+          "unitFullName": "14. Daily activities",
+          "theme": "Daily activities",
+          "vocabulary": [
+            {
+              "id": "g4_u14_1",
+              "word": "WASH DISHES",
+              "phonetic": "/wɒʃ ˈdɪʃ.ɪz/",
+              "meaning": "Rửa chén đĩa",
+              "speechText": "WASH DISHES",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "I help wash dishes at home.",
+              "sentenceVi": "Rửa chén đĩa: I help wash dishes at home."
+            },
+            {
+              "id": "g4_u14_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u14_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u14_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u14_s1",
+              "structure": "Unit 14 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 14",
+              "example": "I help wash dishes at home.",
+              "exampleVi": "Rửa chén đĩa: I help wash dishes at home.",
+              "speechText": "I help wash dishes at home."
+            }
+          ]
+        },
+        {
+          "unitNumber": 15,
+          "unitKey": "unit_15",
+          "unitName": "Food and drink",
+          "unitFullName": "15. Food and drink",
+          "theme": "Food and drink",
+          "vocabulary": [
+            {
+              "id": "g4_u15_1",
+              "word": "ORANGE JUICE",
+              "phonetic": "/ˈɒr.ɪndʒ dʒuːs/",
+              "meaning": "Nước cam ép",
+              "speechText": "ORANGE JUICE",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "Orange juice is healthy.",
+              "sentenceVi": "Nước cam ép: Orange juice is healthy."
+            },
+            {
+              "id": "g4_u15_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u15_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u15_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u15_s1",
+              "structure": "Unit 15 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 15",
+              "example": "Orange juice is healthy.",
+              "exampleVi": "Nước cam ép: Orange juice is healthy.",
+              "speechText": "Orange juice is healthy."
+            }
+          ]
+        },
+        {
+          "unitNumber": 16,
+          "unitKey": "unit_16",
+          "unitName": "Weather",
+          "unitFullName": "16. Weather",
+          "theme": "Weather",
+          "vocabulary": [
+            {
+              "id": "g4_u16_1",
+              "word": "SUNNY",
+              "phonetic": "/ˈsʌn.i/",
+              "meaning": "Có nắng / Trời nắng",
+              "speechText": "SUNNY",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "It is sunny and green today.",
+              "sentenceVi": "Có nắng / Trời nắng: It is sunny and green today."
+            },
+            {
+              "id": "g4_u16_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u16_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u16_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u16_s1",
+              "structure": "Unit 16 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 16",
+              "example": "It is sunny and green today.",
+              "exampleVi": "Có nắng / Trời nắng: It is sunny and green today.",
+              "speechText": "It is sunny and green today."
+            }
+          ]
+        },
+        {
+          "unitNumber": 17,
+          "unitKey": "unit_17",
+          "unitName": "In the city",
+          "unitFullName": "17. In the city",
+          "theme": "In the city",
+          "vocabulary": [
+            {
+              "id": "g4_u17_1",
+              "word": "SUPERMARKET",
+              "phonetic": "/ˈsuː.pəˌmɑː.kɪt/",
+              "meaning": "Siêu thị",
+              "speechText": "SUPERMARKET",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "Let us go to the supermarket.",
+              "sentenceVi": "Siêu thị: Let us go to the supermarket."
+            },
+            {
+              "id": "g4_u17_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u17_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u17_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u17_s1",
+              "structure": "Unit 17 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 17",
+              "example": "Let us go to the supermarket.",
+              "exampleVi": "Siêu thị: Let us go to the supermarket.",
+              "speechText": "Let us go to the supermarket."
+            }
+          ]
+        },
+        {
+          "unitNumber": 18,
+          "unitKey": "unit_18",
+          "unitName": "At the shopping centre",
+          "unitFullName": "18. At the shopping centre",
+          "theme": "At the shopping centre",
+          "vocabulary": [
+            {
+              "id": "g4_u18_1",
+              "word": "BUY",
+              "phonetic": "/baɪ/",
+              "meaning": "Mua sắm",
+              "speechText": "BUY",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "I want to buy some fruits.",
+              "sentenceVi": "Mua sắm: I want to buy some fruits."
+            },
+            {
+              "id": "g4_u18_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u18_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u18_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u18_s1",
+              "structure": "Unit 18 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 18",
+              "example": "I want to buy some fruits.",
+              "exampleVi": "Mua sắm: I want to buy some fruits.",
+              "speechText": "I want to buy some fruits."
+            }
+          ]
+        },
+        {
+          "unitNumber": 19,
+          "unitKey": "unit_19",
+          "unitName": "Animal world",
+          "unitFullName": "19. Animal world",
+          "theme": "Animal world",
+          "vocabulary": [
+            {
+              "id": "g4_u19_1",
+              "word": "DOLPHIN",
+              "phonetic": "/ˈdɒl.fɪn/",
+              "meaning": "Cá heo",
+              "speechText": "DOLPHIN",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "The dolphin jumps high.",
+              "sentenceVi": "Cá heo: The dolphin jumps high."
+            },
+            {
+              "id": "g4_u19_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u19_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u19_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u19_s1",
+              "structure": "Unit 19 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 19",
+              "example": "The dolphin jumps high.",
+              "exampleVi": "Cá heo: The dolphin jumps high.",
+              "speechText": "The dolphin jumps high."
+            }
+          ]
+        },
+        {
+          "unitNumber": 20,
+          "unitKey": "unit_20",
+          "unitName": "At summer camp",
+          "unitFullName": "20. At summer camp",
+          "theme": "At summer camp",
+          "vocabulary": [
+            {
+              "id": "g4_u20_1",
+              "word": "SUMMER CAMP",
+              "phonetic": "/ˈsʌm.ə kæmp/",
+              "meaning": "Trại hè thiếu nhi",
+              "speechText": "SUMMER CAMP",
+              "colorHex": "#10b981",
+              "icon": "🌱",
+              "sentence": "We plant trees at summer camp.",
+              "sentenceVi": "Trại hè thiếu nhi: We plant trees at summer camp."
+            },
+            {
+              "id": "g4_u20_2",
+              "word": "PRACTICE",
+              "phonetic": "/ˈpræk.tɪs/",
+              "meaning": "Luyện tập phát âm",
+              "speechText": "Practice",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice speaking English every day.",
+              "sentenceVi": "Luyện tập nói tiếng Anh mỗi ngày."
+            },
+            {
+              "id": "g4_u20_3",
+              "word": "LEARN",
+              "phonetic": "/lɜːn/",
+              "meaning": "Học hỏi",
+              "speechText": "Learn",
+              "colorHex": "#f59e0b",
+              "icon": "📖",
+              "sentence": "We learn new words together.",
+              "sentenceVi": "Chúng mình cùng học từ mới."
+            },
+            {
+              "id": "g4_u20_4",
+              "word": "GREEN",
+              "phonetic": "/ɡriːn/",
+              "meaning": "Xanh tươi",
+              "speechText": "Green",
+              "colorHex": "#16a34a",
+              "icon": "🌳",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Vun đắp mầm xanh cùng Eco-Voice."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g4_u20_s1",
+              "structure": "Unit 20 Key Sentence Pattern",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 20",
+              "example": "We plant trees at summer camp.",
+              "exampleVi": "Trại hè thiếu nhi: We plant trees at summer camp.",
+              "speechText": "We plant trees at summer camp."
+            }
+          ]
+        }
+      ]
+    },
+    "5": {
+      "grade": 5,
+      "gradeTitle": "Tiếng Anh 5 - Global Success",
+      "curriculum": "Chương trình Giáo dục phổ thông 2018",
+      "publisher": "Nhà xuất bản Giáo dục Việt Nam",
+      "description": "Chương trình 20 Unit học kỳ 1 và học kỳ 2 cho học sinh Lớp 5",
+      "units": [
+        {
+          "unitNumber": 1,
+          "unitKey": "unit_1",
+          "unitName": "All about me",
+          "unitFullName": "1. All about me",
+          "theme": "Addresses & Hometowns",
+          "vocabulary": [
+            {
+              "id": "g5_u1_1",
+              "word": "ADDRESS",
+              "phonetic": "/əˈdres/",
+              "meaning": "Địa chỉ nhà",
+              "speechText": "Address",
+              "colorHex": "#3b82f6",
+              "icon": "📍",
+              "sentence": "What is your address?",
+              "sentenceVi": "Địa chỉ nhà của bạn ở đâu?"
+            },
+            {
+              "id": "g5_u1_2",
+              "word": "HOMETOWN",
+              "phonetic": "/ˈhəʊm.taʊn/",
+              "meaning": "Quê hương",
+              "speechText": "Hometown",
+              "colorHex": "#10b981",
+              "icon": "🏡",
+              "sentence": "My hometown is quiet and green.",
+              "sentenceVi": "Quê hương của mình yên bình và xanh tươi."
+            },
+            {
+              "id": "g5_u1_3",
+              "word": "VILLAGE",
+              "phonetic": "/ˈvɪl.ɪdʒ/",
+              "meaning": "Làng quê / Thôn xóm",
+              "speechText": "Village",
+              "colorHex": "#f59e0b",
+              "icon": "🌾",
+              "sentence": "He lives in a small village.",
+              "sentenceVi": "Bạn ấy sống ở một ngôi làng nhỏ."
+            },
+            {
+              "id": "g5_u1_4",
+              "word": "STREET",
+              "phonetic": "/striːt/",
+              "meaning": "Đường phố",
+              "speechText": "Street",
+              "colorHex": "#8b5cf6",
+              "icon": "🛣️",
+              "sentence": "I live on Peace Street.",
+              "sentenceVi": "Mình sống trên con phố Hòa Bình."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u1_s1",
+              "structure": "What's your address? - It's [Address].",
+              "meaning": "Hỏi và trả lời về địa chỉ sinh sống",
+              "example": "What's your address? - It's 105 Peace Street.",
+              "exampleVi": "Địa chỉ của bạn là gì? - Là số 105 phố Hòa Bình.",
+              "speechText": "What's your address? It's 105 Peace Street."
+            },
+            {
+              "id": "g5_u1_s2",
+              "structure": "What's your hometown like? - It's [adjective].",
+              "meaning": "Hỏi quê hương trông như thế nào",
+              "example": "What's your hometown like? - It's small and quiet.",
+              "exampleVi": "Quê hương của bạn như thế nào? - Quê mình nhỏ và yên tĩnh.",
+              "speechText": "What's your hometown like? It's small and quiet."
+            }
+          ]
+        },
+        {
+          "unitNumber": 2,
+          "unitKey": "unit_2",
+          "unitName": "Our homes",
+          "unitFullName": "2. Our homes",
+          "theme": "Houses & Living Spaces",
+          "vocabulary": [
+            {
+              "id": "g5_u2_1",
+              "word": "FLAT",
+              "phonetic": "/flæt/",
+              "meaning": "Căn hộ chung cư",
+              "speechText": "Flat",
+              "colorHex": "#3b82f6",
+              "icon": "🏢",
+              "sentence": "I live in a modern flat.",
+              "sentenceVi": "Mình sống trong một căn hộ hiện đại."
+            },
+            {
+              "id": "g5_u2_2",
+              "word": "COTTAGE",
+              "phonetic": "/ˈkɒt.ɪdʒ/",
+              "meaning": "Nhà tranh / Nhà nhỏ thôn quê",
+              "speechText": "Cottage",
+              "colorHex": "#10b981",
+              "icon": "🛖",
+              "sentence": "The cottage has a lovely garden.",
+              "sentenceVi": "Ngôi nhà nhỏ có một khu vườn xinh xắn."
+            },
+            {
+              "id": "g5_u2_3",
+              "word": "BUILDING",
+              "phonetic": "/ˈbɪl.dɪŋ/",
+              "meaning": "Tòa nhà cao tầng",
+              "speechText": "Building",
+              "colorHex": "#64748b",
+              "icon": "🏬",
+              "sentence": "This green building is very tall.",
+              "sentenceVi": "Tòa nhà xanh này rất cao."
+            },
+            {
+              "id": "g5_u2_4",
+              "word": "FLOOR",
+              "phonetic": "/flɔːr/",
+              "meaning": "Tầng nhà / Sàn nhà",
+              "speechText": "Floor",
+              "colorHex": "#f59e0b",
+              "icon": "🪜",
+              "sentence": "We live on the third floor.",
+              "sentenceVi": "Chúng mình sống ở tầng ba."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u2_s1",
+              "structure": "Where do you live? - I live in [type of home].",
+              "meaning": "Hỏi bạn sống trong loại nhà nào",
+              "example": "Where do you live? - I live in a flat.",
+              "exampleVi": "Bạn sống ở đâu? - Mình sống trong một căn hộ.",
+              "speechText": "Where do you live? I live in a flat."
+            },
+            {
+              "id": "g5_u2_s2",
+              "structure": "Who do you live with? - I live with my [family].",
+              "meaning": "Hỏi sống cùng với ai",
+              "example": "Who do you live with? - I live with my parents.",
+              "exampleVi": "Bạn sống cùng với ai? - Mình sống cùng bố mẹ.",
+              "speechText": "Who do you live with? I live with my parents."
+            }
+          ]
+        },
+        {
+          "unitNumber": 3,
+          "unitKey": "unit_3",
+          "unitName": "My foreign friends",
+          "unitFullName": "3. My foreign friends",
+          "theme": "Nationalities & Cultures",
+          "vocabulary": [
+            {
+              "id": "g5_u3_1",
+              "word": "VIETNAMESE",
+              "phonetic": "/ˌvjet.nəˈmiːz/",
+              "meaning": "Người Việt Nam",
+              "speechText": "Vietnamese",
+              "colorHex": "#ef4444",
+              "icon": "🇻🇳",
+              "sentence": "I am Vietnamese.",
+              "sentenceVi": "Tôi là người Việt Nam."
+            },
+            {
+              "id": "g5_u3_2",
+              "word": "AMERICAN",
+              "phonetic": "/əˈmer.ɪ.kən/",
+              "meaning": "Người Mỹ",
+              "speechText": "American",
+              "colorHex": "#3b82f6",
+              "icon": "🇺🇸",
+              "sentence": "John is American.",
+              "sentenceVi": "John là người Mỹ."
+            },
+            {
+              "id": "g5_u3_3",
+              "word": "ENGLISH",
+              "phonetic": "/ˈɪŋ.ɡlɪʃ/",
+              "meaning": "Người Anh",
+              "speechText": "English",
+              "colorHex": "#8b5cf6",
+              "icon": "🇬🇧",
+              "sentence": "Emma is English.",
+              "sentenceVi": "Emma là người Anh."
+            },
+            {
+              "id": "g5_u3_4",
+              "word": "JAPANESE",
+              "phonetic": "/ˌdʒæp.ənˈiːz/",
+              "meaning": "Người Nhật Bản",
+              "speechText": "Japanese",
+              "colorHex": "#ec4899",
+              "icon": "🇯🇵",
+              "sentence": "Akiko is Japanese.",
+              "sentenceVi": "Akiko là người Nhật Bản."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u3_s1",
+              "structure": "What nationality are you? - I'm [Nationality].",
+              "meaning": "Hỏi về quốc tịch của một người",
+              "example": "What nationality are you? - I'm Vietnamese.",
+              "exampleVi": "Quốc tịch của bạn là gì? - Mình là người Việt Nam.",
+              "speechText": "What nationality are you? I'm Vietnamese."
+            },
+            {
+              "id": "g5_u3_s2",
+              "structure": "What is his / her nationality? - He's / She's [Nationality].",
+              "meaning": "Hỏi quốc tịch của người khác",
+              "example": "What is his nationality? - He's American.",
+              "exampleVi": "Quốc tịch của bạn ấy là gì? - Bạn ấy là người Mỹ.",
+              "speechText": "What is his nationality? He's American."
+            }
+          ]
+        },
+        {
+          "unitNumber": 4,
+          "unitKey": "unit_4",
+          "unitName": "Our free-time activities",
+          "unitFullName": "4. Our free-time activities",
+          "theme": "Free Time & Hobbies",
+          "vocabulary": [
+            {
+              "id": "g5_u4_1",
+              "word": "WATER FLOWERS",
+              "phonetic": "/ˈwɔː.tər ˈflaʊ.əz/",
+              "meaning": "Tưới hoa / Tưới cây",
+              "speechText": "Water flowers",
+              "colorHex": "#10b981",
+              "icon": "🌸",
+              "sentence": "I water flowers in my garden.",
+              "sentenceVi": "Mình tưới hoa trong khu vườn."
+            },
+            {
+              "id": "g5_u4_2",
+              "word": "GO CAMPING",
+              "phonetic": "/ɡəʊ ˈkæm.pɪŋ/",
+              "meaning": "Đi cắm trại",
+              "speechText": "Go camping",
+              "colorHex": "#f59e0b",
+              "icon": "⛺",
+              "sentence": "We go camping in the forest.",
+              "sentenceVi": "Chúng mình đi cắm trại trong rừng."
+            },
+            {
+              "id": "g5_u4_3",
+              "word": "SURF INTERNET",
+              "phonetic": "/sɜːf ˈɪn.tə.net/",
+              "meaning": "Lướt mạng / Tra cứu",
+              "speechText": "Surf the Internet",
+              "colorHex": "#3b82f6",
+              "icon": "💻",
+              "sentence": "I surf the Internet for English.",
+              "sentenceVi": "Mình lướt mạng để học tiếng Anh."
+            },
+            {
+              "id": "g5_u4_4",
+              "word": "WATCH CARTOON",
+              "phonetic": "/wɒtʃ kɑːˈtuːn/",
+              "meaning": "Xem phim hoạt hình",
+              "speechText": "Watch cartoons",
+              "colorHex": "#ec4899",
+              "icon": "📺",
+              "sentence": "Children love watching cartoons.",
+              "sentenceVi": "Trẻ em rất thích xem hoạt hình."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u4_s1",
+              "structure": "What do you do in your free time? - I [activity].",
+              "meaning": "Hỏi hoạt động lúc rảnh rỗi",
+              "example": "What do you do in your free time? - I water flowers.",
+              "exampleVi": "Bạn làm gì vào thời gian rảnh? - Mình chăm sóc và tưới hoa.",
+              "speechText": "What do you do in your free time? I water the flowers."
+            },
+            {
+              "id": "g5_u4_s2",
+              "structure": "What does he / she do in his / her free time? - He / She [activity].",
+              "meaning": "Hỏi người khác làm gì khi rảnh",
+              "example": "What does she do in her free time? - She goes camping.",
+              "exampleVi": "Cô ấy làm gì khi rảnh? - Cô ấy đi cắm trại.",
+              "speechText": "What does she do in her free time? She goes camping."
+            }
+          ]
+        },
+        {
+          "unitNumber": 5,
+          "unitKey": "unit_5",
+          "unitName": "My future job",
+          "unitFullName": "5. My future job",
+          "theme": "Future Dreams & Careers",
+          "vocabulary": [
+            {
+              "id": "g5_u5_1",
+              "word": "PILOT",
+              "phonetic": "/ˈpaɪ.lət/",
+              "meaning": "Phi công",
+              "speechText": "Pilot",
+              "colorHex": "#3b82f6",
+              "icon": "✈️",
+              "sentence": "I want to be a pilot.",
+              "sentenceVi": "Mình muốn trở thành một phi công."
+            },
+            {
+              "id": "g5_u5_2",
+              "word": "ASTRONAUT",
+              "phonetic": "/ˈæs.trə.nɔːt/",
+              "meaning": "Phi hành gia vũ trụ",
+              "speechText": "Astronaut",
+              "colorHex": "#8b5cf6",
+              "icon": "🧑‍🚀",
+              "sentence": "The astronaut flies into space.",
+              "sentenceVi": "Phi hành gia bay vào vũ trụ."
+            },
+            {
+              "id": "g5_u5_3",
+              "word": "ARCHITECT",
+              "phonetic": "/ˈɑː.kɪ.tekt/",
+              "meaning": "Kiến trúc sư",
+              "speechText": "Architect",
+              "colorHex": "#10b981",
+              "icon": "📐",
+              "sentence": "An architect designs green buildings.",
+              "sentenceVi": "Kiến trúc sư thiết kế những tòa nhà xanh."
+            },
+            {
+              "id": "g5_u5_4",
+              "word": "WRITER",
+              "phonetic": "/ˈraɪ.tər/",
+              "meaning": "Nhà văn / Tác giả",
+              "speechText": "Writer",
+              "colorHex": "#f59e0b",
+              "icon": "✍️",
+              "sentence": "She wants to be a writer.",
+              "sentenceVi": "Cô ấy muốn trở thành một nhà văn."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u5_s1",
+              "structure": "What would you like to be in the future? - I'd like to be a [job].",
+              "meaning": "Hỏi ước mơ nghề nghiệp tương lai",
+              "example": "What would you like to be in the future? - I'd like to be an architect.",
+              "exampleVi": "Bạn muốn làm nghề gì trong tương lai? - Mình muốn làm kiến trúc sư.",
+              "speechText": "What would you like to be in the future? I'd like to be an architect."
+            },
+            {
+              "id": "g5_u5_s2",
+              "structure": "Why would you like to be a [job]? - Because I'd like to [reason].",
+              "meaning": "Hỏi lý do yêu thích nghề nghiệp đó",
+              "example": "Why would you like to be an architect? - Because I want to design green parks.",
+              "exampleVi": "Vì sao bạn muốn làm kiến trúc sư? - Vì mình muốn thiết kế công viên xanh.",
+              "speechText": "Why would you like to be an architect? Because I want to design green parks."
+            }
+          ]
+        },
+        {
+          "unitNumber": 6,
+          "unitKey": "unit_6",
+          "unitName": "Our school rooms",
+          "unitFullName": "6. Our school rooms",
+          "theme": "Our school rooms",
+          "vocabulary": [
+            {
+              "id": "g5_u6_1",
+              "word": "SCIENCE LAB",
+              "phonetic": "/ˈsaɪ.əns læb/",
+              "meaning": "Phòng thí nghiệm khoa học",
+              "speechText": "SCIENCE LAB",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "We do experiments in the science lab.",
+              "sentenceVi": "Phòng thí nghiệm khoa học: We do experiments in the science lab."
+            },
+            {
+              "id": "g5_u6_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u6_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u6_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u6_s1",
+              "structure": "Unit 6 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 6",
+              "example": "We do experiments in the science lab.",
+              "exampleVi": "Phòng thí nghiệm khoa học: We do experiments in the science lab.",
+              "speechText": "We do experiments in the science lab."
+            }
+          ]
+        },
+        {
+          "unitNumber": 7,
+          "unitKey": "unit_7",
+          "unitName": "Our favourite school activities",
+          "unitFullName": "7. Our favourite school activities",
+          "theme": "Our favourite school activities",
+          "vocabulary": [
+            {
+              "id": "g5_u7_1",
+              "word": "PLANT TREES",
+              "phonetic": "/plɑːnt triːz/",
+              "meaning": "Trồng cây xanh",
+              "speechText": "PLANT TREES",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "We plant trees at school.",
+              "sentenceVi": "Trồng cây xanh: We plant trees at school."
+            },
+            {
+              "id": "g5_u7_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u7_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u7_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u7_s1",
+              "structure": "Unit 7 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 7",
+              "example": "We plant trees at school.",
+              "exampleVi": "Trồng cây xanh: We plant trees at school.",
+              "speechText": "We plant trees at school."
+            }
+          ]
+        },
+        {
+          "unitNumber": 8,
+          "unitKey": "unit_8",
+          "unitName": "School subjects",
+          "unitFullName": "8. School subjects",
+          "theme": "School subjects",
+          "vocabulary": [
+            {
+              "id": "g5_u8_1",
+              "word": "SCIENCE",
+              "phonetic": "/ˈsaɪ.əns/",
+              "meaning": "Môn Khoa học",
+              "speechText": "SCIENCE",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "I love science class.",
+              "sentenceVi": "Môn Khoa học: I love science class."
+            },
+            {
+              "id": "g5_u8_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u8_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u8_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u8_s1",
+              "structure": "Unit 8 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 8",
+              "example": "I love science class.",
+              "exampleVi": "Môn Khoa học: I love science class.",
+              "speechText": "I love science class."
+            }
+          ]
+        },
+        {
+          "unitNumber": 9,
+          "unitKey": "unit_9",
+          "unitName": "Our sports day",
+          "unitFullName": "9. Our sports day",
+          "theme": "Our sports day",
+          "vocabulary": [
+            {
+              "id": "g5_u9_1",
+              "word": "RACE",
+              "phonetic": "/reɪs/",
+              "meaning": "Cuộc đua / Chạy đua",
+              "speechText": "RACE",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "He won the running race.",
+              "sentenceVi": "Cuộc đua / Chạy đua: He won the running race."
+            },
+            {
+              "id": "g5_u9_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u9_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u9_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u9_s1",
+              "structure": "Unit 9 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 9",
+              "example": "He won the running race.",
+              "exampleVi": "Cuộc đua / Chạy đua: He won the running race.",
+              "speechText": "He won the running race."
+            }
+          ]
+        },
+        {
+          "unitNumber": 10,
+          "unitKey": "unit_10",
+          "unitName": "Our school trips",
+          "unitFullName": "10. Our school trips",
+          "theme": "Our school trips",
+          "vocabulary": [
+            {
+              "id": "g5_u10_1",
+              "word": "ZOO TRIP",
+              "phonetic": "/zuː trɪp/",
+              "meaning": "Chuyến dã ngoại sở thú",
+              "speechText": "ZOO TRIP",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "Our school trip was exciting.",
+              "sentenceVi": "Chuyến dã ngoại sở thú: Our school trip was exciting."
+            },
+            {
+              "id": "g5_u10_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u10_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u10_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u10_s1",
+              "structure": "Unit 10 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 10",
+              "example": "Our school trip was exciting.",
+              "exampleVi": "Chuyến dã ngoại sở thú: Our school trip was exciting.",
+              "speechText": "Our school trip was exciting."
+            }
+          ]
+        },
+        {
+          "unitNumber": 11,
+          "unitKey": "unit_11",
+          "unitName": "Family time",
+          "unitFullName": "11. Family time",
+          "theme": "Family time",
+          "vocabulary": [
+            {
+              "id": "g5_u11_1",
+              "word": "COOK TOGETHER",
+              "phonetic": "/kʊk təˈɡeð.ər/",
+              "meaning": "Cùng nhau nấu ăn",
+              "speechText": "COOK TOGETHER",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "We enjoy family dinner.",
+              "sentenceVi": "Cùng nhau nấu ăn: We enjoy family dinner."
+            },
+            {
+              "id": "g5_u11_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u11_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u11_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u11_s1",
+              "structure": "Unit 11 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 11",
+              "example": "We enjoy family dinner.",
+              "exampleVi": "Cùng nhau nấu ăn: We enjoy family dinner.",
+              "speechText": "We enjoy family dinner."
+            }
+          ]
+        },
+        {
+          "unitNumber": 12,
+          "unitKey": "unit_12",
+          "unitName": "Our health",
+          "unitFullName": "12. Our health",
+          "theme": "Our health",
+          "vocabulary": [
+            {
+              "id": "g5_u12_1",
+              "word": "HEADACHE",
+              "phonetic": "/ˈhed.eɪk/",
+              "meaning": "Đau đầu",
+              "speechText": "HEADACHE",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "You should rest well.",
+              "sentenceVi": "Đau đầu: You should rest well."
+            },
+            {
+              "id": "g5_u12_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u12_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u12_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u12_s1",
+              "structure": "Unit 12 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 12",
+              "example": "You should rest well.",
+              "exampleVi": "Đau đầu: You should rest well.",
+              "speechText": "You should rest well."
+            }
+          ]
+        },
+        {
+          "unitNumber": 13,
+          "unitKey": "unit_13",
+          "unitName": "Free-time activities",
+          "unitFullName": "13. Free-time activities",
+          "theme": "Free-time activities",
+          "vocabulary": [
+            {
+              "id": "g5_u13_1",
+              "word": "RIDE A BIKE",
+              "phonetic": "/raɪd ə baɪk/",
+              "meaning": "Đi xe đạp",
+              "speechText": "RIDE A BIKE",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "I ride a bike in the park.",
+              "sentenceVi": "Đi xe đạp: I ride a bike in the park."
+            },
+            {
+              "id": "g5_u13_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u13_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u13_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u13_s1",
+              "structure": "Unit 13 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 13",
+              "example": "I ride a bike in the park.",
+              "exampleVi": "Đi xe đạp: I ride a bike in the park.",
+              "speechText": "I ride a bike in the park."
+            }
+          ]
+        },
+        {
+          "unitNumber": 14,
+          "unitKey": "unit_14",
+          "unitName": "Animals",
+          "unitFullName": "14. Animals",
+          "theme": "Animals",
+          "vocabulary": [
+            {
+              "id": "g5_u14_1",
+              "word": "KANGAROO",
+              "phonetic": "/ˌkæŋ.ɡərˈuː/",
+              "meaning": "Chuột túi",
+              "speechText": "KANGAROO",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "Kangaroos hop fast.",
+              "sentenceVi": "Chuột túi: Kangaroos hop fast."
+            },
+            {
+              "id": "g5_u14_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u14_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u14_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u14_s1",
+              "structure": "Unit 14 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 14",
+              "example": "Kangaroos hop fast.",
+              "exampleVi": "Chuột túi: Kangaroos hop fast.",
+              "speechText": "Kangaroos hop fast."
+            }
+          ]
+        },
+        {
+          "unitNumber": 15,
+          "unitKey": "unit_15",
+          "unitName": "Weather",
+          "unitFullName": "15. Weather",
+          "theme": "Weather",
+          "vocabulary": [
+            {
+              "id": "g5_u15_1",
+              "word": "RAINY",
+              "phonetic": "/ˈreɪ.ni/",
+              "meaning": "Có mưa",
+              "speechText": "RAINY",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "Rain helps green trees grow.",
+              "sentenceVi": "Có mưa: Rain helps green trees grow."
+            },
+            {
+              "id": "g5_u15_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u15_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u15_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u15_s1",
+              "structure": "Unit 15 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 15",
+              "example": "Rain helps green trees grow.",
+              "exampleVi": "Có mưa: Rain helps green trees grow.",
+              "speechText": "Rain helps green trees grow."
+            }
+          ]
+        },
+        {
+          "unitNumber": 16,
+          "unitKey": "unit_16",
+          "unitName": "Seasons and the weather",
+          "unitFullName": "16. Seasons and the weather",
+          "theme": "Seasons and the weather",
+          "vocabulary": [
+            {
+              "id": "g5_u16_1",
+              "word": "SPRING",
+              "phonetic": "/sprɪŋ/",
+              "meaning": "Mùa xuân",
+              "speechText": "SPRING",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "Spring brings fresh green flowers.",
+              "sentenceVi": "Mùa xuân: Spring brings fresh green flowers."
+            },
+            {
+              "id": "g5_u16_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u16_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u16_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u16_s1",
+              "structure": "Unit 16 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 16",
+              "example": "Spring brings fresh green flowers.",
+              "exampleVi": "Mùa xuân: Spring brings fresh green flowers.",
+              "speechText": "Spring brings fresh green flowers."
+            }
+          ]
+        },
+        {
+          "unitNumber": 17,
+          "unitKey": "unit_17",
+          "unitName": "Places of interest",
+          "unitFullName": "17. Places of interest",
+          "theme": "Places of interest",
+          "vocabulary": [
+            {
+              "id": "g5_u17_1",
+              "word": "HA LONG BAY",
+              "phonetic": "/ˌhɑː ˈlɒŋ beɪ/",
+              "meaning": "Vịnh Hạ Long",
+              "speechText": "HA LONG BAY",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "Ha Long Bay is a wonder of nature.",
+              "sentenceVi": "Vịnh Hạ Long: Ha Long Bay is a wonder of nature."
+            },
+            {
+              "id": "g5_u17_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u17_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u17_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u17_s1",
+              "structure": "Unit 17 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 17",
+              "example": "Ha Long Bay is a wonder of nature.",
+              "exampleVi": "Vịnh Hạ Long: Ha Long Bay is a wonder of nature.",
+              "speechText": "Ha Long Bay is a wonder of nature."
+            }
+          ]
+        },
+        {
+          "unitNumber": 18,
+          "unitKey": "unit_18",
+          "unitName": "Means of transport",
+          "unitFullName": "18. Means of transport",
+          "theme": "Means of transport",
+          "vocabulary": [
+            {
+              "id": "g5_u18_1",
+              "word": "TRAIN",
+              "phonetic": "/treɪn/",
+              "meaning": "Tàu hỏa / Xe lửa",
+              "speechText": "TRAIN",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "We travel by train.",
+              "sentenceVi": "Tàu hỏa / Xe lửa: We travel by train."
+            },
+            {
+              "id": "g5_u18_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u18_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u18_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u18_s1",
+              "structure": "Unit 18 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 18",
+              "example": "We travel by train.",
+              "exampleVi": "Tàu hỏa / Xe lửa: We travel by train.",
+              "speechText": "We travel by train."
+            }
+          ]
+        },
+        {
+          "unitNumber": 19,
+          "unitKey": "unit_19",
+          "unitName": "Outdoor activities",
+          "unitFullName": "19. Outdoor activities",
+          "theme": "Outdoor activities",
+          "vocabulary": [
+            {
+              "id": "g5_u19_1",
+              "word": "PICNIC",
+              "phonetic": "/ˈpɪk.nɪk/",
+              "meaning": "Dã ngoại ngoài trời",
+              "speechText": "PICNIC",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "We had a picnic on the grass.",
+              "sentenceVi": "Dã ngoại ngoài trời: We had a picnic on the grass."
+            },
+            {
+              "id": "g5_u19_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u19_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u19_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u19_s1",
+              "structure": "Unit 19 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 19",
+              "example": "We had a picnic on the grass.",
+              "exampleVi": "Dã ngoại ngoài trời: We had a picnic on the grass.",
+              "speechText": "We had a picnic on the grass."
+            }
+          ]
+        },
+        {
+          "unitNumber": 20,
+          "unitKey": "unit_20",
+          "unitName": "Our summer holidays",
+          "unitFullName": "20. Our summer holidays",
+          "theme": "Our summer holidays",
+          "vocabulary": [
+            {
+              "id": "g5_u20_1",
+              "word": "BEACH",
+              "phonetic": "/biːtʃ/",
+              "meaning": "Bãi biển",
+              "speechText": "BEACH",
+              "colorHex": "#10b981",
+              "icon": "🌿",
+              "sentence": "We enjoyed our green summer holiday.",
+              "sentenceVi": "Bãi biển: We enjoyed our green summer holiday."
+            },
+            {
+              "id": "g5_u20_2",
+              "word": "COMMUNICATION",
+              "phonetic": "/kəˌmjuː.nɪˈkeɪ.ʃən/",
+              "meaning": "Giao tiếp",
+              "speechText": "Communication",
+              "colorHex": "#3b82f6",
+              "icon": "🗣️",
+              "sentence": "Practice communication with friends.",
+              "sentenceVi": "Giao tiếp tự tin cùng bạn bè."
+            },
+            {
+              "id": "g5_u20_3",
+              "word": "KNOWLEDGE",
+              "phonetic": "/ˈnɒl.ɪdʒ/",
+              "meaning": "Kiến thức bổ ích",
+              "speechText": "Knowledge",
+              "colorHex": "#f59e0b",
+              "icon": "💡",
+              "sentence": "English opens doors to knowledge.",
+              "sentenceVi": "Tiếng Anh mở ra chân trời tri thức."
+            },
+            {
+              "id": "g5_u20_4",
+              "word": "GROWTH",
+              "phonetic": "/ɡrəʊθ/",
+              "meaning": "Sự trưởng thành / Vun xanh",
+              "speechText": "Growth",
+              "colorHex": "#16a34a",
+              "icon": "🌱",
+              "sentence": "Grow green with Eco-Voice.",
+              "sentenceVi": "Cùng phát triển và vun xanh tương lai."
+            }
+          ],
+          "sentences": [
+            {
+              "id": "g5_u20_s1",
+              "structure": "Unit 20 Key Expression",
+              "meaning": "Mẫu câu giao tiếp trọng tâm Unit 20",
+              "example": "We enjoyed our green summer holiday.",
+              "exampleVi": "Bãi biển: We enjoyed our green summer holiday.",
+              "speechText": "We enjoyed our green summer holiday."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

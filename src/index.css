@@ -1,0 +1,349 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Quicksand', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* 3D and glossy typography */
+.text-3d-red {
+  color: #df1b1b;
+  text-shadow: 
+    0 1px 0 #fff,
+    0 3px 0 #b91010,
+    0 5px 0 #8b0808,
+    0 8px 12px rgba(180, 0, 0, 0.35);
+}
+
+.text-3d-blue {
+  color: #1d68ed;
+  text-shadow: 
+    0 1px 0 #fff,
+    0 3px 0 #124ebd,
+    0 5px 0 #0b388e,
+    0 8px 12px rgba(20, 80, 220, 0.35);
+}
+
+.text-3d-green {
+  color: #10a364;
+  text-shadow: 
+    0 1px 0 #fff,
+    0 3px 0 #0c824f,
+    0 5px 0 #075835,
+    0 8px 12px rgba(16, 163, 100, 0.35);
+}
+
+.text-3d-yellow {
+  color: #eab308;
+  text-shadow: 
+    0 1px 0 #fff,
+    0 3px 0 #ca8a04,
+    0 5px 0 #a16207,
+    0 8px 12px rgba(202, 138, 4, 0.35);
+}
+
+/* Custom bounce / floating animation */
+@keyframes softFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-soft-float {
+  animation: softFloat 3s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+/* Speech bubble pointer */
+.bubble-arrow {
+  position: relative;
+}
+.bubble-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 40px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: #ffffff transparent;
+  display: block;
+  width: 0;
+}
+
+/* ============================================================== */
+/* TABLET MEDIA QUERY OPTIMIZATION (Screens <= 1024px)            */
+/* ============================================================== */
+@media screen and (max-width: 1024px) {
+  /* Ensure the background forest displays beautifully and completely */
+  .forest-app-bg {
+    background-size: cover !important;
+    background-position: center bottom !important;
+    background-attachment: fixed !important;
+  }
+
+  /* 1. TOP FILTER BAR RESPONSIVE SIZING & BALANCED SPACE-BETWEEN */
+  .top-filter-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Filter buttons (Vocabulary, Sentences, Book map) */
+  .top-filter-bar .filter-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    height: 34px !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Grade dropdown container & select */
+  .top-filter-bar .grade-tag {
+    height: 34px !important;
+    padding: 3px 6px 3px 10px !important;
+    gap: 6px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .top-filter-bar .grade-select {
+    width: 52px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+    padding-left: 8px !important;
+    padding-right: 18px !important;
+  }
+
+  /* Unit dropdown box - constrained to 140px - 160px with flex-grow */
+  .top-filter-bar .unit-box {
+    max-width: 155px !important;
+    min-width: 115px !important;
+    flex-grow: 1 !important;
+    height: 34px !important;
+    padding: 3px 6px !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+  }
+
+  .top-filter-bar .unit-box select {
+    font-size: 11px !important;
+    padding: 2px 4px !important;
+  }
+
+  /* 4 color cards in a single, balanced horizontal row */
+  .tablet-color-cards-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Bottom widget group: Widgets on the bottom-left, Mascot on the bottom-right */
+  .tablet-bottom-widgets-container {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .tablet-widgets-left {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    flex: 1 1 0% !important;
+    max-width: 580px !important;
+  }
+
+  .tablet-mascot-right {
+    flex-shrink: 0 !important;
+    align-self: flex-end !important;
+  }
+}
+
+/* ============================================================== */
+/* MOBILE RESPONSIVE OPTIMIZATION (@media (max-width: 768px))     */
+/* 2 Gọn Gàng: Dòng 1 = Grade & Unit | Dòng 2 = 3 Nút chức năng   */
+/* 100% hiển thị rõ, bấm thuận tiện cho học sinh, không cần vuốt  */
+/* ============================================================== */
+@media screen and (max-width: 768px) {
+  /* Container chuyển thành cột 2 hàng gọn gàng */
+  .top-filter-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    padding: 7px 8px !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* DÒNG 1: Grade và Unit trải rộng 100% */
+  .top-filter-bar .filter-group-primary {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .top-filter-bar .grade-tag {
+    flex-shrink: 0 !important;
+    height: 35px !important;
+    padding: 2px 4px 2px 8px !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+  }
+
+  .top-filter-bar .grade-select {
+    width: 50px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+  }
+
+  .top-filter-bar .unit-box {
+    flex: 1 1 0% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: 35px !important;
+    padding: 2px 6px !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+  }
+
+  .top-filter-bar .unit-box select {
+    font-size: 11px !important;
+    padding: 2px 4px !important;
+    width: 100% !important;
+  }
+
+  /* DÒNG 2: 3 nút chức năng dàn đều 3 cột, không bị che khuất */
+  .top-filter-bar .filter-group-secondary {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    width: 100% !important;
+  }
+
+  .top-filter-bar .filter-btn {
+    width: 100% !important;
+    height: 34px !important;
+    padding: 2px 4px !important;
+    font-size: 10.5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+}
+
+/* Trên màn hình Tablet và Desktop: Bố cục cân đối, dàn đều hết khung với space-between */
+@media screen and (min-width: 769px) {
+  .top-filter-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .top-filter-bar .filter-group-primary {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .top-filter-bar .unit-box {
+    flex: 1 1 auto !important;
+    min-width: 160px !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 36px !important;
+  }
+
+  .top-filter-bar .filter-group-secondary {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+    justify-content: flex-end !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .tablet-bottom-widgets-container {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .tablet-widgets-left {
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ==========================================================================
+   VOCABULARY CARD CONTAINMENT & DYNAMIC RESPONSIVE FONT SIZE
+   Prevents text overflow for long English words (HOMETOWN, COUNTRYSIDE, etc.)
+   ========================================================================== */
+.vocab-card-containment {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.vocab-word-display {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  text-align: center !important;
+  font-size: clamp(2.1rem, 4.2vw, 2.75rem);
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  line-height: 1.15 !important;
+  box-sizing: border-box !important;
+}
+
+.vocab-word-display.is-long-word {
+  font-size: clamp(1.75rem, 3.6vw, 2.35rem) !important;
+}
+
+.vocab-info-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
