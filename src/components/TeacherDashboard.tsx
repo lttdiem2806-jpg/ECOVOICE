@@ -43,7 +43,8 @@ import {
   Trophy,
   Crown,
   Medal,
-  ChevronDown
+  ChevronDown,
+  Edit3
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { 
@@ -67,6 +68,7 @@ import {
   getTeacherAssignments,
   saveTeacherAssignment,
   deleteTeacherAssignment,
+  ASSIGNMENTS_EVENT,
   getUnitPermissions,
   toggleUnitPermission,
   setAllUnitsPermission,
@@ -314,7 +316,19 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   // Delete Class Confirmation State
   const [deletingClass, setDeletingClass] = useState<TeacherClass | null>(null);
 
-  // Listen to LocalStorage updates
+  // Modal State for Adding New Custom Lesson Item
+  const [showAddLessonModal, setShowAddLessonModal] = useState<boolean>(false);
+  const [addLessonType, setAddLessonType] = useState<'vocab' | 'sentence'>('vocab');
+  const [addLessonGrade, setAddLessonGrade] = useState<'3' | '4' | '5'>('3');
+  const [addLessonUnitKey, setAddLessonUnitKey] = useState<string>('unit_1');
+  const [addLessonSection, setAddLessonSection] = useState<string>('Lesson 1');
+  const [addLessonWordOrSentence, setAddLessonWordOrSentence] = useState<string>('');
+  const [addLessonPhonetic, setAddLessonPhonetic] = useState<string>('');
+  const [addLessonMeaning, setAddLessonMeaning] = useState<string>('');
+  const [addLessonImageUrl, setAddLessonImageUrl] = useState<string>('');
+  const [addLessonIcon, setAddLessonIcon] = useState<string>('🌱');
+
+  // Listen to LocalStorage & Firestore real-time updates
   useEffect(() => {
     const handleUpdate = () => {
       setCustomVisuals(getCustomVisuals());
@@ -325,12 +339,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     };
     window.addEventListener('ecovoice_custom_visuals_updated', handleUpdate);
     window.addEventListener('ecovoice_unit_permissions_updated', handleUpdate);
+    window.addEventListener('ecovoice_perms_updated', handleUpdate);
+    window.addEventListener('ecovoice_classes_updated', handleUpdate);
+    window.addEventListener('ecovoice_assignments_updated', handleUpdate);
+    window.addEventListener(ASSIGNMENTS_EVENT, handleUpdate);
     window.addEventListener(CLASSES_EVENT, handleUpdate);
     window.addEventListener(STUDENTS_EVENT, handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
       window.removeEventListener('ecovoice_custom_visuals_updated', handleUpdate);
       window.removeEventListener('ecovoice_unit_permissions_updated', handleUpdate);
+      window.removeEventListener('ecovoice_perms_updated', handleUpdate);
+      window.removeEventListener('ecovoice_classes_updated', handleUpdate);
+      window.removeEventListener('ecovoice_assignments_updated', handleUpdate);
+      window.removeEventListener(ASSIGNMENTS_EVENT, handleUpdate);
       window.removeEventListener(CLASSES_EVENT, handleUpdate);
       window.removeEventListener(STUDENTS_EVENT, handleUpdate);
       window.removeEventListener('storage', handleUpdate);
@@ -459,8 +481,42 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       });
     }
 
+    // Include teacher custom-added lesson items
+    Object.values(customVisuals).forEach(custom => {
+      if (!custom.isCustomAdded) return;
+      if (custom.grade && custom.grade !== selectedGrade) return;
+      if (custom.unitKey && custom.unitKey !== (currentUnit?.unitKey || selectedUnitKey)) return;
+
+      if (filterType !== 'all' && filterType !== custom.type) return;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const match = 
+          custom.wordOrSentence.toLowerCase().includes(q) || 
+          custom.meaning.toLowerCase().includes(q) || 
+          (custom.phonetic && custom.phonetic.toLowerCase().includes(q));
+        if (!match) return;
+      }
+
+      if (list.some(existing => existing.id === custom.id)) return;
+
+      list.push({
+        id: custom.id,
+        type: custom.type,
+        wordOrSentence: custom.wordOrSentence,
+        phonetic: custom.phonetic,
+        meaning: custom.meaning,
+        lesson: custom.lesson || 'Lesson tùy chỉnh',
+        unitKey: custom.unitKey || selectedUnitKey,
+        unitName: custom.unitName || currentUnit?.unitFullName || 'Unit',
+        defaultIcon: custom.customIcon || '🌱',
+        defaultColorHex: custom.customColorHex || '#10b981',
+        customData: custom
+      });
+    });
+
     return list;
-  }, [currentUnitVocab, currentUnitSentences, filterType, onlyCustomized, searchQuery, customVisuals, currentUnit, selectedUnitKey]);
+  }, [currentUnitVocab, currentUnitSentences, filterType, onlyCustomized, searchQuery, customVisuals, currentUnit, selectedUnitKey, selectedGrade]);
 
   const totalCustomizations = Object.keys(customVisuals).length;
 
@@ -646,6 +702,58 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     if (window.confirm('Thầy/Cô có chắc chắn muốn xóa tất cả hình ảnh tùy chỉnh và quay về mặc định chương trình không?')) {
       resetAllCustomVisuals();
       showToast('Đã khôi phục toàn bộ hình ảnh về mặc định chương trình.', 'info');
+    }
+  };
+
+  // Add new custom lesson item (Vocabulary / Sentence)
+  const handleSaveAddLessonItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addLessonWordOrSentence.trim() || !addLessonMeaning.trim()) {
+      showToast('Vui lòng nhập Từ vựng / Câu tiếng Anh và Nghĩa tiếng Việt!', 'error');
+      return;
+    }
+
+    const currentGradeUnits = bookmapDatabase.grades[addLessonGrade]?.units || [];
+    const matchedUnit = currentGradeUnits.find(u => u.unitKey === addLessonUnitKey) || currentGradeUnits[0];
+
+    const newItemId = `custom_lesson_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const newVisualRecord: CustomVisual = {
+      id: newItemId,
+      fallbackKey: addLessonWordOrSentence.trim().toUpperCase(),
+      type: addLessonType,
+      wordOrSentence: addLessonWordOrSentence.trim(),
+      phonetic: addLessonPhonetic.trim() || undefined,
+      meaning: addLessonMeaning.trim(),
+      grade: addLessonGrade,
+      unitKey: addLessonUnitKey,
+      unitName: matchedUnit?.unitFullName || `Unit ${addLessonUnitKey.replace('unit_', '')}`,
+      lesson: addLessonSection,
+      imageUrl: addLessonImageUrl.trim() || undefined,
+      customIcon: addLessonIcon || '🌱',
+      isCustomAdded: true,
+      updatedAt: Date.now()
+    };
+
+    saveCustomVisual(newVisualRecord);
+    setCustomVisuals(getCustomVisuals());
+    setShowAddLessonModal(false);
+    setAddLessonWordOrSentence('');
+    setAddLessonPhonetic('');
+    setAddLessonMeaning('');
+    setAddLessonImageUrl('');
+    showToast(`Đã thêm bài học mới "${newVisualRecord.wordOrSentence}" vào ${newVisualRecord.unitName} thành công!`, 'success');
+  };
+
+  // Delete custom lesson item completely or revert built-in item
+  const handleDeleteLessonItem = (id: string, wordOrSentence: string, isCustomAdded?: boolean) => {
+    const message = isCustomAdded
+      ? `Thầy/Cô có chắc chắn muốn XÓA hẳn bài học "${wordOrSentence}" khỏi hệ thống không?`
+      : `Thầy/Cô có muốn khôi phục ảnh mặc định cho bài học "${wordOrSentence}" không?`;
+
+    if (window.confirm(message)) {
+      removeCustomVisual(id, wordOrSentence);
+      setCustomVisuals(getCustomVisuals());
+      showToast(`Đã ${isCustomAdded ? 'xóa' : 'khôi phục ảnh'} bài học "${wordOrSentence}" thành công!`, 'info');
     }
   };
 
@@ -2374,22 +2482,36 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black text-emerald-950 font-display">
-                  Biên tập Hình ảnh Minh họa Từ vựng & Mẫu câu
+                  Quản lý & Biên tập Bài học (Lesson Management)
                 </h2>
                 <p className="text-xs text-emerald-800">
-                  Tùy chỉnh ảnh chuẩn cho từng từ/câu nếu thấy chưa khớp màu sắc, tải ảnh mới hoặc nhập URL
+                  Thêm bài học/từ vựng mới, chỉnh sửa nội dung/hình ảnh, hoặc xóa bài học tùy chỉnh
                 </p>
               </div>
 
-              {totalCustomizations > 0 && (
+              <div className="flex items-center gap-2 self-start sm:self-auto">
                 <button
-                  onClick={handleResetAll}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 text-xs font-bold cursor-pointer transition-colors shadow-2xs self-start sm:self-auto"
+                  onClick={() => {
+                    setAddLessonGrade(selectedGrade);
+                    setAddLessonUnitKey(selectedUnitKey);
+                    setShowAddLessonModal(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] text-white text-xs font-black cursor-pointer transition-all shadow-xs"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Khôi phục tất cả ảnh mặc định</span>
+                  <Plus className="w-4 h-4" />
+                  <span>Thêm Từ vựng / Câu mới</span>
                 </button>
-              )}
+
+                {totalCustomizations > 0 && (
+                  <button
+                    onClick={handleResetAll}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 text-xs font-bold cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Khôi phục mặc định</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* FILTER & SELECTOR CARD */}
@@ -2645,17 +2767,17 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           }}
                           className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] text-white font-extrabold text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-98"
                         >
-                          <ImageIcon className="w-3.5 h-3.5" />
-                          <span>{isCustomized ? 'Đổi ảnh khác' : 'Chỉnh sửa ảnh'}</span>
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>{isCustomized ? 'Chỉnh sửa' : 'Chỉnh sửa ảnh'}</span>
                         </button>
 
-                        {isCustomized && (
+                        {(isCustomized || (item as any).isCustomAdded) && (
                           <button
-                            onClick={() => handleRevertSingle(item.id, item.wordOrSentence)}
+                            onClick={() => handleDeleteLessonItem(item.id, item.wordOrSentence, (item as any).isCustomAdded)}
                             className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer transition-colors"
-                            title="Khôi phục ảnh mặc định"
+                            title={(item as any).isCustomAdded ? "Xóa bài học này" : "Khôi phục ảnh mặc định"}
                           >
-                            <RotateCcw className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
@@ -3972,6 +4094,201 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* MODAL: THÊM BÀI HỌC / TỪ VỰNG / MẪU CÂU MỚI (ADD CUSTOM LESSON ITEM) */}
+      {showAddLessonModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-[#f2faf5] rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative border-[3px] border-[#86c898] flex flex-col gap-4">
+            
+            <div className="flex items-center justify-between border-b border-emerald-200 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 shadow-2xs">
+                  <Plus className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-emerald-950 font-display">
+                    Thêm Bài học / Từ vựng / Mẫu câu mới
+                  </h3>
+                  <p className="text-[11px] text-emerald-800 font-medium">
+                    Nội dung mới sẽ được lưu vào Firestore và hiển thị cho học sinh học tập
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowAddLessonModal(false)}
+                className="p-1 rounded-full hover:bg-emerald-100 text-emerald-800 cursor-pointer transition-colors"
+                title="Đóng"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAddLessonItem} className="flex flex-col gap-3.5">
+              
+              {/* Row 1: Loại nội dung & Khối lớp */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Phân loại nội dung:
+                  </label>
+                  <select
+                    value={addLessonType}
+                    onChange={(e) => setAddLessonType(e.target.value as 'vocab' | 'sentence')}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  >
+                    <option value="vocab">1. Từ vựng (Vocabulary)</option>
+                    <option value="sentence">2. Mẫu câu (Sentence)</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Khối lớp học tập:
+                  </label>
+                  <select
+                    value={addLessonGrade}
+                    onChange={(e) => {
+                      const g = e.target.value as '3' | '4' | '5';
+                      setAddLessonGrade(g);
+                      const gUnits = bookmapDatabase.grades[g]?.units || [];
+                      if (gUnits.length > 0) {
+                        setAddLessonUnitKey(gUnits[0].unitKey);
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  >
+                    <option value="3">Khối 3 (Grade 3)</option>
+                    <option value="4">Khối 4 (Grade 4)</option>
+                    <option value="5">Khối 5 (Grade 5)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2: Chọn Unit học tập & Bài học */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Chọn Unit học tập:
+                  </label>
+                  <select
+                    value={addLessonUnitKey}
+                    onChange={(e) => setAddLessonUnitKey(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  >
+                    {(bookmapDatabase.grades[addLessonGrade]?.units || []).map(u => (
+                      <option key={u.unitKey} value={u.unitKey}>
+                        {u.unitFullName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Mục bài học (Section):
+                  </label>
+                  <input
+                    type="text"
+                    value={addLessonSection}
+                    onChange={(e) => setAddLessonSection(e.target.value)}
+                    placeholder="VD: Lesson 1, Lesson 2, Extra..."
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  />
+                </div>
+              </div>
+
+              {/* Row 3: Từ vựng / Câu tiếng Anh */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-emerald-950">
+                  {addLessonType === 'vocab' ? 'Từ vựng tiếng Anh (English Word):' : 'Mẫu câu tiếng Anh (English Sentence):'} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={addLessonWordOrSentence}
+                  onChange={(e) => setAddLessonWordOrSentence(e.target.value)}
+                  placeholder={addLessonType === 'vocab' ? "VD: dragon fruit, solar power, turtle..." : "VD: What do you do in your free time?"}
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                />
+              </div>
+
+              {/* Row 4: Phiên âm IPA & Nghĩa tiếng Việt */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Phiên âm (Phonetic IPA):
+                  </label>
+                  <input
+                    type="text"
+                    value={addLessonPhonetic}
+                    onChange={(e) => setAddLessonPhonetic(e.target.value)}
+                    placeholder="VD: /ˈdræɡ.ən ˌfruːt/"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-emerald-950">
+                    Nghĩa tiếng Việt: *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={addLessonMeaning}
+                    onChange={(e) => setAddLessonMeaning(e.target.value)}
+                    placeholder="VD: quả thanh long, năng lượng mặt trời..."
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  />
+                </div>
+              </div>
+
+              {/* Row 5: Ảnh minh họa URL & Emoji */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-emerald-950">
+                  Đường dẫn URL Ảnh minh họa:
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={addLessonImageUrl}
+                    onChange={(e) => setAddLessonImageUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="flex-1 px-3 py-2 rounded-xl bg-white border border-[#86c898] text-xs font-bold text-emerald-950 focus:outline-none focus:border-[#10b981]"
+                  />
+                  <input
+                    type="text"
+                    value={addLessonIcon}
+                    onChange={(e) => setAddLessonIcon(e.target.value)}
+                    placeholder="🌱"
+                    className="w-14 text-center px-2 py-2 rounded-xl bg-white border border-[#86c898] text-sm font-bold"
+                    title="Emoji đại diện"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-emerald-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAddLessonModal(false)}
+                  className="px-4 py-2.5 rounded-xl border border-gray-300 font-bold text-xs text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] text-white font-extrabold text-xs shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Thêm Bài học mới</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
         </div>
       )}
 

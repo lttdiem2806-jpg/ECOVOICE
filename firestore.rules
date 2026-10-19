@@ -84,13 +84,25 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // 4. Custom Visuals collection (Teacher custom unit visuals)
+    // 4. Custom Visuals collection (Teacher custom unit visuals & lessons)
     match /customVisuals/{visualId} {
       allow read: if true;
-      allow write: if isValidId(visualId) && (isAdmin() || isSignedIn());
+      allow write: if true;
     }
 
-    // 5. Test connection collection
+    // 5. Classes collection (Teacher class management: Grade 3, 4, 5 classes)
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 6. Unit Permissions collection (Unit Lock/Unlock permissions for Grade 3, 4, 5)
+    match /unitPermissions/{permId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 7. Test connection collection
     match /test/{docId} {
       allow read, write: if true;
     }

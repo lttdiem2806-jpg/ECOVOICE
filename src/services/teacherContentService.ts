@@ -6,7 +6,14 @@ import { getStudentPracticedWords, getStudentPracticedSentences } from './studen
 import { 
   saveAssignmentToFirestore, 
   deleteAssignmentFromFirestore, 
-  saveStudentProgressToFirestore 
+  saveStudentProgressToFirestore,
+  saveClassToFirestore,
+  deleteClassFromFirestore,
+  saveUnitPermissionsToFirestore,
+  saveCustomVisualToFirestore,
+  deleteCustomVisualFromFirestore,
+  saveStudentToFirestore,
+  deleteStudentFromFirestore
 } from './firestoreSyncService';
 
 export interface CustomVisual {
@@ -24,6 +31,7 @@ export interface CustomVisual {
   customIcon?: string; // Custom emoji
   customColorHex?: string;
   notes?: string;
+  isCustomAdded?: boolean; // Flag if teacher added a brand new lesson item
   updatedAt: number;
 }
 
@@ -406,8 +414,15 @@ export function saveCustomVisual(visual: CustomVisual): void {
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
     window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: { id: visual.id } }));
+
+    // Sync to Firestore in background
+    try {
+      saveCustomVisualToFirestore(updatedRecord);
+    } catch (e) {
+      console.warn('Firestore custom visual sync error:', e);
+    }
   } catch (err) {
-    console.error('Error saving custom visual to LocalStorage:', err);
+    console.error('Error saving custom visual:', err);
     throw err;
   }
 }
@@ -422,6 +437,13 @@ export function removeCustomVisual(id: string, word?: string): void {
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
     window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: { id } }));
+
+    // Sync deletion to Firestore
+    try {
+      deleteCustomVisualFromFirestore(id);
+    } catch (e) {
+      console.warn('Firestore custom visual delete error:', e);
+    }
   } catch (err) {
     console.error('Error removing custom visual from LocalStorage:', err);
   }
@@ -697,13 +719,25 @@ export function saveTeacherClass(cls: TeacherClass): void {
   if (typeof window === 'undefined') return;
   const classes = getTeacherClasses();
   const index = classes.findIndex(c => c.id === cls.id);
+  const updatedCls = {
+    ...cls,
+    ...(index >= 0 ? classes[index] : {}),
+    ...cls
+  };
   if (index >= 0) {
-    classes[index] = { ...classes[index], ...cls };
+    classes[index] = updatedCls;
   } else {
-    classes.push(cls);
+    classes.push(updatedCls);
   }
   localStorage.setItem(CLASSES_KEY, JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent(CLASSES_EVENT, { detail: { classId: cls.id } }));
+
+  // Sync to Firestore in background
+  try {
+    saveClassToFirestore(updatedCls);
+  } catch (e) {
+    console.warn('Firestore class save error:', e);
+  }
 }
 
 export function deleteTeacherClass(id: string): void {
@@ -729,6 +763,13 @@ export function deleteTeacherClass(id: string): void {
   }
 
   window.dispatchEvent(new CustomEvent(CLASSES_EVENT, { detail: { deletedId: id } }));
+
+  // Sync deletion to Firestore in background
+  try {
+    deleteClassFromFirestore(id);
+  } catch (e) {
+    console.warn('Firestore class delete error:', e);
+  }
 }
 
 export function resetTeacherClassesToDefault(): TeacherClass[] {
@@ -957,14 +998,22 @@ export function saveStudentAccount(student: StudentAccount): void {
   if (typeof window === 'undefined') return;
   const list = getStudentAccounts();
   const idx = list.findIndex(s => s.id === student.id);
+  const updatedStudent = idx >= 0 ? { ...list[idx], ...student } : student;
   if (idx >= 0) {
-    list[idx] = { ...list[idx], ...student };
+    list[idx] = updatedStudent;
   } else {
-    list.push(student);
+    list.push(updatedStudent);
   }
   localStorage.setItem(STUDENTS_KEY, JSON.stringify(list));
   window.dispatchEvent(new CustomEvent(STUDENTS_EVENT, { detail: { studentId: student.id } }));
   syncClassesWithStudentData(student.className);
+
+  // Sync to Firestore in background
+  try {
+    saveStudentToFirestore(updatedStudent);
+  } catch (e) {
+    console.warn('Firestore student save error:', e);
+  }
 }
 
 export function addStudentAccount(studentData: Omit<StudentAccount, 'id'>): StudentAccount {
@@ -979,6 +1028,13 @@ export function addStudentAccount(studentData: Omit<StudentAccount, 'id'>): Stud
     localStorage.setItem(STUDENTS_KEY, JSON.stringify(list));
     window.dispatchEvent(new CustomEvent(STUDENTS_EVENT, { detail: { studentId: newId } }));
     syncClassesWithStudentData(newStudent.className);
+
+    // Sync to Firestore in background
+    try {
+      saveStudentToFirestore(newStudent);
+    } catch (e) {
+      console.warn('Firestore student add error:', e);
+    }
   }
   return newStudent;
 }
@@ -989,6 +1045,13 @@ export function deleteStudentAccount(id: string): void {
   localStorage.setItem(STUDENTS_KEY, JSON.stringify(list));
   window.dispatchEvent(new CustomEvent(STUDENTS_EVENT, { detail: { deletedId: id } }));
   syncClassesWithStudentData();
+
+  // Sync deletion to Firestore
+  try {
+    deleteStudentFromFirestore(id);
+  } catch (e) {
+    console.warn('Firestore student delete error:', e);
+  }
 }
 
 /**
@@ -1369,11 +1432,9 @@ export function saveTeacherAssignment(asg: TeacherAssignment): void {
   window.dispatchEvent(new CustomEvent(ASSIGNMENTS_EVENT, { detail: { id: asg.id } }));
 
   // Sync to Firestore in background
-  try {
-    saveAssignmentToFirestore(asg);
-  } catch (e) {
-    console.warn('Firestore assignment sync warning:', e);
-  }
+  saveAssignmentToFirestore(asg).catch(e => {
+    console.error('Firestore assignment sync error:', e);
+  });
 }
 
 export function deleteTeacherAssignment(id: string): void {
@@ -1538,6 +1599,11 @@ export function toggleUnitPermission(grade: string, unitKey: string, isUnlocked:
   perms[`${grade}_${unitKey}`] = isUnlocked;
   localStorage.setItem(UNIT_PERMS_KEY, JSON.stringify(perms));
   window.dispatchEvent(new CustomEvent(PERMS_EVENT, { detail: { grade, unitKey, isUnlocked } }));
+  try {
+    saveUnitPermissionsToFirestore(perms);
+  } catch (e) {
+    console.warn('Firestore unit permissions sync warning:', e);
+  }
 }
 
 export function setAllUnitsPermission(grade: string, unitKeys: string[], isUnlocked: boolean): void {
@@ -1548,4 +1614,9 @@ export function setAllUnitsPermission(grade: string, unitKeys: string[], isUnloc
   });
   localStorage.setItem(UNIT_PERMS_KEY, JSON.stringify(perms));
   window.dispatchEvent(new CustomEvent(PERMS_EVENT, { detail: { grade, isUnlocked } }));
+  try {
+    saveUnitPermissionsToFirestore(perms);
+  } catch (e) {
+    console.warn('Firestore unit permissions sync warning:', e);
+  }
 }

@@ -116,6 +116,9 @@ import {
   syncInitialDataToFirestore,
   subscribeToFirestoreStudents,
   subscribeToFirestoreAssignments,
+  subscribeToFirestoreClasses,
+  subscribeToFirestoreUnitPermissions,
+  subscribeToFirestoreCustomVisuals,
   syncGoogleUserToFirestore,
   syncUserToFirestore,
   ADMIN_EMAIL,
@@ -475,7 +478,28 @@ export default function App() {
       }
     });
 
-    // 4. Firebase Auth listener
+    // 4. Real-time Firestore classes listener
+    const unsubClasses = subscribeToFirestoreClasses((classes) => {
+      if (classes && classes.length > 0) {
+        window.dispatchEvent(new CustomEvent('ecovoice_classes_updated', { detail: { classes } }));
+      }
+    });
+
+    // 5. Real-time Firestore unit permissions listener
+    const unsubPerms = subscribeToFirestoreUnitPermissions((perms) => {
+      if (perms) {
+        window.dispatchEvent(new CustomEvent('ecovoice_perms_updated', { detail: { perms } }));
+      }
+    });
+
+    // 6. Real-time Firestore custom visuals (illustrations/lessons) listener
+    const unsubVisuals = subscribeToFirestoreCustomVisuals((visuals) => {
+      if (visuals) {
+        window.dispatchEvent(new CustomEvent('ecovoice_custom_visuals_updated', { detail: { visuals } }));
+      }
+    });
+
+    // 7. Firebase Auth listener
     const unsubAuth = subscribeToAuthState(async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -498,6 +522,9 @@ export default function App() {
     return () => {
       unsubStudents();
       unsubAssignments();
+      unsubClasses();
+      unsubPerms();
+      unsubVisuals();
       unsubAuth();
     };
   }, [isLoggedIn, userRole, userName]);
@@ -1042,8 +1069,51 @@ export default function App() {
   const currentUnit = availableUnits.find(u => u.unitKey === selectedUnitKey) || availableUnits[0];
   const availableLessons = currentUnit.lessons || [];
 
-  const rawVocabList = currentUnit.vocabulary || [];
-  const rawSentencesList = currentUnit.sentences || [];
+  const rawVocabList = useMemo(() => {
+    const list = [...(currentUnit.vocabulary || [])];
+    Object.values(customVisuals).forEach(custom => {
+      if (!custom.isCustomAdded) return;
+      if (custom.type !== 'vocab') return;
+      if (custom.grade && custom.grade !== selectedGrade) return;
+      if (custom.unitKey && custom.unitKey !== (currentUnit?.unitKey || selectedUnitKey)) return;
+      if (list.some(v => v.id === custom.id)) return;
+
+      list.push({
+        id: custom.id,
+        word: custom.wordOrSentence,
+        phonetic: custom.phonetic || '/.../',
+        meaning: custom.meaning,
+        icon: custom.customIcon || '🌱',
+        colorHex: custom.customColorHex || '#10b981',
+        lesson: custom.lesson || 'Lesson 1',
+        sentence: `It's ${custom.wordOrSentence}.`,
+        sentenceVi: `Đó là ${custom.meaning}.`
+      } as any);
+    });
+    return list;
+  }, [currentUnit, customVisuals, selectedGrade, selectedUnitKey]);
+
+  const rawSentencesList = useMemo(() => {
+    const list = [...(currentUnit.sentences || [])];
+    Object.values(customVisuals).forEach(custom => {
+      if (!custom.isCustomAdded) return;
+      if (custom.type !== 'sentence') return;
+      if (custom.grade && custom.grade !== selectedGrade) return;
+      if (custom.unitKey && custom.unitKey !== (currentUnit?.unitKey || selectedUnitKey)) return;
+      if (list.some(s => s.id === custom.id)) return;
+
+      list.push({
+        id: custom.id,
+        structure: custom.wordOrSentence,
+        meaning: custom.meaning,
+        example: custom.wordOrSentence,
+        exampleVi: custom.meaning,
+        speechText: custom.wordOrSentence,
+        lesson: custom.lesson || 'Lesson 2'
+      } as any);
+    });
+    return list;
+  }, [currentUnit, customVisuals, selectedGrade, selectedUnitKey]);
 
   const filteredVocab = selectedLesson === 'all'
     ? rawVocabList

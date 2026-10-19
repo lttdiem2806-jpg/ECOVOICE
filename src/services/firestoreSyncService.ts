@@ -40,6 +40,7 @@ const ASGS_COL = 'assignments';
 const CLASSES_COL = 'classes';
 const ACTIVITIES_COL = 'activities';
 const VISUALS_COL = 'customVisuals';
+const UNIT_PERMS_COL = 'unitPermissions';
 
 /**
  * Helper to generate consistent student ID
@@ -53,6 +54,25 @@ export function sanitizeDocId(name: string): string {
     .replace(/[^a-z0-9]/g, '_')
     .replace(/^_+|_+$/g, '')
     .slice(0, 60) || 'student_user';
+}
+
+/**
+ * Utility to strip undefined properties recursively before saving to Firestore.
+ * Firebase JS SDK throws an error if any object property is undefined.
+ */
+export function sanitizeForFirestore<T extends Record<string, any>>(obj: T): T {
+  if (!obj || typeof obj !== 'object') return obj;
+  const clean: Record<string, any> = {};
+  for (const [key, val] of Object.entries(obj)) {
+    if (val !== undefined) {
+      if (val !== null && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {
+        clean[key] = sanitizeForFirestore(val);
+      } else {
+        clean[key] = val;
+      }
+    }
+  }
+  return clean as T;
 }
 
 /**
@@ -129,6 +149,40 @@ export async function syncInitialDataToFirestore(): Promise<void> {
       });
       await batch.commit();
       console.info('Initial assignments successfully seeded to Firestore.');
+    }
+
+    // Check & Seed Classes
+    const classesSnap = await getDocs(collection(db, CLASSES_COL));
+    if (classesSnap.empty) {
+      console.info('Seeding initial classes to Firestore...');
+      const batch = writeBatch(db);
+      DEFAULT_CLASSES.forEach((cls) => {
+        const ref = doc(db, CLASSES_COL, cls.id);
+        batch.set(ref, {
+          ...cls,
+          createdAt: new Date().toISOString()
+        });
+      });
+      await batch.commit();
+      console.info('Initial classes successfully seeded to Firestore.');
+    }
+
+    // Check & Seed Unit Permissions
+    const permRef = doc(db, UNIT_PERMS_COL, 'global');
+    const permSnap = await getDoc(permRef);
+    if (!permSnap.exists()) {
+      console.info('Seeding initial unit permissions to Firestore...');
+      const defaultPerms: Record<string, boolean> = {};
+      ['3', '4', '5'].forEach(grade => {
+        for (let i = 1; i <= 20; i++) {
+          defaultPerms[`${grade}_unit_${i}`] = i <= 8;
+        }
+      });
+      await setDoc(permRef, {
+        permissions: defaultPerms,
+        updatedAt: new Date().toISOString()
+      });
+      console.info('Initial unit permissions successfully seeded to Firestore.');
     }
   } catch (error) {
     console.warn('Firestore initial sync skipped or already seeded:', error);
@@ -276,12 +330,13 @@ export async function saveStudentProgressToFirestore(
  * 5. Create or Update Assignment in Firestore
  */
 export async function saveAssignmentToFirestore(assignment: TeacherAssignment): Promise<void> {
+  const cleanAsg = sanitizeForFirestore({
+    ...assignment,
+    updatedAt: new Date().toISOString()
+  });
   const ref = doc(db, ASGS_COL, assignment.id);
   try {
-    await setDoc(ref, {
-      ...assignment,
-      updatedAt: new Date().toISOString()
-    });
+    await setDoc(ref, cleanAsg, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${ASGS_COL}/${assignment.id}`);
   }
@@ -303,12 +358,13 @@ export async function deleteAssignmentFromFirestore(assignmentId: string): Promi
  * 7. Record Student Activity to Firestore
  */
 export async function recordActivityToFirestore(activity: StudentActivityItem): Promise<void> {
+  const cleanActivity = sanitizeForFirestore({
+    ...activity,
+    createdAt: new Date().toISOString()
+  });
   const ref = doc(db, ACTIVITIES_COL, activity.id);
   try {
-    await setDoc(ref, {
-      ...activity,
-      createdAt: new Date().toISOString()
-    });
+    await setDoc(ref, cleanActivity, { merge: true });
   } catch (error) {
     console.warn('Failed to record activity to Firestore:', error);
   }
@@ -336,6 +392,171 @@ export function subscribeToFirestoreActivities(callback: (activities: StudentAct
     );
   } catch (error) {
     console.warn('Activities subscribe error:', error);
+    return () => {};
+  }
+}
+
+/**
+ * 9. Create or Update Class in Firestore
+ */
+export async function saveClassToFirestore(cls: TeacherClass): Promise<void> {
+  const cleanCls = sanitizeForFirestore({
+    ...cls,
+    updatedAt: new Date().toISOString()
+  });
+  const ref = doc(db, CLASSES_COL, cls.id);
+  try {
+    await setDoc(ref, cleanCls, { merge: true });
+  } catch (error) {
+    console.warn('Failed to save class to Firestore:', error);
+  }
+}
+
+/**
+ * 10. Delete Class from Firestore
+ */
+export async function deleteClassFromFirestore(classId: string): Promise<void> {
+  const ref = doc(db, CLASSES_COL, classId);
+  try {
+    await deleteDoc(ref);
+  } catch (error) {
+    console.warn('Failed to delete class from Firestore:', error);
+  }
+}
+
+/**
+ * 11. Subscribe to Real-Time Classes from Firestore
+ */
+export function subscribeToFirestoreClasses(callback: (classes: TeacherClass[]) => void): () => void {
+  try {
+    return onSnapshot(
+      collection(db, CLASSES_COL),
+      (snapshot) => {
+        const list: TeacherClass[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push(docSnap.data() as TeacherClass);
+        });
+        if (list.length > 0) {
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('ecovoice_teacher_classes', JSON.stringify(list));
+              window.dispatchEvent(new CustomEvent('ecovoice_classes_updated', { detail: { classes: list } }));
+            }
+          } catch {}
+          callback(list);
+        }
+      },
+      (error) => {
+        console.warn('Classes listener error:', error);
+      }
+    );
+  } catch (error) {
+    console.warn('Classes subscribe error:', error);
+    return () => {};
+  }
+}
+
+/**
+ * 12. Save Unit Access Permissions to Firestore
+ */
+export async function saveUnitPermissionsToFirestore(perms: Record<string, boolean>): Promise<void> {
+  const cleanPerms = sanitizeForFirestore({
+    permissions: perms,
+    updatedAt: new Date().toISOString()
+  });
+  const ref = doc(db, UNIT_PERMS_COL, 'global');
+  try {
+    await setDoc(ref, cleanPerms, { merge: true });
+  } catch (error) {
+    console.warn('Failed to save unit permissions to Firestore:', error);
+  }
+}
+
+/**
+ * 13. Subscribe to Real-Time Unit Access Permissions from Firestore
+ */
+export function subscribeToFirestoreUnitPermissions(callback: (perms: Record<string, boolean>) => void): () => void {
+  try {
+    return onSnapshot(
+      doc(db, UNIT_PERMS_COL, 'global'),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data && data.permissions) {
+            try {
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('ecovoice_unit_permissions', JSON.stringify(data.permissions));
+                window.dispatchEvent(new CustomEvent('ecovoice_perms_updated', { detail: { perms: data.permissions } }));
+              }
+            } catch {}
+            callback(data.permissions);
+          }
+        }
+      },
+      (error) => {
+        console.warn('Unit permissions listener error:', error);
+      }
+    );
+  } catch (error) {
+    console.warn('Unit permissions subscribe error:', error);
+    return () => {};
+  }
+}
+
+/**
+ * 14. Save Custom Visual / Lesson Illustration to Firestore
+ */
+export async function saveCustomVisualToFirestore(visual: CustomVisual): Promise<void> {
+  const cleanVisual = sanitizeForFirestore({
+    ...visual,
+    updatedAt: new Date().toISOString()
+  });
+  const ref = doc(db, VISUALS_COL, visual.id);
+  try {
+    await setDoc(ref, cleanVisual, { merge: true });
+  } catch (error) {
+    console.warn('Failed to save custom visual to Firestore:', error);
+  }
+}
+
+/**
+ * 15. Delete Custom Visual from Firestore
+ */
+export async function deleteCustomVisualFromFirestore(visualId: string): Promise<void> {
+  const ref = doc(db, VISUALS_COL, visualId);
+  try {
+    await deleteDoc(ref);
+  } catch (error) {
+    console.warn('Failed to delete custom visual from Firestore:', error);
+  }
+}
+
+/**
+ * 16. Subscribe to Real-Time Custom Visuals from Firestore
+ */
+export function subscribeToFirestoreCustomVisuals(callback: (visuals: Record<string, CustomVisual>) => void): () => void {
+  try {
+    return onSnapshot(
+      collection(db, VISUALS_COL),
+      (snapshot) => {
+        const map: Record<string, CustomVisual> = {};
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as CustomVisual;
+          map[docSnap.id] = data;
+        });
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('ecovoice_custom_visuals', JSON.stringify(map));
+            window.dispatchEvent(new CustomEvent('ecovoice_custom_visuals_updated', { detail: { visuals: map } }));
+          }
+        } catch {}
+        callback(map);
+      },
+      (error) => {
+        console.warn('Custom visuals listener error:', error);
+      }
+    );
+  } catch (error) {
     return () => {};
   }
 }
@@ -612,3 +833,45 @@ export async function authenticateStudentOrAdmin(
     error: 'Tên học sinh hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!'
   };
 }
+
+/**
+ * 17. Create or Update Student Account in Firestore
+ */
+export async function saveStudentToFirestore(student: StudentAccount): Promise<void> {
+  const docId = student.id || sanitizeDocId(student.name);
+  const ref = doc(db, USERS_COL, docId);
+  try {
+    await setDoc(ref, {
+      id: docId,
+      name: student.name,
+      className: student.className || '4A3',
+      grade: student.grade || '4',
+      password: student.password || '123',
+      email: (student as any).email || '',
+      username: (student as any).username || '',
+      score: student.score || 0,
+      trees: student.trees || 0,
+      ecoPoints: student.ecoPoints ?? ((student.trees || 0) * 30),
+      status: student.status || 'Đang học',
+      lastPractice: student.lastPractice || 'Chưa luyện tập',
+      completedAssignments: student.completedAssignments || [],
+      role: 'student',
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (error) {
+    console.warn('Failed to save student account to Firestore:', error);
+  }
+}
+
+/**
+ * 18. Delete Student Account from Firestore
+ */
+export async function deleteStudentFromFirestore(studentId: string): Promise<void> {
+  const ref = doc(db, USERS_COL, studentId);
+  try {
+    await deleteDoc(ref);
+  } catch (error) {
+    console.warn('Failed to delete student account from Firestore:', error);
+  }
+}
+
