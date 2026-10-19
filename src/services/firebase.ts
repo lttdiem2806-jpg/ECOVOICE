@@ -113,6 +113,14 @@ export async function signInWithGoogle(): Promise<FirebaseUser | null> {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error: any) {
+    if (
+      error?.code === 'auth/popup-closed-by-user' ||
+      error?.code === 'auth/cancelled-popup-request' ||
+      error?.message?.includes('popup-closed-by-user')
+    ) {
+      console.info('Google Sign-In popup closed by user.');
+      return null;
+    }
     console.error('Google Sign-In failed:', error);
     throw error;
   }

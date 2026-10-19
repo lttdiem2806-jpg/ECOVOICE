@@ -90,6 +90,7 @@ import {
   CLASSES_EVENT,
   verifyStudentCredentials,
   getStudentAccounts,
+  saveStudentAccount,
   updateStudentProgress,
   getTeacherAssignments,
   ASSIGNMENTS_EVENT,
@@ -431,6 +432,12 @@ export default function App() {
   const [showTeacherLoginPassword, setShowTeacherLoginPassword] = useState<boolean>(false);
   const [isAuthenticatingTeacher, setIsAuthenticatingTeacher] = useState<boolean>(false);
 
+  // Profile modal states
+  const [profileModalTab, setProfileModalTab] = useState<'overview' | 'password'>('overview');
+  const [changePassNew, setChangePassNew] = useState<string>('');
+  const [changePassConfirm, setChangePassConfirm] = useState<string>('');
+  const [changePassMsg, setChangePassMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Synchronize / clear login fields whenever Login Modal opens
   useEffect(() => {
     if (activeModal === 'login') {
@@ -625,17 +632,131 @@ export default function App() {
         setActiveModal(null);
       }
     } catch (error: any) {
-      console.error('Google Sign-In Error:', error);
-      const msg = error?.message?.includes('popup-closed-by-user')
-        ? 'Bạn đã đóng cửa sổ đăng nhập Google. Vui lòng bấm thử lại nhé!'
-        : 'Không thể đăng nhập bằng Google lúc này. Vui lòng thử lại hoặc đăng nhập bằng tài khoản lớp!';
-      if (loginRoleTab === 'teacher') {
-        setTeacherLoginError(msg);
+      const isPopupClosed = 
+        error?.code === 'auth/popup-closed-by-user' ||
+        error?.code === 'auth/cancelled-popup-request' ||
+        error?.message?.includes('popup-closed-by-user');
+
+      if (isPopupClosed) {
+        console.info('Google Sign-In popup closed by user.');
       } else {
-        setStudentLoginError(msg);
+        console.error('Google Sign-In Error:', error);
+        const msg = 'Không thể đăng nhập bằng Google lúc này. Vui lòng thử lại hoặc đăng nhập bằng tài khoản lớp!';
+        if (loginRoleTab === 'teacher') {
+          setTeacherLoginError(msg);
+        } else {
+          setStudentLoginError(msg);
+        }
       }
     } finally {
       setIsSigningInGoogle(false);
+    }
+  };
+
+  const handleLogoutAction = () => {
+    playSoundEffect('click');
+    const wasRemembered = localStorage.getItem('ecovoice_remember_student') === 'true';
+    localStorage.removeItem('ecovoice_is_logged_in');
+    localStorage.removeItem('ecovoice_user_role');
+    localStorage.removeItem('ecovoice_is_guest_mode');
+    localStorage.removeItem('ecovoice_student_class');
+    setTeacherUnlocked(false);
+
+    if (!wasRemembered) {
+      localStorage.removeItem('ecovoice_user_name');
+      localStorage.removeItem('ecovoice_remember_student');
+      localStorage.removeItem('ecovoice_saved_student_name');
+      localStorage.removeItem('ecovoice_saved_student_pass');
+      setUserName('');
+      setLoginStudentName('');
+      setLoginStudentPassword('');
+      setRememberStudent(false);
+    } else {
+      setLoginStudentName(localStorage.getItem('ecovoice_saved_student_name') || '');
+      setLoginStudentPassword(localStorage.getItem('ecovoice_saved_student_pass') || '');
+      setRememberStudent(true);
+    }
+
+    sessionStorage.removeItem('ecovoice_is_logged_in');
+    sessionStorage.removeItem('ecovoice_user_role');
+    sessionStorage.removeItem('ecovoice_is_guest_mode');
+    sessionStorage.removeItem('ecovoice_student_class');
+    sessionStorage.removeItem('ecovoice_user_name');
+    resetGuestSession();
+    resetGuestAssignmentCompletions();
+    setEcoPoints(0);
+    setVirtualTrees(0);
+    setGuestCompletedAssignmentIds([]);
+    setPracticedItems(new Set());
+
+    setIsGuestMode(true);
+    setCurrentUserRole('guest');
+    setUserRole('guest');
+    setIsLoggedIn(false);
+    logOutFirebase().catch(() => {});
+    setMascotBubble('Đã đăng xuất tài khoản!');
+    setActiveModal(null);
+  };
+
+  const handleGuestLoginAction = () => {
+    playSoundEffect('celebrate');
+    const guestName = 'Khách trải nghiệm / Visitor';
+    sessionStorage.setItem('ecovoice_user_name', guestName);
+    sessionStorage.setItem('ecovoice_is_logged_in', 'true');
+    sessionStorage.setItem('ecovoice_user_role', 'guest');
+    sessionStorage.setItem('ecovoice_is_guest_mode', 'true');
+    sessionStorage.setItem('ecovoice_student_class', 'Trải nghiệm (Demo / Guest)');
+    localStorage.removeItem('ecovoice_is_guest_mode');
+    if (localStorage.getItem('ecovoice_user_role') === 'guest') {
+      localStorage.removeItem('ecovoice_user_role');
+      localStorage.removeItem('ecovoice_is_logged_in');
+      localStorage.removeItem('ecovoice_user_name');
+      localStorage.removeItem('ecovoice_student_class');
+    }
+    const guestEP = getGuestGradeEcoPoints(selectedGrade);
+    const guestTrees = getGuestGradeVirtualTrees(selectedGrade);
+    const guestCompleted = getGuestCompletedAssignmentIds();
+    setEcoPoints(guestEP);
+    setVirtualTrees(guestTrees);
+    setGuestCompletedAssignmentIds(guestCompleted);
+    setUserName(guestName);
+    setIsGuestMode(true);
+    setStudentClassInput('Trải nghiệm (Demo / Guest)');
+    setCurrentUserRole('guest');
+    setUserRole('guest');
+    setTeacherUnlocked(false);
+    setIsLoggedIn(true);
+    setLoginPromptNotice(null);
+    setActiveModal(null);
+    setActiveSidebar('lessons');
+    setMascotBubble('Welcome to Eco-Voice! Explore all 20 interactive Units & green features freely!');
+  };
+
+  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!changePassNew || changePassNew.length < 3) {
+      setChangePassMsg({ type: 'error', text: 'Mật khẩu mới phải có tối thiểu 3 ký tự!' });
+      return;
+    }
+    if (changePassNew !== changePassConfirm) {
+      setChangePassMsg({ type: 'error', text: 'Mật khẩu xác nhận không trùng khớp!' });
+      return;
+    }
+    const accounts = getStudentAccounts();
+    const matchIndex = accounts.findIndex(s => s.name.trim().toLowerCase() === userName.trim().toLowerCase());
+    if (matchIndex >= 0) {
+      const updated = { ...accounts[matchIndex], password: changePassNew };
+      saveStudentAccount(updated);
+      if (rememberStudent) {
+        localStorage.setItem('ecovoice_saved_student_pass', changePassNew);
+      }
+      setLoginStudentPassword(changePassNew);
+      setChangePassMsg({ type: 'success', text: 'Đã đổi mật khẩu thành công!' });
+      setChangePassNew('');
+      setChangePassConfirm('');
+      playSoundEffect('celebrate');
+    } else {
+      setChangePassMsg({ type: 'error', text: 'Không tìm thấy tài khoản để cập nhật mật khẩu.' });
     }
   };
 
@@ -4184,608 +4305,430 @@ export default function App() {
         </div>
       )}
 
-      {/* MODAL: LOGIN & ROLE SWITCHER */}
+      {/* MODAL: LOGIN & USER ACCOUNT */}
       {activeModal === 'login' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-[#f0faf4] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative border-[3px] border-[#86c898] flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-[#f0faf4] rounded-3xl max-w-sm sm:max-w-md w-full p-5 sm:p-6 shadow-2xl relative border-[3px] border-[#86c898] flex flex-col gap-3.5 max-h-[90vh] overflow-y-auto">
             
             {/* Close button */}
             <button 
+              type="button"
               onClick={() => {
                 setActiveModal(null);
                 setLoginPromptNotice(null);
-                setTeacherLoginError(null);
                 setStudentLoginError(null);
-                if (localStorage.getItem('ecovoice_remember_student') !== 'true') {
-                  setLoginStudentName('');
-                  setLoginStudentPassword('');
-                  setRememberStudent(false);
-                }
-                if (localStorage.getItem('ecovoice_remember_teacher') !== 'true') {
-                  setTeacherLoginPassword('');
-                  setRememberTeacher(false);
-                }
+                setTeacherLoginError(null);
+                setChangePassMsg(null);
               }}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-emerald-100 text-emerald-800 cursor-pointer transition-colors"
+              className="absolute top-3.5 right-3.5 p-2 rounded-full hover:bg-emerald-100 text-emerald-800 cursor-pointer transition-colors z-10"
               title="Đóng"
             >
               <X className="w-5 h-5" />
             </button>
 
-            {/* If currently logged in, show current session banner with quick logout */}
-            {isLoggedIn && (
-              <div className="bg-emerald-50 border border-emerald-300 p-2.5 rounded-2xl flex items-center justify-between text-xs text-emerald-950 shrink-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xl shrink-0">{userRole === 'teacher' ? '👩‍🏫' : (isGuestMode ? '🌟' : '👧')}</span>
+            {/* CASE 1: USER IS ALREADY LOGGED IN -> SHOW ACCOUNT PROFILE CARD ONLY */}
+            {isLoggedIn ? (
+              <div className="flex flex-col gap-3.5 pt-1">
+                {/* Header */}
+                <div className="flex items-center gap-3 border-b border-emerald-200 pb-3 pr-8">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-200 text-emerald-900 border-2 border-emerald-400 flex items-center justify-center text-2xl shadow-xs shrink-0">
+                    {userRole === 'teacher' ? '👩‍🏫' : (isGuestMode ? '🌟' : '👧')}
+                  </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] uppercase font-black text-emerald-700 leading-none">LOGGED IN AS:</span>
-                    <span className="font-bold text-emerald-950 text-xs truncate">
+                    <span className="text-[10px] font-black uppercase text-emerald-700 tracking-wider">TÀI KHOẢN CÁ NHÂN</span>
+                    <h3 className="text-base sm:text-lg font-black text-emerald-950 truncate leading-snug">
+                      {userName}
+                    </h3>
+                    <span className="text-xs font-bold text-emerald-800 truncate">
                       {userRole === 'teacher' 
-                        ? 'Giáo viên / Admin' 
-                        : (isGuestMode ? 'Khách trải nghiệm / Visitor' : `${userName} (Lớp ${studentClassInput})`)}
+                        ? 'Giáo viên / Quản trị viên' 
+                        : (isGuestMode ? 'Khách trải nghiệm' : `Học sinh • Lớp ${studentClassInput}`)}
                     </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    playSoundEffect('click');
-                    const wasRemembered = localStorage.getItem('ecovoice_remember_student') === 'true';
-                    localStorage.removeItem('ecovoice_is_logged_in');
-                    localStorage.removeItem('ecovoice_user_role');
-                    localStorage.removeItem('ecovoice_is_guest_mode');
-                    localStorage.removeItem('ecovoice_student_class');
-                    setTeacherUnlocked(false);
 
-                    if (!wasRemembered) {
-                      localStorage.removeItem('ecovoice_user_name');
-                      localStorage.removeItem('ecovoice_remember_student');
-                      localStorage.removeItem('ecovoice_saved_student_name');
-                      localStorage.removeItem('ecovoice_saved_student_pass');
-                      setUserName('');
-                      setLoginStudentName('');
-                      setLoginStudentPassword('');
-                      setRememberStudent(false);
-                    } else {
-                      setLoginStudentName(localStorage.getItem('ecovoice_saved_student_name') || '');
-                      setLoginStudentPassword(localStorage.getItem('ecovoice_saved_student_pass') || '');
-                      setRememberStudent(true);
-                    }
-
-                    // Reset guest progress, EP, trees, demo assignments and state to 0
-                    sessionStorage.removeItem('ecovoice_is_logged_in');
-                    sessionStorage.removeItem('ecovoice_user_role');
-                    sessionStorage.removeItem('ecovoice_is_guest_mode');
-                    sessionStorage.removeItem('ecovoice_student_class');
-                    sessionStorage.removeItem('ecovoice_user_name');
-                    resetGuestSession();
-                    resetGuestAssignmentCompletions();
-                    setEcoPoints(0);
-                    setVirtualTrees(0);
-                    setGuestCompletedAssignmentIds([]);
-                    setPracticedItems(new Set());
-
-                    setIsGuestMode(true);
-                    setCurrentUserRole('guest');
-                    setUserRole('guest');
-                    setIsLoggedIn(false);
-                    logOutFirebase().catch(() => {});
-                    setMascotBubble('Đã đăng xuất tài khoản!');
-                  }}
-                  className="px-2.5 py-1 bg-white hover:bg-rose-50 text-rose-700 font-bold border border-rose-300 rounded-xl text-[11px] cursor-pointer transition-colors shadow-2xs shrink-0 flex items-center gap-1"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Log Out</span>
-                </button>
-              </div>
-            )}
-              <div className="flex flex-col gap-3">
-                {/* Notification when triggered by route guard */}
-                {loginPromptNotice && (
-                  <div className="bg-amber-50 border-2 border-amber-400 text-emerald-950 p-3 rounded-2xl flex items-center gap-3 text-xs shadow-sm animate-in fade-in duration-200 shrink-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-400 text-emerald-950 flex items-center justify-center shrink-0 font-black shadow-2xs">
-                      <Lock className="w-4 h-4 text-emerald-950" />
-                    </div>
-                    <div className="flex flex-col leading-snug">
-                      <span className="font-black text-sm text-amber-950 font-display">{loginPromptNotice.en}</span>
-                      <span className="text-[11px] italic font-medium text-amber-900 mt-0.5">{loginPromptNotice.vi}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="text-center space-y-0.5 mb-1">
-                  <h3 className="text-xl font-black text-emerald-950 font-display">Sign In to Eco-Voice</h3>
-                  <p className="text-xs italic text-emerald-800 font-medium">Đăng nhập Eco-Voice · Chọn vai trò của bạn để bắt đầu</p>
-                </div>
-
-                {/* Role Switcher Tabs */}
-                <div className="grid grid-cols-2 gap-1.5 p-1 bg-emerald-100/70 rounded-2xl border border-emerald-200">
+                {/* Sub-tab Switcher: Thông tin vs Đổi mật khẩu */}
+                <div className="flex items-center justify-center p-1 bg-emerald-100/70 rounded-xl border border-emerald-200 gap-1 text-xs">
                   <button
                     type="button"
                     onClick={() => {
-                      setLoginRoleTab('student');
-                      setTeacherLoginError(null);
-                      setStudentLoginError(null);
+                      setProfileModalTab('overview');
+                      setChangePassMsg(null);
                     }}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center leading-tight cursor-pointer ${
-                      loginRoleTab === 'student'
-                        ? 'bg-white text-emerald-950 shadow-xs border border-emerald-300'
-                        : 'text-emerald-800 hover:text-emerald-950'
+                    className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                      profileModalTab === 'overview'
+                        ? 'bg-emerald-800 text-white shadow-2xs'
+                        : 'text-emerald-900 hover:text-emerald-950 font-medium'
                     }`}
                   >
-                    <div className="flex items-center gap-1 font-black">
-                      <span>👧</span>
-                      <span>Student</span>
-                    </div>
-                    <span className="text-[10px] italic text-emerald-700 font-medium">Học sinh</span>
+                    Thông tin cá nhân
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoginRoleTab('teacher');
-                      setTeacherLoginError(null);
-                      setStudentLoginError(null);
-                    }}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center leading-tight cursor-pointer ${
-                      loginRoleTab === 'teacher'
-                        ? 'bg-[#0c4326] text-white shadow-xs'
-                        : 'text-emerald-800 hover:text-emerald-950'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1 font-black">
-                      <span>👨‍🏫</span>
-                      <span>Teacher / Admin</span>
-                    </div>
-                    <span className="text-[10px] italic text-emerald-200/90 font-medium">Giáo viên</span>
-                  </button>
+                  {!isGuestMode && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileModalTab('password');
+                        setChangePassMsg(null);
+                      }}
+                      className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                        profileModalTab === 'password'
+                          ? 'bg-emerald-800 text-white shadow-2xs'
+                          : 'text-emerald-900 hover:text-emerald-950 font-medium'
+                      }`}
+                    >
+                      Đổi mật khẩu
+                    </button>
+                  )}
                 </div>
 
-                {/* TAB CONTENT: STUDENT */}
-                {loginRoleTab === 'student' && (
+                {/* TAB 1: OVERVIEW */}
+                {profileModalTab === 'overview' && (
                   <div className="flex flex-col gap-3">
-                    {/* 1. Sign in with Google (For Students) */}
-                    <button
-                      type="button"
-                      onClick={handleGoogleSignIn}
-                      disabled={isSigningInGoogle}
-                      className="w-full py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-800 font-bold border-2 border-slate-200 hover:border-emerald-500 rounded-2xl shadow-xs transition-all flex items-center justify-center gap-3 cursor-pointer active:scale-98 disabled:opacity-60"
-                    >
-                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                      </svg>
-                      <div className="flex flex-col text-left leading-tight">
-                        <span className="text-xs sm:text-sm font-black text-slate-800">
-                          {isSigningInGoogle ? 'Đang kết nối Google...' : 'Đăng nhập bằng tài khoản Google'}
-                        </span>
-                        <span className="text-[10px] text-emerald-700 font-semibold">Tự động phân quyền Học sinh · Đồng bộ kết quả Firestore</span>
+                    <div className="bg-white rounded-2xl p-3.5 border border-emerald-200 flex flex-col gap-2 text-xs text-emerald-950 shadow-2xs">
+                      <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
+                        <span className="text-emerald-700 font-medium">Họ và tên:</span>
+                        <span className="font-bold text-emerald-950">{userName}</span>
                       </div>
-                    </button>
-
-                    <div className="relative flex py-0.5 items-center">
-                      <div className="flex-grow border-t border-emerald-200"></div>
-                      <span className="flex-shrink mx-2 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
-                        Hoặc đăng nhập bằng Tên đăng nhập / Email
-                      </span>
-                      <div className="flex-grow border-t border-emerald-200"></div>
-                    </div>
-
-                    {/* Sub-mode switcher: Sign In vs Register */}
-                    <div className="flex items-center justify-center p-0.5 bg-emerald-50 rounded-xl border border-emerald-200 gap-1 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStudentAuthMode('login');
-                          setStudentLoginError(null);
-                        }}
-                        className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all text-center cursor-pointer ${
-                          studentAuthMode === 'login'
-                            ? 'bg-emerald-700 text-white shadow-2xs'
-                            : 'text-emerald-900 hover:text-emerald-950'
-                        }`}
-                      >
-                        Đăng nhập (Sign In)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStudentAuthMode('register');
-                          setStudentLoginError(null);
-                        }}
-                        className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all text-center cursor-pointer ${
-                          studentAuthMode === 'register'
-                            ? 'bg-emerald-700 text-white shadow-2xs'
-                            : 'text-emerald-900 hover:text-emerald-950'
-                        }`}
-                      >
-                        Đăng ký tài khoản mới (Register)
-                      </button>
-                    </div>
-
-                    {/* STUDENT LOGIN FORM */}
-                    {studentAuthMode === 'login' ? (
-                      <form onSubmit={handleStudentLoginSubmit} className="flex flex-col gap-3 mt-1">
-                        <div>
-                          <label className="text-xs font-bold text-emerald-950 block mb-1">
-                            Tên đăng nhập hoặc Email / Username or Email:
-                          </label>
-                          <input 
-                            type="text" 
-                            value={loginStudentName} 
-                            onChange={(e) => {
-                              setLoginStudentName(e.target.value);
-                              if (studentLoginError) setStudentLoginError(null);
-                            }}
-                            className="w-full px-3.5 py-2.5 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm"
-                            placeholder="Nhập tên học sinh (ví dụ: Chí Vỹ) hoặc email..."
-                            required
-                            autoComplete={rememberStudent ? "username" : "off"}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold text-emerald-950 block mb-1">Password / Mật khẩu:</label>
-                          <div className="relative">
-                            <input
-                              type={showStudentPassword ? "text" : "password"}
-                              value={loginStudentPassword}
-                              onChange={(e) => {
-                                setLoginStudentPassword(e.target.value);
-                                if (studentLoginError) setStudentLoginError(null);
-                              }}
-                              className="w-full px-3.5 py-2.5 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm tracking-widest pr-10"
-                              placeholder="Nhập mật khẩu (ví dụ: 123)..."
-                              required
-                              autoComplete={rememberStudent ? "current-password" : "new-password"}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowStudentPassword(!showStudentPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 hover:text-emerald-900 cursor-pointer"
-                              title={showStudentPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                            >
-                              {showStudentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Remember Me Checkbox */}
-                        <div className="flex items-center justify-between py-0.5">
-                          <label className="flex items-center gap-2 cursor-pointer select-none">
-                            <input 
-                              type="checkbox" 
-                              checked={rememberStudent} 
-                              onChange={(e) => setRememberStudent(e.target.checked)}
-                              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-emerald-300 accent-[#15803d] cursor-pointer"
-                            />
-                            <span className="text-xs font-semibold text-emerald-950">Remember me / Ghi nhớ mật khẩu</span>
-                          </label>
-                        </div>
-
-                        {/* Authentication Error Notification */}
-                        {studentLoginError && (
-                          <div className="p-3 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 text-xs font-bold flex items-start gap-2 animate-in fade-in duration-200">
-                            <span className="text-base leading-none shrink-0">⚠️</span>
-                            <span className="leading-snug">{studentLoginError}</span>
-                          </div>
-                        )}
-
-                        <button
-                          type="submit"
-                          disabled={isAuthenticatingStudent}
-                          className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] active:scale-95 text-white rounded-xl shadow cursor-pointer transition-all mt-1 flex flex-col items-center justify-center leading-tight disabled:opacity-60"
-                        >
-                          <span className="font-black text-sm sm:text-base">
-                            {isAuthenticatingStudent ? 'Đang xác thực...' : 'Start Learning Now'}
-                          </span>
-                          <span className="text-[10px] sm:text-[11px] italic font-medium text-emerald-100">Vào học ngay (Học sinh)</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            playSoundEffect('celebrate');
-                            const guestName = 'Khách trải nghiệm / Visitor';
-                            sessionStorage.setItem('ecovoice_user_name', guestName);
-                            sessionStorage.setItem('ecovoice_is_logged_in', 'true');
-                            sessionStorage.setItem('ecovoice_user_role', 'guest');
-                            sessionStorage.setItem('ecovoice_is_guest_mode', 'true');
-                            sessionStorage.setItem('ecovoice_student_class', 'Trải nghiệm (Demo / Guest)');
-                            // Clean up any guest items from localStorage
-                            localStorage.removeItem('ecovoice_is_guest_mode');
-                            if (localStorage.getItem('ecovoice_user_role') === 'guest') {
-                              localStorage.removeItem('ecovoice_user_role');
-                              localStorage.removeItem('ecovoice_is_logged_in');
-                              localStorage.removeItem('ecovoice_user_name');
-                              localStorage.removeItem('ecovoice_student_class');
-                            }
-                            const guestEP = getGuestGradeEcoPoints(selectedGrade);
-                            const guestTrees = getGuestGradeVirtualTrees(selectedGrade);
-                            const guestCompleted = getGuestCompletedAssignmentIds();
-                            setEcoPoints(guestEP);
-                            setVirtualTrees(guestTrees);
-                            setGuestCompletedAssignmentIds(guestCompleted);
-                            setUserName(guestName);
-                            setIsGuestMode(true);
-                            setStudentClassInput('Trải nghiệm (Demo / Guest)');
-                            setCurrentUserRole('guest');
-                            setUserRole('guest');
-                            setTeacherUnlocked(false);
-                            setIsLoggedIn(true);
-                            setLoginPromptNotice(null);
-                            setActiveModal(null);
-                            setActiveSidebar('lessons');
-                            setMascotBubble('Welcome to Eco-Voice! Explore all 20 interactive Units & green features freely!');
-                          }}
-                          className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100/80 text-emerald-900 border-2 border-dashed border-[#86c898] rounded-xl shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-95 leading-tight"
-                        >
-                          <span className="text-base">⚡</span>
-                          <div className="flex flex-col items-center leading-tight">
-                            <span className="font-black text-xs sm:text-sm">Guest Mode</span>
-                            <span className="text-[10px] italic font-medium text-emerald-800">Chế độ trải nghiệm dành cho Khách</span>
-                          </div>
-                        </button>
-
-                        <div className="text-center pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setStudentAuthMode('register');
-                              setStudentLoginError(null);
-                            }}
-                            className="text-xs font-bold text-emerald-700 hover:text-emerald-950 underline cursor-pointer"
-                          >
-                            Chưa có tài khoản? Nhấn để Đăng ký tài khoản học sinh mới 🌱
-                          </button>
-                        </div>
-                      </form>
-                    ) : (
-                      /* STUDENT REGISTRATION FORM */
-                      <form onSubmit={handleStudentRegisterSubmit} className="flex flex-col gap-2.5 mt-1">
-                        <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-300 text-xs text-emerald-900 flex items-center gap-2">
-                          <span className="text-base">🌱</span>
-                          <div className="leading-tight">
-                            <span className="font-bold block">Đăng ký tài khoản Học sinh mới</span>
-                            <span className="text-[11px] text-emerald-700">Tài khoản mới tạo được phân quyền tự động là Học sinh</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold text-emerald-950 block mb-1">
-                            Họ và tên học sinh / Full Name:
-                          </label>
-                          <input 
-                            type="text" 
-                            value={regStudentName} 
-                            onChange={(e) => setRegStudentName(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm"
-                            placeholder="Ví dụ: Nguyễn Văn An"
-                            required
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-xs font-bold text-emerald-950 block mb-1">Lớp / Class:</label>
-                            <select
-                              value={regStudentClass}
-                              onChange={(e) => setRegStudentClass(e.target.value)}
-                              className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm"
-                            >
-                              <option value="3A1">Lớp 3A1 (Khối 3)</option>
-                              <option value="3A2">Lớp 3A2 (Khối 3)</option>
-                              <option value="4A1">Lớp 4A1 (Khối 4)</option>
-                              <option value="4A2">Lớp 4A2 (Khối 4)</option>
-                              <option value="4A3">Lớp 4A3 (Khối 4)</option>
-                              <option value="5A1">Lớp 5A1 (Khối 5)</option>
-                              <option value="5A2">Lớp 5A2 (Khối 5)</option>
-                              <option value="5A3">Lớp 5A3 (Khối 5)</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-emerald-950 block mb-1">Email:</label>
-                            <input 
-                              type="email" 
-                              value={regStudentEmail} 
-                              onChange={(e) => setRegStudentEmail(e.target.value)}
-                              className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm"
-                              placeholder="hocsinh@gmail.com"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold text-emerald-950 block mb-1">
-                            Mật khẩu / Password (tối thiểu 6 ký tự):
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showRegPassword ? "text" : "password"}
-                              value={regStudentPassword}
-                              onChange={(e) => setRegStudentPassword(e.target.value)}
-                              className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm tracking-widest pr-10"
-                              placeholder="Tối thiểu 6 ký tự..."
-                              minLength={6}
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowRegPassword(!showRegPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 hover:text-emerald-900 cursor-pointer"
-                              title={showRegPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                            >
-                              {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                          </div>
-                        </div>
-
-                        {studentLoginError && (
-                          <div className="p-3 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 text-xs font-bold flex items-start gap-2 animate-in fade-in duration-200">
-                            <span className="text-base leading-none shrink-0">⚠️</span>
-                            <span className="leading-snug">{studentLoginError}</span>
-                          </div>
-                        )}
-
-                        <button
-                          type="submit"
-                          disabled={isRegisteringStudent}
-                          className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] active:scale-95 text-white rounded-xl shadow cursor-pointer transition-all mt-1 flex flex-col items-center justify-center leading-tight disabled:opacity-60"
-                        >
-                          <span className="font-black text-sm sm:text-base">
-                            {isRegisteringStudent ? 'Đang tạo tài khoản...' : 'Tạo tài khoản Học sinh & Vào học'}
-                          </span>
-                          <span className="text-[10px] sm:text-[11px] italic font-medium text-emerald-100">
-                            Phân quyền: Học sinh (Role: Student)
-                          </span>
-                        </button>
-
-                        <div className="text-center pt-0.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setStudentAuthMode('login');
-                              setStudentLoginError(null);
-                            }}
-                            className="text-xs font-bold text-emerald-700 hover:text-emerald-950 underline cursor-pointer"
-                          >
-                            Đã có tài khoản? Quay lại Đăng nhập
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </div>
-                )}
-
-                {/* TAB CONTENT: TEACHER / ADMIN */}
-                {loginRoleTab === 'teacher' && (
-                  <form onSubmit={handleTeacherLoginSubmit} className="flex flex-col gap-3 mt-1">
-                    {/* Default Admin Account Card */}
-                    <div className="p-3 bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-emerald-500/20 rounded-2xl border-2 border-amber-400/80 text-amber-950 flex items-start gap-2.5 shadow-2xs">
-                      <div className="w-8 h-8 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center font-black shrink-0 text-sm shadow-2xs">
-                        👑
+                      <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
+                        <span className="text-emerald-700 font-medium">Lớp / Đơn vị:</span>
+                        <span className="font-bold text-emerald-950">{studentClassInput}</span>
                       </div>
-                      <div className="flex flex-col text-xs leading-snug">
-                        <span className="font-black text-amber-950">Tài khoản quản trị mặc định:</span>
-                        <span className="font-mono font-bold text-emerald-950 bg-white/90 px-2 py-0.5 rounded-md border border-amber-300 mt-1 inline-block w-fit text-[11px]">
-                          {ADMIN_EMAIL}
-                        </span>
-                        <span className="text-[10px] text-amber-900 mt-1 italic font-medium">
-                          Chỉ email quản trị này mới được cấp quyền Teacher/Admin. Mọi tài khoản mới khác chỉ có vai trò Học sinh.
+                      <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
+                        <span className="text-emerald-700 font-medium">Vai trò:</span>
+                        <span className="font-bold text-emerald-950">
+                          {userRole === 'teacher' ? 'Giáo viên / Admin' : (isGuestMode ? 'Khách trải nghiệm' : 'Học sinh')}
                         </span>
                       </div>
-                    </div>
-
-                    {/* Google Sign-in for Admin */}
-                    <button
-                      type="button"
-                      onClick={handleGoogleSignIn}
-                      disabled={isSigningInGoogle}
-                      className="w-full py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-800 font-bold border-2 border-slate-200 hover:border-amber-500 rounded-2xl shadow-xs transition-all flex items-center justify-center gap-3 cursor-pointer active:scale-98 disabled:opacity-60"
-                    >
-                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                      </svg>
-                      <div className="flex flex-col text-left leading-tight">
-                        <span className="text-xs sm:text-sm font-black text-slate-800">
-                          {isSigningInGoogle ? 'Đang kết nối Google...' : 'Đăng nhập Google Quản trị'}
-                        </span>
-                        <span className="text-[10px] text-amber-700 font-semibold">Khuyên dùng cho {ADMIN_EMAIL}</span>
-                      </div>
-                    </button>
-
-                    <div className="relative flex py-0.5 items-center">
-                      <div className="flex-grow border-t border-emerald-200"></div>
-                      <span className="flex-shrink mx-2 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
-                        Hoặc nhập Mật khẩu / Email Quản trị
-                      </span>
-                      <div className="flex-grow border-t border-emerald-200"></div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-emerald-950 block mb-1">
-                        Email Quản trị viên / Admin Email:
-                      </label>
-                      <input 
-                        type="email" 
-                        value={teacherLoginEmail} 
-                        onChange={(e) => {
-                          setTeacherLoginEmail(e.target.value);
-                          if (teacherLoginError) setTeacherLoginError(null);
-                        }}
-                        className="w-full px-3.5 py-2.5 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm font-mono"
-                        placeholder="lttdiem2806@gmail.com"
-                        required
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between items-center text-xs font-bold text-emerald-950">
-                        <span>Password / Mật khẩu hoặc Mật mã Quản trị:</span>
-                      </div>
-                      <div className="relative">
-                        <input
-                          type={showTeacherLoginPassword ? "text" : "password"}
-                          value={teacherLoginPassword}
-                          onChange={(e) => {
-                            setTeacherLoginPassword(e.target.value);
-                            setTeacherLoginError(null);
-                          }}
-                          placeholder="Nhập mật khẩu quản trị..."
-                          className="w-full px-3.5 py-2.5 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-sm pr-10"
-                          required
-                          autoComplete={rememberTeacher ? "current-password" : "new-password"}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowTeacherLoginPassword(!showTeacherLoginPassword)}
-                          className="absolute right-3 top-3 text-emerald-700 hover:text-emerald-950 cursor-pointer"
-                        >
-                          {showTeacherLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-
-                      {/* Remember Me Checkbox for Teacher */}
-                      <div className="flex items-center justify-between py-0.5">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                          <input 
-                            type="checkbox" 
-                            checked={rememberTeacher} 
-                            onChange={(e) => setRememberTeacher(e.target.checked)}
-                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-emerald-300 accent-[#15803d] cursor-pointer"
-                          />
-                          <span className="text-xs font-semibold text-emerald-950">Remember me / Ghi nhớ mật khẩu</span>
-                        </label>
-                      </div>
-
-                      {teacherLoginError && (
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 mt-0.5">
-                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span>{teacherLoginError}</span>
+                      {!isGuestMode && userRole === 'student' && (
+                        <div className="flex items-center justify-between pt-0.5">
+                          <span className="text-emerald-700 font-medium">Thành tích:</span>
+                          <div className="flex items-center gap-2 font-black">
+                            <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                              ⚡ {ecoPoints} EP
+                            </span>
+                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                              🌳 {virtualTrees} cây
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
 
+                    {/* Log Out Button */}
+                    <button
+                      type="button"
+                      onClick={handleLogoutAction}
+                      className="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 active:scale-98 text-rose-700 font-extrabold border-2 border-rose-200 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm mt-1"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Log Out / Đăng xuất tài khoản</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* TAB 2: CHANGE PASSWORD */}
+                {profileModalTab === 'password' && (
+                  <form onSubmit={handleChangePasswordSubmit} className="flex flex-col gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-emerald-950 block mb-1">
+                        Mật khẩu mới / New Password:
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        minLength={3}
+                        value={changePassNew}
+                        onChange={(e) => setChangePassNew(e.target.value)}
+                        placeholder="Nhập mật khẩu mới..."
+                        className="w-full px-3.5 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-emerald-950 block mb-1">
+                        Xác nhận mật khẩu mới:
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        minLength={3}
+                        value={changePassConfirm}
+                        onChange={(e) => setChangePassConfirm(e.target.value)}
+                        placeholder="Nhập lại mật khẩu mới..."
+                        className="w-full px-3.5 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm"
+                      />
+                    </div>
+
+                    {changePassMsg && (
+                      <div className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                        changePassMsg.type === 'success' 
+                          ? 'bg-emerald-100 border border-emerald-300 text-emerald-900' 
+                          : 'bg-rose-50 border border-rose-300 text-rose-700'
+                      }`}>
+                        <span>{changePassMsg.type === 'success' ? '✅' : '⚠️'}</span>
+                        <span>{changePassMsg.text}</span>
+                      </div>
+                    )}
+
                     <button
                       type="submit"
-                      disabled={isAuthenticatingTeacher}
-                      className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] active:scale-95 text-white rounded-xl shadow cursor-pointer transition-all flex flex-col items-center justify-center leading-tight mt-1 disabled:opacity-60"
+                      className="w-full py-2.5 px-4 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] active:scale-95 text-white font-extrabold rounded-xl shadow cursor-pointer transition-all text-xs sm:text-sm mt-1"
                     >
-                      <div className="flex items-center gap-2 font-black text-sm sm:text-base">
-                        <Unlock className="w-4 h-4" />
-                        <span>{isAuthenticatingTeacher ? 'Đang xác thực...' : 'Enter Teacher Dashboard'}</span>
-                      </div>
-                      <span className="text-[10px] sm:text-[11px] italic font-medium text-emerald-100">Xác nhận & Mở Quản trị Giáo viên</span>
+                      Cập nhật mật khẩu mới
                     </button>
                   </form>
                 )}
               </div>
+            ) : (
+              /* CASE 2: USER IS NOT LOGGED IN -> SHOW REDESIGNED COMPACT LOGIN MODAL */
+              <div className="flex flex-col gap-3">
+                {/* Notification when triggered by route guard */}
+                {loginPromptNotice && (
+                  <div className="bg-amber-50 border-2 border-amber-400 text-emerald-950 p-2.5 rounded-2xl flex items-center gap-2.5 text-xs shadow-xs shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-amber-400 text-emerald-950 flex items-center justify-center shrink-0 font-black shadow-2xs">
+                      <Lock className="w-4 h-4 text-emerald-950" />
+                    </div>
+                    <div className="flex flex-col leading-snug min-w-0">
+                      <span className="font-black text-xs sm:text-sm text-amber-950 font-display truncate">{loginPromptNotice.en}</span>
+                      <span className="text-[10px] italic font-medium text-amber-900 truncate">{loginPromptNotice.vi}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Title */}
+                <div className="text-center space-y-0.5">
+                  <h3 className="text-lg sm:text-xl font-black text-emerald-950 font-display">Sign In to Eco-Voice</h3>
+                  <p className="text-xs text-emerald-800 font-medium">Đăng nhập tài khoản để học & tích lũy cây xanh 🌿</p>
+                </div>
+
+                {/* METHOD 1: Google Sign-In Button */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isSigningInGoogle}
+                  className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-extrabold border-2 border-slate-200 hover:border-emerald-500 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-2.5 cursor-pointer active:scale-98 disabled:opacity-60 text-xs sm:text-sm"
+                >
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>
+                    {isSigningInGoogle ? 'Đang kết nối Google...' : 'Đăng nhập bằng tài khoản Google'}
+                  </span>
+                </button>
+
+                {/* Sub-mode switcher: Sign In vs Register */}
+                <div className="flex items-center justify-center p-1 bg-emerald-100/70 rounded-xl border border-emerald-200 gap-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStudentAuthMode('login');
+                      setStudentLoginError(null);
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                      studentAuthMode === 'login'
+                        ? 'bg-emerald-800 text-white shadow-2xs'
+                        : 'text-emerald-900 hover:text-emerald-950 font-medium'
+                    }`}
+                  >
+                    Đăng nhập (Sign In)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStudentAuthMode('register');
+                      setStudentLoginError(null);
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                      studentAuthMode === 'register'
+                        ? 'bg-emerald-800 text-white shadow-2xs'
+                        : 'text-emerald-900 hover:text-emerald-950 font-medium'
+                    }`}
+                  >
+                    Đăng ký tài khoản mới
+                  </button>
+                </div>
+
+                {/* METHOD 2: Traditional Login Input Fields */}
+                {studentAuthMode === 'login' ? (
+                  <form onSubmit={handleStudentLoginSubmit} className="flex flex-col gap-2.5">
+                    <div>
+                      <label className="text-xs font-bold text-emerald-950 block mb-1">
+                        Username or Email / Tên đăng nhập:
+                      </label>
+                      <input 
+                        type="text" 
+                        value={loginStudentName} 
+                        onChange={(e) => {
+                          setLoginStudentName(e.target.value);
+                          if (studentLoginError) setStudentLoginError(null);
+                        }}
+                        className="w-full px-3.5 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm"
+                        placeholder="Nhập tên học sinh (VD: Chí Vỹ) hoặc email..."
+                        required
+                        autoComplete={rememberStudent ? "username" : "off"}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-emerald-950 block mb-1">Password / Mật khẩu:</label>
+                      <div className="relative">
+                        <input
+                          type={showStudentPassword ? "text" : "password"}
+                          value={loginStudentPassword}
+                          onChange={(e) => {
+                            setLoginStudentPassword(e.target.value);
+                            if (studentLoginError) setStudentLoginError(null);
+                          }}
+                          className="w-full px-3.5 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm tracking-wider pr-10"
+                          placeholder="Nhập mật khẩu (ví dụ: 123)..."
+                          required
+                          autoComplete={rememberStudent ? "current-password" : "new-password"}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowStudentPassword(!showStudentPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 hover:text-emerald-900 cursor-pointer"
+                          title={showStudentPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                        >
+                          {showStudentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Remember Me Checkbox */}
+                    <div className="flex items-center justify-between py-0.5">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={rememberStudent} 
+                          onChange={(e) => setRememberStudent(e.target.checked)}
+                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-emerald-300 accent-[#15803d] cursor-pointer"
+                        />
+                        <span className="text-xs font-semibold text-emerald-950">Ghi nhớ mật khẩu</span>
+                      </label>
+                    </div>
+
+                    {/* Error Notification */}
+                    {studentLoginError && (
+                      <div className="p-2.5 bg-red-50 border border-red-300 rounded-xl text-red-700 text-xs font-bold flex items-start gap-2 animate-in fade-in duration-200">
+                        <span className="text-base leading-none shrink-0">⚠️</span>
+                        <span className="leading-snug">{studentLoginError}</span>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={isAuthenticatingStudent}
+                      className="w-full py-2.5 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] active:scale-95 text-white font-extrabold rounded-xl shadow cursor-pointer transition-all flex items-center justify-center gap-2 text-xs sm:text-sm disabled:opacity-60 mt-0.5"
+                    >
+                      <span>{isAuthenticatingStudent ? 'Đang xác thực...' : 'Vào học ngay (Start Learning)'}</span>
+                    </button>
+
+                    {/* Guest Mode Option */}
+                    <button
+                      type="button"
+                      onClick={handleGuestLoginAction}
+                      className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100/80 text-emerald-900 border-2 border-dashed border-[#86c898] rounded-xl shadow-2xs cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-95 text-xs font-bold"
+                    >
+                      <span>⚡</span>
+                      <span>Chế độ trải nghiệm (Guest Mode)</span>
+                    </button>
+                  </form>
+                ) : (
+                  /* REGISTRATION FORM */
+                  <form onSubmit={handleStudentRegisterSubmit} className="flex flex-col gap-2.5">
+                    <div>
+                      <label className="text-xs font-bold text-emerald-950 block mb-1">
+                        Họ và tên học sinh / Full Name:
+                      </label>
+                      <input 
+                        type="text" 
+                        value={regStudentName} 
+                        onChange={(e) => setRegStudentName(e.target.value)}
+                        className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm"
+                        placeholder="Ví dụ: Nguyễn Văn An"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-emerald-950 block mb-1">Lớp / Class:</label>
+                        <select
+                          value={regStudentClass}
+                          onChange={(e) => setRegStudentClass(e.target.value)}
+                          className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm"
+                        >
+                          <option value="3A1">Lớp 3A1 (Khối 3)</option>
+                          <option value="3A2">Lớp 3A2 (Khối 3)</option>
+                          <option value="4A1">Lớp 4A1 (Khối 4)</option>
+                          <option value="4A2">Lớp 4A2 (Khối 4)</option>
+                          <option value="4A3">Lớp 4A3 (Khối 4)</option>
+                          <option value="5A1">Lớp 5A1 (Khối 5)</option>
+                          <option value="5A2">Lớp 5A2 (Khối 5)</option>
+                          <option value="5A3">Lớp 5A3 (Khối 5)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-emerald-950 block mb-1">Email:</label>
+                        <input 
+                          type="email" 
+                          value={regStudentEmail} 
+                          onChange={(e) => setRegStudentEmail(e.target.value)}
+                          className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm"
+                          placeholder="hocsinh@gmail.com"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-emerald-950 block mb-1">
+                        Mật khẩu / Password (tối thiểu 6 ký tự):
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showRegPassword ? "text" : "password"}
+                          value={regStudentPassword}
+                          onChange={(e) => setRegStudentPassword(e.target.value)}
+                          className="w-full px-3 py-2 bg-white border-2 border-[#86c898] rounded-xl font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-400 outline-none text-xs sm:text-sm tracking-wider pr-10"
+                          placeholder="Tối thiểu 6 ký tự..."
+                          minLength={6}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRegPassword(!showRegPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 hover:text-emerald-900 cursor-pointer"
+                          title={showRegPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                        >
+                          {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {studentLoginError && (
+                      <div className="p-2.5 bg-red-50 border border-red-300 rounded-xl text-red-700 text-xs font-bold flex items-start gap-2 animate-in fade-in duration-200">
+                        <span className="text-base leading-none shrink-0">⚠️</span>
+                        <span className="leading-snug">{studentLoginError}</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isRegisteringStudent}
+                      className="w-full py-2.5 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] active:scale-95 text-white font-extrabold rounded-xl shadow cursor-pointer transition-all text-xs sm:text-sm disabled:opacity-60 mt-1"
+                    >
+                      {isRegisteringStudent ? 'Đang tạo tài khoản...' : 'Tạo tài khoản Học sinh & Vào học'}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
 
           </div>
         </div>
