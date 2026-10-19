@@ -148,6 +148,8 @@ export interface StudentAccount {
   className: string; // e.g. '3A1'
   grade: string; // '3' | '4' | '5'
   password: string; // e.g. '123456'
+  email?: string;
+  username?: string;
   score: number;
   trees: number;
   ecoPoints?: number;
@@ -1084,35 +1086,55 @@ export function getStudentsByClass(className: string): StudentAccount[] {
 }
 
 /**
- * Strict authentication: checks both student name and password
- * against the roster in Teacher Dashboard / LocalStorage.
+ * Authentication helper: checks student identifier (name, username, email, or ID)
+ * and password against the roster in Teacher Dashboard / LocalStorage.
  */
 export function verifyStudentCredentials(
-  name: string,
+  identifier: string,
   pass: string
 ): { success: boolean; student?: StudentAccount; error?: string } {
-  const defaultError = 'Tên học sinh hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại hoặc liên hệ Giáo viên!';
+  const defaultError = 'Tên đăng nhập / Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại hoặc liên hệ Giáo viên!';
   
-  if (!name || !name.trim() || !pass || !pass.trim()) {
+  if (!identifier || !identifier.trim() || !pass || !pass.trim()) {
     return {
       success: false,
       error: defaultError
     };
   }
 
-  const normalizedInputName = name.trim().toLowerCase().replace(/\s+/g, ' ');
+  const stripAccents = (str: string) =>
+    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+
+  const normalizedInput = identifier.trim().toLowerCase().replace(/\s+/g, ' ');
+  const normalizedNoAccent = stripAccents(normalizedInput);
   const normalizedPass = pass.trim();
 
   const students = getStudentAccounts();
   const matched = students.find(s => {
     const sName = s.name.trim().toLowerCase().replace(/\s+/g, ' ');
-    if (sName !== normalizedInputName) return false;
+    const sNameNoAccent = stripAccents(sName);
+    const sId = (s.id || '').trim().toLowerCase();
+    const sEmail = ((s as any).email || '').trim().toLowerCase();
+    const sUsername = ((s as any).username || '').trim().toLowerCase();
+
+    const matchesIdentifier =
+      sName === normalizedInput ||
+      sNameNoAccent === normalizedNoAccent ||
+      sId === normalizedInput ||
+      sEmail === normalizedInput ||
+      sUsername === normalizedInput;
+
+    if (!matchesIdentifier) return false;
 
     // Check password
     const sPass = (s.password || '').trim();
     if (sPass === normalizedPass) return true;
     // Allow convenient alias between '123' and '123456' for ease of testing
     if ((sPass === '123' && normalizedPass === '123456') || (sPass === '123456' && normalizedPass === '123')) {
+      return true;
+    }
+    // Default fallback for student without explicit password
+    if (!sPass && (normalizedPass === '123' || normalizedPass === '123456')) {
       return true;
     }
     return false;

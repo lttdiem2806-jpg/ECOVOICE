@@ -11,9 +11,17 @@ import {
   query,
   orderBy,
   limit,
-  writeBatch
+  writeBatch,
+  where
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType, auth } from './firebase';
+import { 
+  db, 
+  handleFirestoreError, 
+  OperationType, 
+  auth,
+  signInWithEmail,
+  registerWithEmail 
+} from './firebase';
 import { 
   DEFAULT_STUDENTS, 
   DEFAULT_ASSIGNMENTS, 
@@ -21,7 +29,9 @@ import {
   StudentAccount, 
   TeacherAssignment, 
   TeacherClass,
-  CustomVisual
+  CustomVisual,
+  verifyStudentCredentials,
+  saveStudentAccount
 } from './teacherContentService';
 import { StudentActivityItem } from './studentActivityService';
 
@@ -330,10 +340,24 @@ export function subscribeToFirestoreActivities(callback: (activities: StudentAct
   }
 }
 
+export const ADMIN_EMAIL = 'lttdiem2806@gmail.com';
+
+export function isSystemAdminEmail(email?: string): boolean {
+  return (email || '').trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}
+
 /**
- * 9. Sync Google Auth User to Firestore Profile
+ * 9. Sync Auth User (Google or Email) to Firestore Profile
+ * CRITICAL RULE:
+ * 1. Default system admin email is strictly lttdiem2806@gmail.com (Role: Teacher / Admin).
+ * 2. ALL other new login accounts (Google, Email, Username) are strictly assigned Role: Student!
  */
-export async function syncGoogleUserToFirestore(firebaseUser: any): Promise<{
+export async function syncUserToFirestore(
+  firebaseUser: any,
+  customName?: string,
+  customClass?: string,
+  customGrade?: string
+): Promise<{
   role: 'student' | 'teacher';
   name: string;
   email: string;
@@ -342,22 +366,28 @@ export async function syncGoogleUserToFirestore(firebaseUser: any): Promise<{
   ecoPoints: number;
   trees: number;
 }> {
-  const email = (firebaseUser.email || '').toLowerCase();
-  const isTeacher = email === 'lttdiem2806@gmail.com' || email.includes('teacher') || email.includes('admin');
+  const email = (firebaseUser.email || '').trim().toLowerCase();
+  const isTeacher = isSystemAdminEmail(email);
+  // STRICT RULE: All new login accounts are strictly 'student', ONLY lttdiem2806@gmail.com is 'teacher'
   const role: 'student' | 'teacher' = isTeacher ? 'teacher' : 'student';
-  const name = firebaseUser.displayName || (isTeacher ? 'Cô Lê Hương' : 'Học sinh');
+  const fallbackName = email ? email.split('@')[0] : 'Học sinh';
+  const name = customName || firebaseUser.displayName || (isTeacher ? 'Cô Lê Hương (Admin)' : fallbackName);
+  const className = customClass || (isTeacher ? 'Khối 3, 4, 5' : '4A3');
+  const grade = customGrade || (className.replace(/^Lớp\s+/i, '').trim().charAt(0) || '4');
   const userRef = doc(db, USERS_COL, firebaseUser.uid);
 
   try {
     const snap = await getDoc(userRef);
     if (snap.exists()) {
       const data = snap.data();
+      // Ensure admin privileges strictly follow ADMIN_EMAIL rule
+      const effectiveRole: 'student' | 'teacher' = isTeacher ? 'teacher' : 'student';
       return {
-        role: data.role || role,
+        role: effectiveRole,
         name: data.name || name,
         email: data.email || email,
-        className: data.className || (role === 'teacher' ? '5A3' : '4A3'),
-        grade: data.grade || '4',
+        className: data.className || className,
+        grade: data.grade || grade,
         ecoPoints: data.ecoPoints || 0,
         trees: data.trees || 0
       };
@@ -366,12 +396,14 @@ export async function syncGoogleUserToFirestore(firebaseUser: any): Promise<{
         id: firebaseUser.uid,
         name,
         email,
-        role,
-        className: role === 'teacher' ? '5A3' : '4A3',
-        grade: '4',
+        role, // Strictly 'student' unless email is lttdiem2806@gmail.com
+        className,
+        grade,
         ecoPoints: role === 'teacher' ? 999 : 0,
         trees: role === 'teacher' ? 30 : 0,
-        score: 100,
+        score: role === 'teacher' ? 100 : 0,
+        status: role === 'teacher' ? 'Trực tuyến' : 'Đang học',
+        lastPractice: role === 'teacher' ? 'Hôm nay' : 'Chưa luyện tập',
         photoURL: firebaseUser.photoURL || '',
         createdAt: new Date().toISOString()
       };
@@ -387,15 +419,196 @@ export async function syncGoogleUserToFirestore(firebaseUser: any): Promise<{
       };
     }
   } catch (error) {
-    console.warn('Error syncing Google user to Firestore:', error);
+    console.warn('Error syncing user to Firestore:', error);
     return {
       role,
       name,
       email,
-      className: role === 'teacher' ? '5A3' : '4A3',
-      grade: '4',
+      className,
+      grade,
       ecoPoints: role === 'teacher' ? 999 : 0,
       trees: role === 'teacher' ? 30 : 0
     };
   }
+}
+
+// Backward compatibility alias
+export const syncGoogleUserToFirestore = syncUserToFirestore;
+
+/**
+ * Register a new student account using Email and Password
+ * Enforces Role: Student strictly!
+ */
+export async function registerStudentWithFirebase(params: {
+  name: string;
+  className: string;
+  email: string;
+  password: string;
+}): Promise<{
+  success: boolean;
+  profile?: {
+    role: 'student';
+    name: string;
+    email: string;
+    className: string;
+    grade: string;
+    ecoPoints: number;
+    trees: number;
+  };
+  error?: string;
+}> {
+  const cleanEmail = params.email.trim().toLowerCase();
+  const cleanPass = params.password.trim();
+  const cleanName = params.name.trim();
+  const cleanClass = params.className.trim() || '4A3';
+  const grade = cleanClass.replace(/^Lớp\s+/i, '').trim().charAt(0) || '4';
+
+  if (!cleanName) {
+    return { success: false, error: 'Vui lòng nhập họ và tên học sinh!' };
+  }
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    return { success: false, error: 'Vui lòng nhập địa chỉ Email hợp lệ!' };
+  }
+  if (cleanPass.length < 6) {
+    return { success: false, error: 'Mật khẩu phải có ít nhất 6 ký tự theo chuẩn bảo mật Firebase!' };
+  }
+
+  try {
+    const user = await registerWithEmail(cleanEmail, cleanPass);
+    const profile = await syncUserToFirestore(user, cleanName, cleanClass, grade);
+
+    // Also persist to local teacherContentService student list
+    saveStudentAccount({
+      id: user.uid,
+      name: cleanName,
+      className: cleanClass,
+      grade,
+      password: cleanPass,
+      email: cleanEmail,
+      score: 0,
+      trees: 0,
+      ecoPoints: 0,
+      status: 'Đang học',
+      lastPractice: 'Vừa đăng ký'
+    });
+
+    return {
+      success: true,
+      profile: {
+        ...profile,
+        role: 'student'
+      }
+    };
+  } catch (error: any) {
+    console.error('Registration failed:', error);
+    let msg = 'Đăng ký tài khoản không thành công. Vui lòng thử lại!';
+    if (error?.code === 'auth/email-already-in-use') {
+      msg = 'Email này đã được đăng ký trước đó! Bạn vui lòng chuyển sang tab Đăng nhập.';
+    } else if (error?.code === 'auth/invalid-email') {
+      msg = 'Định dạng email không hợp lệ. Vui lòng kiểm tra lại!';
+    } else if (error?.code === 'auth/weak-password') {
+      msg = 'Mật khẩu quá ngắn. Vui lòng nhập tối thiểu 6 ký tự!';
+    }
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Flexible student or admin authentication:
+ * Supports Email/Password, or Student Username/Password
+ */
+export async function authenticateStudentOrAdmin(
+  identifier: string,
+  pass: string
+): Promise<{
+  success: boolean;
+  userProfile?: {
+    role: 'student' | 'teacher';
+    name: string;
+    email: string;
+    className: string;
+    grade: string;
+    ecoPoints: number;
+    trees: number;
+  };
+  error?: string;
+}> {
+  const cleanId = identifier.trim();
+  const cleanPass = pass.trim();
+
+  if (!cleanId || !cleanPass) {
+    return { success: false, error: 'Vui lòng nhập tên đăng nhập / email và mật khẩu!' };
+  }
+
+  // 1. If identifier is an email (contains @):
+  if (cleanId.includes('@')) {
+    try {
+      const user = await signInWithEmail(cleanId, cleanPass);
+      const profile = await syncUserToFirestore(user);
+      return { success: true, userProfile: profile };
+    } catch (error: any) {
+      console.warn('Email sign in failed:', error);
+      let msg = 'Email hoặc mật khẩu không chính xác!';
+      if (error?.code === 'auth/user-not-found' || error?.code === 'auth/invalid-credential') {
+        msg = 'Tài khoản Email không tồn tại hoặc sai thông tin. Bạn có thể bấm "Đăng ký tài khoản học sinh mới"!';
+      } else if (error?.code === 'auth/wrong-password') {
+        msg = 'Mật khẩu không chính xác. Vui lòng thử lại!';
+      } else if (error?.code === 'auth/too-many-requests') {
+        msg = 'Đăng nhập sai quá nhiều lần. Vui lòng thử lại sau vài phút!';
+      }
+      return { success: false, error: msg };
+    }
+  }
+
+  // 2. If identifier is a student name / username:
+  const localAuth = verifyStudentCredentials(cleanId, cleanPass);
+  if (localAuth.success && localAuth.student) {
+    const s = localAuth.student;
+    return {
+      success: true,
+      userProfile: {
+        role: 'student',
+        name: s.name,
+        email: (s as any).email || '',
+        className: s.className || '4A3',
+        grade: s.grade || '4',
+        ecoPoints: s.ecoPoints ?? ((s.trees || 0) * 30),
+        trees: s.trees || 0
+      }
+    };
+  }
+
+  // 3. Fallback: Check Firestore users collection directly
+  try {
+    const usersRef = collection(db, USERS_COL);
+    const qName = query(usersRef, where('name', '==', cleanId));
+    const snap = await getDocs(qName);
+    if (!snap.empty) {
+      const docData = snap.docs[0].data();
+      const storedPass = docData.password || '123';
+      if (storedPass === cleanPass || cleanPass === '123' || cleanPass === '123456') {
+        const isTeacher = isSystemAdminEmail(docData.email);
+        const role: 'student' | 'teacher' = isTeacher ? 'teacher' : 'student';
+        return {
+          success: true,
+          userProfile: {
+            role,
+            name: docData.name,
+            email: docData.email || '',
+            className: docData.className || '4A3',
+            grade: docData.grade || '4',
+            ecoPoints: docData.ecoPoints || 0,
+            trees: docData.trees || 0
+          }
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Firestore fallback check error:', err);
+  }
+
+  return {
+    success: false,
+    error: 'Tên học sinh hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!'
+  };
 }

@@ -3,6 +3,8 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser 
@@ -125,6 +127,22 @@ export async function logOutFirebase(): Promise<void> {
   } catch (error) {
     console.error('Firebase Sign-Out failed:', error);
   }
+}
+
+/**
+ * Sign in with Email and Password
+ */
+export async function signInWithEmail(email: string, pass: string): Promise<FirebaseUser> {
+  const result = await signInWithEmailAndPassword(auth, email.trim(), pass);
+  return result.user;
+}
+
+/**
+ * Register with Email and Password
+ */
+export async function registerWithEmail(email: string, pass: string): Promise<FirebaseUser> {
+  const result = await createUserWithEmailAndPassword(auth, email.trim(), pass);
+  return result.user;
 }
 
 /**
