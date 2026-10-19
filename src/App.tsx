@@ -2435,29 +2435,25 @@ export default function App() {
                 setLoginPromptNotice(null);
                 setActiveModal('login');
               }}
-              className="flex items-center gap-1.5 sm:gap-2 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full hover:bg-emerald-100/60 transition-colors cursor-pointer shrink-0 border border-emerald-200/60"
-              title="Thông tin tài khoản & Chuyển đổi vai trò"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-white/70 hover:bg-emerald-100/80 transition-all cursor-pointer shrink-0 border border-emerald-300/80 shadow-2xs"
+              title="Thông tin tài khoản & Quản lý"
             >
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-200 border border-white overflow-hidden flex items-center justify-center text-xs sm:text-base shadow-sm shrink-0">
-                {userRole === 'teacher' ? '👩‍🏫' : (isGuestMode || userRole === 'guest' || !isLoggedIn ? '🌟' : '👧')}
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-100 border border-emerald-300 overflow-hidden flex items-center justify-center text-xs sm:text-base shadow-2xs shrink-0">
+                {userRole === 'teacher' ? '👩‍🏫' : '👧'}
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-emerald-950 text-xs sm:text-sm whitespace-nowrap">
-                  {userRole === 'teacher' 
-                    ? 'Thầy/Cô' 
-                    : (isGuestMode || userRole === 'guest' || !isLoggedIn 
-                        ? 'Khách trải nghiệm / Visitor' 
-                        : (userName || 'Khách trải nghiệm / Visitor'))}
+              <div className="flex flex-col leading-tight">
+                <span className="font-extrabold text-emerald-950 text-xs sm:text-sm whitespace-nowrap font-display">
+                  {isLoggedIn && !isGuestMode && userName
+                    ? `Hello, ${userName}!`
+                    : 'Hello!'}
                 </span>
-                <span className="text-[9px] font-black uppercase text-emerald-700 tracking-wider">
-                  {userRole === 'teacher' 
-                    ? 'GV ADMIN' 
-                    : (isGuestMode || userRole === 'guest' || !isLoggedIn 
-                        ? 'DEMO USER' 
-                        : 'HỌC SINH')}
-                </span>
+                {isLoggedIn && !isGuestMode && (
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase text-emerald-700 tracking-wider leading-none mt-0.5">
+                    {userRole === 'teacher' ? 'GV ADMIN' : 'HỌC SINH'}
+                  </span>
+                )}
               </div>
-              <span className="text-[10px] sm:text-xs text-emerald-600 font-bold">▾</span>
+              <span className="text-[10px] sm:text-xs text-emerald-600 font-bold ml-0.5">▾</span>
             </div>
 
             <div className="hidden sm:block h-4 sm:h-5 w-[1.5px] bg-[#86c898]/70 shrink-0" />
