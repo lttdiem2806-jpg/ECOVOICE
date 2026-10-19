@@ -63,10 +63,13 @@ export function sanitizeDocId(name: string): string {
  */
 export function sanitizeForFirestore<T extends Record<string, any>>(obj: T): T {
   if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeForFirestore(item)) as unknown as T;
+  }
   const clean: Record<string, any> = {};
   for (const [key, val] of Object.entries(obj)) {
     if (val !== undefined) {
-      if (val !== null && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {
+      if (val !== null && typeof val === 'object' && !(val instanceof Date)) {
         clean[key] = sanitizeForFirestore(val);
       } else {
         clean[key] = val;
@@ -566,7 +569,7 @@ export function subscribeToFirestoreCustomVisuals(callback: (visuals: Record<str
  * 19. Save Custom Unit to Firestore
  */
 export async function saveCustomUnitToFirestore(grade: string, unit: any): Promise<void> {
-  const docId = `${grade}_${unit.unitKey}`;
+  const docId = sanitizeDocId(`${grade}_${unit.unitKey}`);
   const cleanUnit = sanitizeForFirestore({
     ...unit,
     grade,
@@ -584,7 +587,7 @@ export async function saveCustomUnitToFirestore(grade: string, unit: any): Promi
  * 20. Delete Custom Unit from Firestore
  */
 export async function deleteCustomUnitFromFirestore(grade: string, unitKey: string): Promise<void> {
-  const docId = `${grade}_${unitKey}`;
+  const docId = sanitizeDocId(`${grade}_${unitKey}`);
   const ref = doc(db, UNITS_COL, docId);
   try {
     await deleteDoc(ref);

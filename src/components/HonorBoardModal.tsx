@@ -206,14 +206,16 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleExport}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white font-bold text-xs shadow-xs cursor-pointer transition-all border border-emerald-600"
-              title="Xuất bảng xếp hạng ra file Excel"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Xuất Excel</span>
-            </button>
+            {isTeacher && (
+              <button
+                onClick={handleExport}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white font-bold text-xs shadow-xs cursor-pointer transition-all border border-emerald-600"
+                title="Xuất bảng xếp hạng ra file Excel"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Xuất Excel</span>
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -664,13 +666,15 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
             <span>Mỗi 30 Eco Points (EP) sẽ giúp bạn trồng thêm 1 cây xanh cho lớp và trường học!</span>
           </div>
 
-          <button
-            onClick={handleExport}
-            className="sm:hidden flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-800 text-white font-bold text-xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Xuất Excel</span>
-          </button>
+          {isTeacher && (
+            <button
+              onClick={handleExport}
+              className="sm:hidden flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-800 text-white font-bold text-xs"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Xuất Excel</span>
+            </button>
+          )}
         </div>
 
       </div>
