@@ -1697,11 +1697,16 @@ export function getUnitsForGrade(grade: string): any[] {
     const custom = customStore[key];
     if (custom) {
       if (custom.isDeleted) return; // Hidden/Deleted
-      merged.push({
-        ...bu,
-        ...custom,
-        unitKey: bu.unitKey
-      });
+      if (custom.unitName === 'abc' || custom.unitName === 'Custom Unit' || (bu.unitKey === 'unit_12' && custom.unitName !== 'Jobs')) {
+        // Ignore corrupted custom override for base unit
+        merged.push(bu);
+      } else {
+        merged.push({
+          ...bu,
+          ...custom,
+          unitKey: bu.unitKey
+        });
+      }
     } else {
       merged.push(bu);
     }

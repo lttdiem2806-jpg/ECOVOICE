@@ -606,11 +606,32 @@ export function subscribeToFirestoreCustomUnits(callback: (unitsMap: Record<stri
       (snapshot) => {
         const map: Record<string, any> = {};
         snapshot.forEach((docSnap) => {
-          map[docSnap.id] = docSnap.data();
+          const data = docSnap.data();
+          // Cleanup test/corrupted unit overrides such as 'abc'
+          if (data && (data.unitName === 'abc' || data.unitName === 'Custom Unit' || (data.unitKey === 'unit_12' && data.unitName !== 'Jobs'))) {
+            try {
+              deleteDoc(docSnap.ref);
+            } catch (e) {
+              console.warn('Failed to delete corrupted unit doc:', e);
+            }
+            return;
+          }
+          map[docSnap.id] = data;
         });
         try {
           if (typeof window !== 'undefined') {
-            localStorage.setItem('ecovoice_custom_units', JSON.stringify(map));
+            // Also clean up local storage corrupted keys
+            const raw = localStorage.getItem('ecovoice_custom_units');
+            if (raw) {
+              const localMap = JSON.parse(raw);
+              delete localMap['3_unit_12'];
+              delete localMap['unit_12'];
+              delete localMap['3_abc'];
+              delete localMap['abc'];
+              localStorage.setItem('ecovoice_custom_units', JSON.stringify({ ...localMap, ...map }));
+            } else {
+              localStorage.setItem('ecovoice_custom_units', JSON.stringify(map));
+            }
             window.dispatchEvent(new CustomEvent('ecovoice_custom_units_updated', { detail: { units: map } }));
           }
         } catch {}
