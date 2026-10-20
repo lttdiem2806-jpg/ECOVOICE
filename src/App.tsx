@@ -2498,7 +2498,7 @@ export default function App() {
                     {userRole === 'teacher' 
                       ? 'GV ADMIN' 
                       : (isOfficialStudentAccount(userName, userRole)
-                          ? 'HỌC SINH'
+                          ? 'STUDENT'
                           : (userName && !isGuestUser(userName) ? 'GOOGLE USER' : 'DEMO USER'))}
                   </span>
                 )}
@@ -2544,7 +2544,7 @@ export default function App() {
                   ? (userRole === 'teacher' 
                       ? 'Giáo viên' 
                       : (isOfficialStudentAccount(userName, userRole)
-                          ? 'Học sinh'
+                          ? 'STUDENT'
                           : (userName && !isGuestUser(userName) ? 'Google User' : 'Guest'))) 
                   : 'Log in'}
               </span>
@@ -4405,7 +4405,7 @@ export default function App() {
                       {userRole === 'teacher' 
                         ? 'Giáo viên / Quản trị viên' 
                         : (isOfficialStudentAccount(userName, userRole)
-                            ? 'Học sinh chính thức'
+                            ? 'STUDENT (Học sinh chính thức)'
                             : (userName && !isGuestUser(userName) 
                                 ? 'Google User' 
                                 : 'Khách trải nghiệm'))}
@@ -4471,7 +4471,7 @@ export default function App() {
                           {userRole === 'teacher' 
                             ? 'Giáo viên / Admin' 
                             : (isOfficialStudentAccount(userName, userRole)
-                                ? 'Học sinh (Tài khoản lớp học)'
+                                ? 'STUDENT (Tài khoản lớp học)'
                                 : (userName && !isGuestUser(userName) 
                                     ? 'Google User (Tài khoản Google)' 
                                     : 'Khách trải nghiệm'))}
