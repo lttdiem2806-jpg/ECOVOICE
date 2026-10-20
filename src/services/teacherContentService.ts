@@ -2,7 +2,7 @@
 // Provides LocalStorage persistence and event synchronization for custom illustrations,
 // class management, assignments, and unit access permissions.
 import { bookmapDatabase } from '../data/bookmapData';
-import { getStudentPracticedWords, getStudentPracticedSentences } from './studentActivityService';
+import { getStudentPracticedWords, getStudentPracticedSentences, isGuestUser } from './studentActivityService';
 import { 
   saveAssignmentToFirestore, 
   deleteAssignmentFromFirestore, 
@@ -1540,7 +1540,10 @@ export function isUnitUnlockedForGrade(grade: string, unitKey: string, userName?
     const effectiveName = userName || localStorage.getItem('ecovoice_user_name') || '';
 
     // Teacher and Guest/Demo Mode / Google Users have full 100% unlocked access to all units
+    const provider = localStorage.getItem('ecovoice_auth_provider') || sessionStorage.getItem('ecovoice_auth_provider');
     const isGuest = isGuestUser(effectiveName) || 
+                    provider === 'google' ||
+                    provider === 'guest' ||
                     localStorage.getItem('ecovoice_is_guest_mode') === 'true' || 
                     sessionStorage.getItem('ecovoice_is_guest_mode') === 'true' ||
                     role === 'guest';

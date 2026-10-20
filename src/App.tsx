@@ -2430,11 +2430,11 @@ export default function App() {
                   <path d="M8 18 C4 22 4 28 10 30 C16 28 16 22 12 18 C10 22 9 22 8 18 Z" fill="#15803d" />
                 </svg>
               </div>
-              <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+              <div className="flex items-baseline gap-1.5 sm:gap-2 flex-nowrap shrink-0">
                 <span className="text-xl sm:text-2xl lg:text-[26px] font-black tracking-tight text-emerald-950 font-display whitespace-nowrap">
                   ECO<span className="text-emerald-700">-VOICE</span>
                 </span>
-                <span className="text-xs sm:text-sm md:text-base lg:text-[17px] font-extrabold text-emerald-800 font-sans whitespace-nowrap">
+                <span className="text-[11px] sm:text-sm md:text-[15px] lg:text-[17px] font-extrabold text-emerald-800 font-sans whitespace-nowrap tracking-tight">
                   (AI Pronunciation and Eco-Learning Companion)
                 </span>
               </div>
@@ -4145,9 +4145,9 @@ export default function App() {
                       <path d="M8 18 C4 22 4 28 10 30 C16 28 16 22 12 18 C10 22 9 22 8 18 Z" fill="#15803d" />
                     </svg>
                   </div>
-                  <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
-                    <span className="font-black text-lg text-emerald-50 font-display">ECO-VOICE</span>
-                    <span className="text-xs sm:text-sm text-emerald-200 font-extrabold tracking-tight">
+                  <div className="flex items-baseline gap-1.5 flex-nowrap min-w-0">
+                    <span className="font-black text-base sm:text-lg text-emerald-50 font-display whitespace-nowrap">ECO-VOICE</span>
+                    <span className="text-[10px] sm:text-xs text-emerald-200 font-extrabold tracking-tight whitespace-nowrap">
                       (AI Pronunciation and Eco-Learning Companion)
                     </span>
                   </div>

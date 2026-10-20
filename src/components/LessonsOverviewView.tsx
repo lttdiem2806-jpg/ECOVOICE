@@ -176,8 +176,6 @@ export const LessonsOverviewView: React.FC<LessonsOverviewViewProps> = ({
               <div className="flex items-center gap-1.5 p-1 bg-emerald-100/70 rounded-2xl border border-emerald-200">
                 {(['3', '4', '5'] as const).map(g => {
                   const isSelected = selectedGrade === g;
-                  // ONLY official form-authenticated students (not teacher, not guest mode, not Google User / demo user) show 'My Class / Lớp em'
-                  const isMyClassGrade = !isTeacher && !isGuestMode && userRole !== 'guest' && !isGuestUser(studentName) && studentRegisteredGrade === g;
                   return (
                     <button
                       key={g}
@@ -193,13 +191,6 @@ export const LessonsOverviewView: React.FC<LessonsOverviewViewProps> = ({
                       }`}
                     >
                       <span>Grade {g}</span>
-                      {isMyClassGrade && (
-                        <span className={`text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-black leading-none ${
-                          isSelected ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-200 text-emerald-900'
-                        }`}>
-                          My Class / Lớp em
-                        </span>
-                      )}
                     </button>
                   );
                 })}
