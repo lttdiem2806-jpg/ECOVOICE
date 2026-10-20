@@ -113,12 +113,17 @@ export async function signInWithGoogle(): Promise<FirebaseUser | null> {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error: any) {
-    if (
+    const isCancelled =
       error?.code === 'auth/popup-closed-by-user' ||
       error?.code === 'auth/cancelled-popup-request' ||
-      error?.message?.includes('popup-closed-by-user')
-    ) {
-      console.info('Google Sign-In popup closed by user.');
+      error?.code === 'auth/user-cancelled' ||
+      error?.message?.includes('popup-closed-by-user') ||
+      error?.message?.includes('user-cancelled') ||
+      error?.message?.includes('IdP denied access') ||
+      error?.message?.includes('user refuses to grant permission');
+
+    if (isCancelled) {
+      console.info('Google Sign-In popup or permission cancelled by user.');
       return null;
     }
     console.error('Google Sign-In failed:', error);

@@ -596,8 +596,8 @@ export default function App() {
         const profile = await syncGoogleUserToFirestore(user);
         setIsLoggedIn(true);
         setUserRole(profile.role);
-        setCurrentUserRole(profile.role);
-        setUserName(profile.name);
+        const displayName = profile.name || user.displayName || user.email || 'Student';
+        setUserName(displayName);
         setIsGuestMode(false);
         setStudentClassInput(profile.className);
         setEcoPoints(profile.ecoPoints);
@@ -635,10 +635,14 @@ export default function App() {
       const isPopupClosed = 
         error?.code === 'auth/popup-closed-by-user' ||
         error?.code === 'auth/cancelled-popup-request' ||
-        error?.message?.includes('popup-closed-by-user');
+        error?.code === 'auth/user-cancelled' ||
+        error?.message?.includes('popup-closed-by-user') ||
+        error?.message?.includes('user-cancelled') ||
+        error?.message?.includes('IdP denied access') ||
+        error?.message?.includes('user refuses to grant permission');
 
       if (isPopupClosed) {
-        console.info('Google Sign-In popup closed by user.');
+        console.info('Google Sign-In popup or permission cancelled by user.');
       } else {
         console.error('Google Sign-In Error:', error);
         const msg = 'Không thể đăng nhập bằng Google lúc này. Vui lòng thử lại hoặc đăng nhập bằng tài khoản lớp!';
@@ -949,14 +953,17 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const storedRole = localStorage.getItem('ecovoice_user_role');
       if (storedRole === 'teacher') return false;
-      const hasLoginFlag = localStorage.getItem('ecovoice_is_logged_in') === 'true';
-      const storedName = localStorage.getItem('ecovoice_user_name') || '';
+      const hasLoginFlag = localStorage.getItem('ecovoice_is_logged_in') === 'true' || sessionStorage.getItem('ecovoice_is_logged_in') === 'true';
+      const storedName = localStorage.getItem('ecovoice_user_name') || sessionStorage.getItem('ecovoice_user_name') || '';
       if (hasLoginFlag && storedRole === 'student' && !isGuestUser(storedName)) {
         return false;
       }
-      return true;
+      if (hasLoginFlag && (storedRole === 'guest' || sessionStorage.getItem('ecovoice_is_guest_mode') === 'true')) {
+        return true;
+      }
+      return false;
     }
-    return true;
+    return false;
   });
   const [studentClassInput, setStudentClassInput] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -2445,6 +2452,8 @@ export default function App() {
                 <span className="font-extrabold text-emerald-950 text-xs sm:text-sm whitespace-nowrap font-display">
                   {isLoggedIn && !isGuestMode && userName
                     ? `Hello, ${userName}!`
+                    : isLoggedIn && isGuestMode
+                    ? 'Hello, visitor!'
                     : 'Hello!'}
                 </span>
                 {isLoggedIn && !isGuestMode && (
