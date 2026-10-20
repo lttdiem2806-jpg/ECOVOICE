@@ -38,7 +38,8 @@ import {
   LogIn,
   Trophy,
   Layers,
-  ArrowRight
+  ArrowRight,
+  LayoutDashboard
 } from 'lucide-react';
 import bgImage from './assets/images/eco_forest_background_1791867767218.jpg';
 import { 
@@ -2814,8 +2815,33 @@ export default function App() {
             </button>
           </div>
 
-          {/* Bottom Controls: Settings */}
+          {/* Bottom Controls: Teacher Dashboard (for Teacher/Admin) & Settings */}
           <div className="flex flex-col gap-1 w-full border-t border-[#297a4d] pt-2.5 mt-2">
+            {(userRole === 'teacher' || isTeacherUnlocked()) && (
+              <button
+                onClick={() => {
+                  playSoundEffect('click');
+                  setShowTeacherDashboard(true);
+                  setActiveModal(null);
+                }}
+                title="Mở cổng Quản trị Giáo viên (Teacher Dashboard & Admin Portal)"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl w-full text-left transition-all cursor-pointer text-emerald-50 hover:bg-[#287b4d] hover:text-white group relative"
+              >
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1b6b3e] to-[#0d4628] text-amber-300 flex items-center justify-center shrink-0 border border-emerald-500/50 shadow-xs group-hover:scale-105 transition-transform">
+                  <LayoutDashboard className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col leading-tight min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm text-amber-200 group-hover:text-white transition-colors">Teacher Dashboard</span>
+                    <span className="text-[9px] bg-amber-400 text-emerald-950 font-black px-1.5 py-0.2 rounded-full uppercase shrink-0">
+                      Admin
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-emerald-200/90 font-medium">Quản trị Giáo viên</span>
+                </div>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 playSoundEffect('click');
@@ -4347,8 +4373,34 @@ export default function App() {
               </button>
             </div>
 
-            {/* Bottom Controls: Settings */}
+            {/* Bottom Controls: Teacher Dashboard (for Teacher/Admin) & Settings */}
             <div className="flex flex-col gap-1 w-full border-t border-[#297a4d] pt-2 mt-2">
+              {(userRole === 'teacher' || isTeacherUnlocked()) && (
+                <button
+                  onClick={() => {
+                    playSoundEffect('click');
+                    setShowTeacherDashboard(true);
+                    setActiveModal(null);
+                    setMobileMenuOpen(false);
+                  }}
+                  title="Mở cổng Quản trị Giáo viên (Teacher Dashboard & Admin Portal)"
+                  className="flex items-center gap-2.5 p-2 rounded-2xl w-full text-left hover:bg-[#287b4d] text-emerald-50 transition-colors cursor-pointer group"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1b6b3e] to-[#0d4628] text-amber-300 flex items-center justify-center shrink-0 border border-emerald-500/50 shadow-xs">
+                    <LayoutDashboard className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col leading-tight min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-sm text-amber-200 group-hover:text-white">Teacher Dashboard</span>
+                      <span className="text-[9px] bg-amber-400 text-emerald-950 font-black px-1.5 py-0.2 rounded-full uppercase shrink-0">
+                        Admin
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-emerald-200/90">Quản trị Giáo viên</span>
+                  </div>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   playSoundEffect('click');
