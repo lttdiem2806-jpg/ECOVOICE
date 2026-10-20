@@ -530,11 +530,16 @@ export default function App() {
           setIsLoggedIn(true);
           setUserRole(profile.role);
           setCurrentUserRole(profile.role);
-          setUserName(profile.name);
-          setIsGuestMode(false);
+          const displayName = profile.name || firebaseUser.displayName || firebaseUser.email || 'Student';
+          setUserName(displayName);
           setStudentClassInput(profile.className);
           if (profile.role === 'teacher') {
+            setIsGuestMode(false);
             setTeacherUnlocked(true);
+          } else {
+            // CASE C: Google Sign-In strictly routes to Guest/Demo Mode interface
+            setIsGuestMode(true);
+            setTeacherUnlocked(false);
           }
         } catch (e) {
           console.warn('Auth state sync error:', e);
@@ -604,19 +609,21 @@ export default function App() {
         setVirtualTrees(profile.trees);
 
         if (profile.role === 'teacher') {
+          setIsGuestMode(false);
           setTeacherUnlocked(true);
           setShowTeacherDashboard(true);
           localStorage.setItem('ecovoice_user_role', 'teacher');
           localStorage.setItem('ecovoice_is_logged_in', 'true');
-          localStorage.setItem('ecovoice_user_name', profile.name);
-          setMascotBubble(`Xin chào Quản trị viên (${user.email || profile.name})! Chúc Thầy/Cô một buổi dạy thật hứng khởi cùng các em học sinh! 👩‍🏫🌿`);
+          localStorage.setItem('ecovoice_user_name', displayName);
+          setMascotBubble(`Xin chào Quản trị viên (${user.email || displayName})! Chúc Thầy/Cô một buổi dạy thật hứng khởi cùng các em học sinh! 👩‍🏫🌿`);
         } else {
-          // STRICT ENFORCEMENT: All new login accounts are assigned strictly role 'student'
+          // LUỒNG 2: Google Sign-In -> Routes into Guest Mode / Demo Interface
+          setIsGuestMode(true);
           setTeacherUnlocked(false);
           setShowTeacherDashboard(false);
           localStorage.setItem('ecovoice_user_role', 'student');
           localStorage.setItem('ecovoice_is_logged_in', 'true');
-          localStorage.setItem('ecovoice_user_name', profile.name);
+          localStorage.setItem('ecovoice_user_name', displayName);
           localStorage.setItem('ecovoice_student_class', profile.className);
 
           const sGrade = profile.grade || profile.className?.replace(/^Lớp\s+/i, '').trim().charAt(0) || '4';
@@ -625,7 +632,7 @@ export default function App() {
             localStorage.setItem('ecovoice_selected_grade', sGrade);
           }
 
-          setMascotBubble(`Chào mừng ${profile.name}! Cùng học tiếng Anh và vun trồng vườn cây sinh thái nhé! 🌟🌱`);
+          setMascotBubble(`Chào mừng ${displayName}! Mời bạn trải nghiệm các bài học mẫu & tính năng Luyện nói AI cùng Eco-Voice nhé! 🌟🌱`);
         }
 
         setLoginPromptNotice(null);
@@ -2450,15 +2457,17 @@ export default function App() {
               </div>
               <div className="flex flex-col leading-tight">
                 <span className="font-extrabold text-emerald-950 text-xs sm:text-sm whitespace-nowrap font-display">
-                  {isLoggedIn && !isGuestMode && userName
+                  {isLoggedIn && userName && !isGuestUser(userName)
                     ? `Hello, ${userName}!`
                     : isLoggedIn && isGuestMode
                     ? 'Hello, visitor!'
                     : 'Hello!'}
                 </span>
-                {isLoggedIn && !isGuestMode && (
+                {isLoggedIn && (
                   <span className="text-[9px] sm:text-[10px] font-black uppercase text-emerald-700 tracking-wider leading-none mt-0.5">
-                    {userRole === 'teacher' ? 'GV ADMIN' : 'HỌC SINH'}
+                    {userRole === 'teacher' 
+                      ? 'GV ADMIN' 
+                      : (userName && !isGuestUser(userName) ? 'GOOGLE USER' : 'DEMO USER')}
                   </span>
                 )}
               </div>
@@ -2499,7 +2508,9 @@ export default function App() {
               className="bg-gradient-to-r from-[#0d4a2b] via-[#15803d] to-[#1cb55b] hover:from-[#115e37] hover:to-[#22c55e] active:scale-95 text-white px-3 sm:px-5 py-1 sm:py-1.5 rounded-full shadow-[0_2px_8px_rgba(13,74,43,0.3)] transition-all duration-150 flex flex-col items-center justify-center leading-tight cursor-pointer shrink-0 whitespace-nowrap border border-emerald-400/30"
             >
               <span className="font-black text-xs sm:text-sm leading-none drop-shadow-xs">
-                {isLoggedIn ? (userRole === 'teacher' ? 'Giáo viên' : (isGuestMode ? 'Guest' : 'Học sinh')) : 'Log in'}
+                {isLoggedIn 
+                  ? (userRole === 'teacher' ? 'Giáo viên' : (userName && !isGuestUser(userName) ? 'Google User' : 'Guest')) 
+                  : 'Log in'}
               </span>
               <span className="text-[9px] sm:text-[10px] text-emerald-100 font-medium leading-none mt-0.5">
                 {isLoggedIn ? 'Tài khoản' : 'Đăng nhập'}
