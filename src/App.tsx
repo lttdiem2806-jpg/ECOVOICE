@@ -4075,9 +4075,9 @@ export default function App() {
 
           {/* Widget 3: Honor Board Top 3 (Bảng Vinh Danh) */}
           <HonorBoardWidget
-            isLoggedIn={isLoggedIn && !isGuestMode && userRole === 'student'}
-            currentStudentName={isLoggedIn && userRole === 'student' && !isGuestMode ? userName : ''}
-            currentStudentClass={isLoggedIn && userRole === 'student' && !isGuestMode ? studentClassInput : ''}
+            isLoggedIn={isLoggedIn || isTeacherUnlocked()}
+            currentStudentName={!isGuestMode && isLoggedIn && userRole === 'student' ? userName : ''}
+            currentStudentClass={!isGuestMode && isLoggedIn && userRole === 'student' ? studentClassInput : ''}
             selectedGrade={selectedGrade}
             currentEP={ecoPoints}
             currentTrees={virtualTrees}
@@ -4087,8 +4087,8 @@ export default function App() {
               setActiveModal('login');
             }}
             playSoundEffect={playSoundEffect}
-            userRole={isGuestMode || userRole === 'guest' || !isLoggedIn ? 'guest' : userRole}
-            isGuestMode={isGuestMode || userRole === 'guest' || !isLoggedIn}
+            userRole={userRole === 'teacher' || isTeacherUnlocked() ? 'teacher' : (isGuestMode || userRole === 'guest' || !isLoggedIn ? 'guest' : userRole)}
+            isGuestMode={!(userRole === 'teacher' || isTeacherUnlocked()) && (isGuestMode || userRole === 'guest' || !isLoggedIn)}
           />
 
           </div>
@@ -4971,7 +4971,7 @@ export default function App() {
           setShowHonorBoardModal(false);
           if (activeModal === 'honor') setActiveModal(null);
         }}
-        isLoggedIn={isLoggedIn && !isGuestMode && userRole === 'student'}
+        isLoggedIn={isLoggedIn || isTeacherUnlocked()}
         currentStudentName={!isGuestMode && isLoggedIn && userRole === 'student' ? userName : ''}
         currentStudentClass={!isGuestMode && isLoggedIn && userRole === 'student' ? studentClassInput : ''}
         selectedGrade={selectedGrade}
@@ -4982,8 +4982,8 @@ export default function App() {
           setActiveModal('login');
         }}
         playSoundEffect={playSoundEffect}
-        userRole={isGuestMode || userRole === 'guest' || !isLoggedIn ? 'guest' : userRole}
-        isGuestMode={isGuestMode || userRole === 'guest' || !isLoggedIn}
+        userRole={userRole === 'teacher' || isTeacherUnlocked() ? 'teacher' : (isGuestMode || userRole === 'guest' || !isLoggedIn ? 'guest' : userRole)}
+        isGuestMode={!(userRole === 'teacher' || isTeacherUnlocked()) && (isGuestMode || userRole === 'guest' || !isLoggedIn)}
       />
 
       {/* MODAL: SETTINGS */}

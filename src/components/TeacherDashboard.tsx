@@ -2267,6 +2267,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       className="appearance-none bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs py-1.5 pl-3 pr-8 rounded-xl border-2 border-emerald-300 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all cursor-pointer shadow-2xs"
                     >
                       <option value="all">Toàn trường</option>
+                      <option value="grade_3">Khối 3</option>
+                      <option value="grade_4">Khối 4</option>
+                      <option value="grade_5">Khối 5</option>
                       {classesList.map((cls) => (
                         <option key={cls.id} value={cls.name}>
                           {cls.name.startsWith('Lớp') ? cls.name : `Lớp ${cls.name}`}

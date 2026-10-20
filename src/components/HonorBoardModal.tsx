@@ -22,7 +22,7 @@ import {
   getAvailableClassesForHonor,
   AvailableHonorClass
 } from '../services/honorBoardService';
-import { STUDENTS_EVENT, CLASSES_EVENT } from '../services/teacherContentService';
+import { STUDENTS_EVENT, CLASSES_EVENT, isTeacherUnlocked } from '../services/teacherContentService';
 import { isGuestUser } from '../services/studentActivityService';
 
 interface HonorBoardModalProps {
@@ -57,21 +57,27 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
   const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
   const [classesList, setClassesList] = useState<AvailableHonorClass[]>(() => getAvailableClassesForHonor());
 
-  // Determine if this is strictly a student account (not Teacher/Admin and not Guest mode)
-  const isGuest = Boolean(
+  // Check if current user is Teacher/Admin (either via role prop or unlocked session)
+  const isTeacher = Boolean(
+    userRole === 'teacher' ||
+    (typeof window !== 'undefined' && isTeacherUnlocked())
+  );
+
+  // Guest Mode: strictly when in guest mode AND NOT a teacher
+  const isGuest = !isTeacher && Boolean(
     isGuestMode ||
     userRole === 'guest' ||
-    !isLoggedIn ||
     currentStudentClass === 'Trải nghiệm (Demo / Guest)' ||
-    !currentStudentName ||
-    isGuestUser(currentStudentName)
+    isGuestUser(currentStudentName) ||
+    (!isLoggedIn && !currentStudentName)
   );
-  const isTeacher = userRole === 'teacher';
-  const isStudentUser = Boolean(isLoggedIn && !isTeacher && !isGuest && currentStudentName);
+
+  // Student User: logged-in real student (not teacher and not guest)
+  const isStudentUser = Boolean(!isTeacher && !isGuest && isLoggedIn && currentStudentName && !isGuestUser(currentStudentName));
   const cleanClassName = (cls?: string) => cls ? cls.replace(/^Lớp\s+/i, '').replace(/^\$/, '').trim() : '';
   const studentClassClean = cleanClassName(currentStudentClass) || '';
 
-  // For Student accounts: strictly locked to their own class. For Teacher/Guest: flexible dropdown
+  // For Student accounts: strictly locked to their own class. For Teacher/Admin: flexible dropdown
   const [scope, setScope] = useState<string>(() => {
     if (isStudentUser) {
       return studentClassClean;
@@ -124,6 +130,8 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
         }
         return;
       }
+
+      // For Teacher or Logged-in Students: fetch real official class / school rankings
       const isQualifiedStudent = Boolean(isLoggedIn && isStudentUser && currentStudentName && currentEP > 0);
       const list = getHonorBoardStudents({
         scope: effectiveScope,
@@ -150,7 +158,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
       window.removeEventListener(CLASSES_EVENT, fetchBoard);
       window.removeEventListener('storage', fetchBoard);
     };
-  }, [isOpen, effectiveScope, timeRange, currentStudentName, currentStudentClass, selectedGrade, currentEP, currentTrees, isLoggedIn]);
+  }, [isOpen, effectiveScope, timeRange, currentStudentName, currentStudentClass, selectedGrade, currentEP, currentTrees, isLoggedIn, isTeacher, isGuest, isStudentUser]);
 
   if (!isOpen) return null;
 
@@ -200,6 +208,8 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
               <p className="text-xs text-emerald-800 font-medium">
                 {isStudentUser
                   ? `Vinh danh các bạn học sinh Lớp ${studentClassClean} có điểm Eco Points > 0 & nhiều cây xanh nhất`
+                  : isTeacher
+                  ? `Bảng xếp hạng thi đua học sinh (${getScopeLabel()})`
                   : 'Vinh danh các đại sứ xanh tích lũy điểm Eco Points > 0 & nhiều cây xanh nhất'}
               </p>
             </div>
@@ -209,7 +219,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
             {isTeacher && (
               <button
                 onClick={handleExport}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white font-bold text-xs shadow-xs cursor-pointer transition-all border border-emerald-600"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white font-bold text-xs shadow-xs cursor-pointer transition-all border border-emerald-600"
                 title="Xuất bảng xếp hạng ra file Excel"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -399,18 +409,18 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
                 </div>
                 <div className="flex flex-col gap-1.5 max-w-md items-center">
                   <h4 className="font-extrabold text-base sm:text-lg text-emerald-950 font-display">
-                    {isGuest ? 'Phiên trải nghiệm chưa có dữ liệu' : 'No Accumulation Points Yet'}
+                    {isGuest ? 'Phiên trải nghiệm chưa có dữ liệu' : `Chưa có dữ liệu thi đua (${getScopeLabel()})`}
                   </h4>
                   <p className="text-xs sm:text-sm font-medium text-emerald-800 leading-relaxed text-center">
                     {isGuest 
                       ? 'Hãy bắt đầu luyện nói hoặc chơi Eco Games để tích lũy EP và ghi tên lên Bảng Vàng ngay trong phiên này!'
-                      : 'Chưa có học sinh nào đạt điểm tích lũy trong khoảng thời gian này'}
+                      : `Chưa có học sinh nào trong ${getScopeLabel()} đạt điểm tích lũy Eco Points trong ${timeRange === 'week' ? 'tuần này' : 'tháng này'}.`}
                   </p>
                 </div>
                 {!isGuest && (
                   <div className="text-xs text-emerald-800/90 max-w-md mt-1 leading-relaxed">
-                    <span className="block font-semibold">The Honor Board displays students with Eco Points (EP &gt; 0).</span>
-                    <span className="italic text-[11px]">Bảng vinh danh chỉ hiển thị học sinh có điểm tích lũy EP &gt; 0. Các em hãy hoàn thành bài luyện nói tiếng Anh hoặc tham gia Eco Games để tích lũy EP và bước lên Bục Quán Quân nhé! ✨</span>
+                    <span className="block font-semibold">Bảng vinh danh chỉ hiển thị học sinh có điểm tích lũy EP &gt; 0.</span>
+                    <span className="italic text-[11px]">Khi học sinh luyện phát âm tiếng Anh hoặc hoàn thành bài tập, hệ thống sẽ tự động vinh danh và cộng cây xanh tại đây! ✨</span>
                   </div>
                 )}
               </div>
@@ -421,7 +431,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
                 <div className="relative mb-1.5">
                   <Crown className="w-6 h-6 sm:w-7 sm:h-7 text-amber-500 fill-amber-400 absolute -top-3.5 left-1/2 -translate-x-1/2 drop-shadow-sm animate-bounce-subtle" />
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-200 via-amber-300 to-amber-400 border-2 border-amber-400 flex items-center justify-center text-2xl sm:text-3xl shadow-sm ring-4 ring-amber-200/50">
-                    🌟
+                    {isGuest ? '🌟' : (top1?.avatar || '👦')}
                   </div>
                   <span className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-500 text-emerald-950 font-black text-xs flex items-center justify-center border-2 border-white shadow-xs">
                     1
@@ -430,8 +440,13 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
 
                 {/* Name: Rõ ràng, phông chữ đậm, dễ đọc */}
                 <h4 className="font-black text-base sm:text-lg text-emerald-950 font-display tracking-tight mt-0.5">
-                  {top1?.name || 'Guest Mode'}
+                  {top1?.name || (isGuest ? 'Guest Mode' : 'Học sinh')}
                 </h4>
+                {!isGuest && top1?.className && (
+                  <span className="text-xs text-emerald-700 font-bold mt-0.5">
+                    Lớp {cleanClassName(top1.className)}
+                  </span>
+                )}
 
                 {/* Compact, elegant bar for achievement metrics and Quán quân title */}
                 <div className="mt-2 inline-flex items-center gap-2 sm:gap-2.5 bg-white/95 border border-emerald-200/90 px-3 py-1 rounded-full shadow-2xs text-xs">

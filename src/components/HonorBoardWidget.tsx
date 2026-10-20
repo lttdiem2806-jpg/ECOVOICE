@@ -6,7 +6,7 @@ import {
   getAvailableClassesForHonor, 
   AvailableHonorClass 
 } from '../services/honorBoardService';
-import { STUDENTS_EVENT, CLASSES_EVENT } from '../services/teacherContentService';
+import { STUDENTS_EVENT, CLASSES_EVENT, isTeacherUnlocked } from '../services/teacherContentService';
 import { isGuestUser } from '../services/studentActivityService';
 
 interface HonorBoardWidgetProps {
@@ -39,25 +39,30 @@ export const HonorBoardWidget: React.FC<HonorBoardWidgetProps> = ({
   const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
   const [classesList, setClassesList] = useState<AvailableHonorClass[]>(() => getAvailableClassesForHonor());
 
-  // Determine if this is strictly a logged-in student account (not Teacher/Admin, not Guest mode, and user is logged in)
-  const isGuest = Boolean(
+  // Check if current user is Teacher/Admin
+  const isTeacher = Boolean(
+    userRole === 'teacher' ||
+    (typeof window !== 'undefined' && isTeacherUnlocked())
+  );
+
+  // Guest Mode: strictly when in guest mode AND NOT a teacher
+  const isGuest = !isTeacher && Boolean(
     isGuestMode ||
     userRole === 'guest' ||
-    !isLoggedIn ||
     currentStudentClass === 'Trải nghiệm (Demo / Guest)' ||
-    !currentStudentName ||
-    isGuestUser(currentStudentName)
+    isGuestUser(currentStudentName) ||
+    (!isLoggedIn && !currentStudentName)
   );
-  const isTeacher = userRole === 'teacher';
-  const isStudentUser = Boolean(isLoggedIn && !isTeacher && !isGuest && currentStudentName);
+
+  const isStudentUser = Boolean(!isTeacher && !isGuest && isLoggedIn && currentStudentName && !isGuestUser(currentStudentName));
   const studentClassClean = (currentStudentClass || '').replace(/^Lớp\s+/i, '').trim();
 
-  // For Student accounts: strictly locked to their own class. For Teacher/Guest/Logged-out: flexible dropdown
+  // For Student accounts: strictly locked to their own class. For Teacher/Admin: flexible dropdown
   const [scope, setScope] = useState<string>(() => {
     if (isStudentUser) {
       return studentClassClean;
     }
-    if (isLoggedIn && currentStudentClass && currentStudentClass !== 'Trải nghiệm (Demo / Guest)') {
+    if (currentStudentClass && currentStudentClass !== 'Trải nghiệm (Demo / Guest)') {
       return currentStudentClass.replace(/^Lớp\s+/i, '').trim() || 'all';
     }
     return 'all';
