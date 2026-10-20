@@ -117,13 +117,23 @@ export function getHonorBoardStudents(options: HonorBoardFilterOptions): HonorSt
       currentStudent.name &&
       s.name.trim().toLowerCase() === currentStudent.name.trim().toLowerCase()
     ) {
+      const ep = currentStudent.ecoPoints !== undefined && currentStudent.ecoPoints > 0
+        ? currentStudent.ecoPoints
+        : (s.ecoPoints || 0);
+      const trees = Math.floor(ep / 30);
       return {
         ...s,
-        ecoPoints: currentStudent.ecoPoints !== undefined ? currentStudent.ecoPoints : (s.ecoPoints || 0),
-        trees: currentStudent.trees !== undefined ? currentStudent.trees : (s.trees || 0)
+        ecoPoints: ep,
+        trees: trees
       };
     }
-    return s;
+    const ep = s.ecoPoints || 0;
+    const trees = Math.floor(ep / 30);
+    return {
+      ...s,
+      ecoPoints: ep,
+      trees: trees
+    };
   });
 
   if (
@@ -132,6 +142,8 @@ export function getHonorBoardStudents(options: HonorBoardFilterOptions): HonorSt
     (currentStudent.ecoPoints || 0) > 0 &&
     !mergedAccounts.some(s => s.name && s.name.trim().toLowerCase() === currentStudent.name.trim().toLowerCase())
   ) {
+    const ep = currentStudent.ecoPoints || 0;
+    const trees = Math.floor(ep / 30);
     mergedAccounts.push({
       id: 'st_current_session',
       name: currentStudent.name,
@@ -139,9 +151,9 @@ export function getHonorBoardStudents(options: HonorBoardFilterOptions): HonorSt
       grade: currentStudent.grade || currentStudent.className?.charAt(0) || '3',
       password: '',
       status: 'active',
-      ecoPoints: currentStudent.ecoPoints || 0,
-      trees: currentStudent.trees || 0,
-      score: Math.min(100, Math.round((currentStudent.ecoPoints || 0) * 1.5)),
+      ecoPoints: ep,
+      trees: trees,
+      score: Math.min(100, Math.round(ep * 1.5)),
       lastPractice: 'Hôm nay'
     });
   }
@@ -181,7 +193,14 @@ export function getHonorBoardStudents(options: HonorBoardFilterOptions): HonorSt
       computedScore = rawScore;
 
       if (timeRange === 'week') {
-        const isRecent = !s.lastPractice || s.lastPractice === 'Hôm nay' || s.lastPractice === 'Hôm qua' || s.lastPractice.includes('ngày trước');
+        const lp = (s.lastPractice || '').toLowerCase();
+        const isRecent = !s.lastPractice || 
+          lp.includes('vừa xong') || 
+          lp.includes('hôm nay') || 
+          lp.includes('hôm qua') || 
+          lp.includes('phút') || 
+          lp.includes('giờ') || 
+          lp.includes('ngày trước');
         if (!isRecent) {
           computedEP = 0;
           computedTrees = 0;

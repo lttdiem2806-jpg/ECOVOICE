@@ -194,7 +194,7 @@ export const PERMS_EVENT = 'ecovoice_perms_updated';
 
 // Default student accounts: Chi Vy has completed 100% Unit 1 (10/10 words, 5/5 sentences), unlocking Unit 2
 export const DEFAULT_STUDENTS: StudentAccount[] = [
-  { id: 'st_chivy', name: 'Chí Vỹ', className: '4A3', grade: '4', password: '123', score: 95, trees: 2, ecoPoints: 60, status: 'Đang học Unit 2', lastPractice: 'Vừa xong', completedAssignments: [] }
+  { id: 'st_chivy', name: 'Chí Vỹ', className: '4A3', grade: '4', password: '123', score: 95, trees: 3, ecoPoints: 100, status: 'Đang học Unit 2', lastPractice: 'Vừa xong', completedAssignments: [] }
 ];
 
 // Default classes: initialized with accurate progress matching real student accounts
@@ -203,7 +203,7 @@ export const DEFAULT_CLASSES: TeacherClass[] = [
   { id: 'c_3a2', name: '3A2', grade: '3', studentCount: 0, teacherName: 'Thầy Trần Tuấn', currentUnit: 'Unit 9: Colours', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
   { id: 'c_4a1', name: '4A1', grade: '4', studentCount: 0, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 8: School Subjects', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
   { id: 'c_4a2', name: '4A2', grade: '4', studentCount: 0, teacherName: 'Cô Nguyễn Mai', currentUnit: 'Chưa giao bài', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_4a3', name: '4A3', grade: '4', studentCount: 1, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 2: Time and daily routines', completionRate: 0, averageSpeakingScore: 95, plantedTrees: 2 },
+  { id: 'c_4a3', name: '4A3', grade: '4', studentCount: 1, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 2: Time and daily routines', completionRate: 0, averageSpeakingScore: 95, plantedTrees: 3 },
   { id: 'c_5a1', name: '5A1', grade: '5', studentCount: 0, teacherName: 'Thầy Phạm Minh', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
   { id: 'c_5a2', name: '5A2', grade: '5', studentCount: 0, teacherName: 'Cô Hoàng Yến', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
   { id: 'c_5a3', name: '5A3', grade: '5', studentCount: 0, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 }
@@ -791,17 +791,19 @@ export function getStudentAccounts(): StudentAccount[] {
     // Sanitize any student whose lastPractice is 'Chưa luyện tập' to have 0% and 0 trees, 0 EP
     let needsUpdate = false;
     let sanitized = parsed.map((s: StudentAccount) => {
-      // Chí Vỹ is actively studying Unit 2 with 60 EP, 2 trees and 95% speaking accuracy
+      // Chí Vỹ is actively studying Unit 2 with 100 EP, 3 trees and 95% speaking accuracy
       if (s.name && s.name.trim().toLowerCase() === 'chí vỹ') {
         const hasLegacyArtifacts = (
           s.trees === 41 ||
           (s.trees || 0) > 10 ||
           (s.ecoPoints || 0) >= 1000 ||
           s.score === 100 ||
+          s.trees === 2 ||
+          s.ecoPoints === 60 ||
           (s.completedAssignments && s.completedAssignments.includes('asg_animal_homes_4a3'))
         );
-        const actualTrees = hasLegacyArtifacts ? 2 : Math.max(0, s.trees || 2);
-        const actualEP = hasLegacyArtifacts ? 60 : Math.max(0, s.ecoPoints || (actualTrees * 30));
+        const actualEP = 100;
+        const actualTrees = Math.floor(actualEP / 30); // Exactly 3 trees (100 / 30 = 3)
         const actualScore = (hasLegacyArtifacts || s.score === 100 || !s.score) ? 95 : s.score;
         const cleanedCompleted = hasLegacyArtifacts ? [] : (s.completedAssignments || []);
 

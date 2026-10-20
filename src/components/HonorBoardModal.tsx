@@ -348,7 +348,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
                 </button>
               )}
             </div>
-          ) : isStudentUser && currentEP > 0 ? (
+          ) : isStudentUser && ((myRankInfo?.ecoPoints ?? 0) > 0 || currentEP > 0) ? (
             <div className="rounded-2xl p-3 sm:p-3.5 text-white flex items-center justify-between shadow-md border-2 transition-all bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 border-amber-400 ring-2 ring-amber-300/30">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-10 h-10 rounded-xl font-black text-base flex items-center justify-center shrink-0 shadow-xs bg-amber-400 text-emerald-950 ring-2 ring-white/50">
@@ -357,7 +357,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
                 <div className="flex flex-col min-w-0 leading-tight">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-black text-amber-200 text-sm sm:text-base truncate">
-                      {currentStudentName || 'Học sinh'}
+                      {myRankInfo?.name || currentStudentName || 'Học sinh'}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold shadow-2xs bg-emerald-600 text-white border border-emerald-400">
                       🏆 Bạn đang xếp Hạng #{myRankInfo ? myRankInfo.rank : 1}
@@ -369,20 +369,20 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
                 </div>
               </div>
 
-              {/* Personal EP & Virtual Trees */}
+              {/* Personal EP & Virtual Trees - Unified Single Source of Truth */}
               <div className="flex items-center gap-3 sm:gap-4 shrink-0 bg-white/10 px-3 py-1.5 rounded-xl border border-white/15">
                 <div className="flex flex-col items-center">
                   <span className="text-[9px] uppercase tracking-wider text-amber-200 font-black">Điểm EP</span>
                   <div className="flex items-center gap-1 text-amber-300 font-black text-sm sm:text-base tabular-nums">
                     <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
-                    <span>{currentEP}</span>
+                    <span>{myRankInfo ? myRankInfo.ecoPoints : (currentEP || 100)}</span>
                   </div>
                 </div>
                 <div className="w-px h-6 bg-white/20" />
                 <div className="flex flex-col items-center">
                   <span className="text-[9px] uppercase tracking-wider text-emerald-200 font-black">Cây xanh</span>
                   <div className="flex items-center gap-1 text-emerald-100 font-black text-sm sm:text-base tabular-nums">
-                    <span>{currentTrees}</span>
+                    <span>{myRankInfo ? myRankInfo.trees : Math.floor((currentEP || 100) / 30)}</span>
                     <span className="text-base">🌲</span>
                   </div>
                 </div>

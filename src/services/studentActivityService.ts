@@ -538,12 +538,26 @@ export function getStudentActivities(userName?: string, grade?: string): Student
       grade: '4'
     },
     {
+      id: 'act_chivy_tree_3',
+      type: 'tree_planted',
+      titleEn: 'Virtual Tree Planted! · Khu vườn xanh',
+      titleVi: 'Vun trồng thành công Cây xanh thứ 3 🌳',
+      detailEn: 'Milestone reached: 90 Eco Points converted to 3 Virtual Trees',
+      detailVi: 'Đạt mốc 90 EP từ luyện tập tiếng Anh và trò chơi xanh! Bé đã trồng thành công cây xanh thứ 3 vào vườn',
+      score: 100,
+      epAwarded: 0,
+      timestamp: 'Hôm nay / Today',
+      icon: '🌳',
+      badgeColor: 'emerald',
+      grade: '4'
+    },
+    {
       id: 'act_chivy_badge_u1',
       type: 'badge_unlocked',
       titleEn: 'Badges Unlocked · Unit 1 Master & Eco Planter',
       titleVi: 'Mở khóa huy hiệu: Bước chân đầu tiên 🌟 & Kiện tướng phát âm 🎙️',
-      detailEn: 'Earned 5 honors by completing Unit 1 and environmental achievements',
-      detailVi: 'Thành tích hoàn thành toàn bộ 10 từ vựng và 5 mẫu câu Unit 1 cùng 2 cây xanh sinh thái',
+      detailEn: 'Earned honors by completing Unit 1 and environmental achievements (100 EP, 3 trees)',
+      detailVi: 'Thành tích hoàn thành toàn bộ 10 từ vựng và 5 mẫu câu Unit 1 cùng 3 cây xanh sinh thái (100 EP)',
       score: 100,
       epAwarded: 0,
       timestamp: 'Hôm nay / Today',

@@ -481,8 +481,10 @@ export default function App() {
       if (isLoggedIn && userRole === 'student' && userName) {
         const match = students.find(s => s.name.trim().toLowerCase() === userName.trim().toLowerCase());
         if (match) {
-          if (match.ecoPoints !== undefined) setEcoPoints(match.ecoPoints);
-          if (match.trees !== undefined) setVirtualTrees(match.trees);
+          const ep = match.ecoPoints !== undefined ? match.ecoPoints : 0;
+          const trees = computeLogicalTrees(ep);
+          setEcoPoints(ep);
+          setVirtualTrees(trees);
         }
       }
     });
@@ -605,8 +607,9 @@ export default function App() {
         setUserName(displayName);
         setIsGuestMode(false);
         setStudentClassInput(profile.className);
-        setEcoPoints(profile.ecoPoints);
-        setVirtualTrees(profile.trees);
+        const ep = profile.ecoPoints || 0;
+        setEcoPoints(ep);
+        setVirtualTrees(computeLogicalTrees(ep));
 
         if (profile.role === 'teacher') {
           setIsGuestMode(false);
@@ -847,7 +850,7 @@ export default function App() {
       }
 
       const studentEP = matched.ecoPoints || 0;
-      const studentTrees = matched.trees || computeLogicalTrees(studentEP);
+      const studentTrees = computeLogicalTrees(studentEP);
       setVirtualTrees(studentTrees);
       setEcoPoints(studentEP);
       setCurrentUserRole('student');
@@ -1035,6 +1038,16 @@ export default function App() {
       window.removeEventListener('ecovoice_class_changed', handleClassChanged);
     };
   }, []);
+
+  // Ensure virtualTrees is ALWAYS mathematically 100% synchronized with ecoPoints (30 EP = 1 tree)
+  useEffect(() => {
+    if (isLoggedIn && userRole === 'student' && !isGuestMode) {
+      const logicalTrees = computeLogicalTrees(ecoPoints);
+      if (virtualTrees !== logicalTrees) {
+        setVirtualTrees(logicalTrees);
+      }
+    }
+  }, [ecoPoints, isLoggedIn, userRole, isGuestMode, virtualTrees]);
 
   // Clean student class & grade for synchronized assignment filtering
   const studentClassClean = (studentClassInput || '').replace(/^Lớp\s+/i, '').trim();

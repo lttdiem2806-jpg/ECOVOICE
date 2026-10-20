@@ -249,15 +249,15 @@ export const HonorBoardWidget: React.FC<HonorBoardWidgetProps> = ({
             Đăng nhập
           </span>
         </button>
-      ) : isStudentUser && currentEP > 0 ? (
-        /* Thanh trạng thái cá nhân: CHỈ hiển thị cho Học sinh có điểm EP > 0 */
+      ) : isStudentUser && ((myRankInfo?.ecoPoints ?? 0) > 0 || currentEP > 0) ? (
+        /* Thanh trạng thái cá nhân: CHỈ hiển thị cho Học sinh có điểm EP > 0 - Thống nhất dữ liệu */
         <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white rounded-xl px-2.5 py-1.5 shadow-2xs flex items-center justify-between text-[10px] border border-emerald-600/50">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-4 h-4 rounded-full bg-amber-400 text-emerald-950 flex items-center justify-center shrink-0 text-[9px] font-black shadow-2xs">
               {myRankInfo && myRankInfo.ecoPoints > 0 ? `#${myRankInfo.rank}` : '🌱'}
             </span>
             <div className="flex flex-col min-w-0 leading-tight">
-              <span className="font-extrabold text-amber-200 truncate">{currentStudentName || 'Bạn'}</span>
+              <span className="font-extrabold text-amber-200 truncate">{myRankInfo?.name || currentStudentName || 'Bạn'}</span>
               <span className="text-[9px] text-emerald-200 font-medium truncate">
                 {myRankInfo && myRankInfo.ecoPoints > 0 ? `Hạng #${myRankInfo.rank} • Lớp ${studentClassClean}` : `Lớp ${studentClassClean}`}
               </span>
@@ -266,10 +266,10 @@ export const HonorBoardWidget: React.FC<HonorBoardWidgetProps> = ({
           <div className="flex items-center gap-2 shrink-0 font-black tabular-nums">
             <div className="flex items-center gap-0.5 text-amber-300">
               <Zap className="w-3 h-3 fill-amber-300" />
-              <span>{currentEP} EP</span>
+              <span>{myRankInfo ? myRankInfo.ecoPoints : (currentEP || 100)} EP</span>
             </div>
             <div className="flex items-center gap-0.5 text-emerald-100">
-              <span>{currentTrees}</span>
+              <span>{myRankInfo ? myRankInfo.trees : Math.floor((currentEP || 100) / 30)}</span>
               <span>🌲</span>
             </div>
           </div>

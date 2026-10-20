@@ -137,6 +137,24 @@ export async function syncInitialDataToFirestore(): Promise<void> {
 
       await batch.commit();
       console.info('Initial users successfully seeded to Firestore.');
+    } else {
+      // Ensure Chí Vỹ's Firestore record is always in sync with 100 EP and 3 trees
+      try {
+        const chiVyDocId = sanitizeDocId('Chí Vỹ');
+        const chiVyRef = doc(db, USERS_COL, chiVyDocId);
+        const chiVySnap = await getDoc(chiVyRef);
+        if (chiVySnap.exists()) {
+          const cvData = chiVySnap.data();
+          if (cvData.ecoPoints !== 100 || cvData.trees !== 3) {
+            await updateDoc(chiVyRef, {
+              ecoPoints: 100,
+              trees: 3
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Silent sync for Chí Vỹ doc in Firestore:', err);
+      }
     }
 
     // Check & Seed Assignments
@@ -212,7 +230,7 @@ export function subscribeToFirestoreStudents(callback: (students: StudentAccount
               grade: data.grade || '4',
               password: data.password || '123',
               score: data.score || 0,
-              trees: data.trees || 0,
+              trees: Math.floor((data.ecoPoints ?? ((data.trees || 0) * 30)) / 30),
               ecoPoints: data.ecoPoints ?? ((data.trees || 0) * 30),
               status: data.status || 'Đang học',
               lastPractice: data.lastPractice || 'Chưa luyện tập',
@@ -695,7 +713,7 @@ export async function syncUserToFirestore(
         className: data.className || className,
         grade: data.grade || grade,
         ecoPoints: data.ecoPoints || 0,
-        trees: data.trees || 0
+        trees: Math.floor((data.ecoPoints || 0) / 30)
       };
     } else {
       const newProfile = {
