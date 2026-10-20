@@ -176,7 +176,8 @@ export const LessonsOverviewView: React.FC<LessonsOverviewViewProps> = ({
               <div className="flex items-center gap-1.5 p-1 bg-emerald-100/70 rounded-2xl border border-emerald-200">
                 {(['3', '4', '5'] as const).map(g => {
                   const isSelected = selectedGrade === g;
-                  const isMyClassGrade = studentRegisteredGrade === g;
+                  // ONLY official form-authenticated students (not teacher, not guest mode, not Google User / demo user) show 'My Class / Lớp em'
+                  const isMyClassGrade = !isTeacher && !isGuestMode && userRole !== 'guest' && !isGuestUser(studentName) && studentRegisteredGrade === g;
                   return (
                     <button
                       key={g}

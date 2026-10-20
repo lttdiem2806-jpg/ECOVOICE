@@ -1539,8 +1539,13 @@ export function isUnitUnlockedForGrade(grade: string, unitKey: string, userName?
     const role = localStorage.getItem('ecovoice_user_role');
     const effectiveName = userName || localStorage.getItem('ecovoice_user_name') || '';
 
-    // Teacher has access to inspect all units freely
-    if (role === 'teacher') {
+    // Teacher and Guest/Demo Mode / Google Users have full 100% unlocked access to all units
+    const isGuest = isGuestUser(effectiveName) || 
+                    localStorage.getItem('ecovoice_is_guest_mode') === 'true' || 
+                    sessionStorage.getItem('ecovoice_is_guest_mode') === 'true' ||
+                    role === 'guest';
+
+    if (role === 'teacher' || isGuest) {
       return true;
     }
 

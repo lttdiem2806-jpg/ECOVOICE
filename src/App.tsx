@@ -4358,7 +4358,7 @@ export default function App() {
                 {/* Header */}
                 <div className="flex items-center gap-3 border-b border-emerald-200 pb-3 pr-8">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-200 text-emerald-900 border-2 border-emerald-400 flex items-center justify-center text-2xl shadow-xs shrink-0">
-                    {userRole === 'teacher' ? '👩‍🏫' : (isGuestMode ? '🌟' : '👧')}
+                    {userRole === 'teacher' ? '👩‍🏫' : '👧'}
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-[10px] font-black uppercase text-emerald-700 tracking-wider">TÀI KHOẢN CÁ NHÂN</span>
@@ -4368,7 +4368,9 @@ export default function App() {
                     <span className="text-xs font-bold text-emerald-800 truncate">
                       {userRole === 'teacher' 
                         ? 'Giáo viên / Quản trị viên' 
-                        : (isGuestMode ? 'Khách trải nghiệm' : `Học sinh • Lớp ${studentClassInput}`)}
+                        : (userName && !isGuestUser(userName) 
+                            ? 'Google User' 
+                            : 'Khách trải nghiệm')}
                     </span>
                   </div>
                 </div>
@@ -4417,12 +4419,22 @@ export default function App() {
                       </div>
                       <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
                         <span className="text-emerald-700 font-medium">Lớp / Đơn vị:</span>
-                        <span className="font-bold text-emerald-950">{studentClassInput}</span>
+                        <span className="font-bold text-emerald-950">
+                          {userRole === 'teacher' 
+                            ? 'Khối 3, 4, 5' 
+                            : (!isGuestMode && userName && !isGuestUser(userName)
+                                ? studentClassInput
+                                : 'Trải nghiệm trực tuyến / Online Visitor')}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
                         <span className="text-emerald-700 font-medium">Vai trò:</span>
                         <span className="font-bold text-emerald-950">
-                          {userRole === 'teacher' ? 'Giáo viên / Admin' : (isGuestMode ? 'Khách trải nghiệm' : 'Học sinh')}
+                          {userRole === 'teacher' 
+                            ? 'Giáo viên / Admin' 
+                            : (userName && !isGuestUser(userName) 
+                                ? 'Google User (Tài khoản Google)' 
+                                : 'Khách trải nghiệm')}
                         </span>
                       </div>
                       {!isGuestMode && userRole === 'student' && (
