@@ -743,6 +743,15 @@ export default function App() {
     setMascotBubble('Welcome to Eco-Voice! Explore all 20 interactive Units & green features freely!');
   };
 
+  const isOfficialStudentAccount = (name?: string, role?: string): boolean => {
+    if (role === 'teacher') return false;
+    if (role === 'student') return true;
+    if (!name) return false;
+    const accounts = getStudentAccounts();
+    const lower = name.trim().toLowerCase();
+    return accounts.some(s => s.name.trim().toLowerCase() === lower);
+  };
+
   const handleChangePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!changePassNew || changePassNew.length < 3) {
@@ -2398,6 +2407,27 @@ export default function App() {
         backgroundImage: `url(${bgImage})`,
         backgroundColor: '#7ec05b'
       }}
+      onClickCapture={(e) => {
+        if (!isLoggedIn) {
+          const target = e.target as HTMLElement;
+          if (
+            target.closest('header') ||
+            target.closest('#login-modal') ||
+            target.closest('[data-auth-exempt="true"]')
+          ) {
+            return;
+          }
+          e.stopPropagation();
+          e.preventDefault();
+          playSoundEffect('fail');
+          setLoginPromptNotice({
+            vi: 'Vui lòng đăng nhập vào hệ thống để trải nghiệm và tương tác!',
+            en: 'Please log in to the system to interact with content!'
+          });
+          setMascotBubble('Please log in to explore! / Vui lòng đăng nhập để tiếp tục sử dụng hệ thống nhé!');
+          setActiveModal('login');
+        }
+      }}
     >
       {/* Background soft ambient tint */}
       <div className="absolute inset-0 bg-gradient-to-b from-sky-400/10 via-transparent to-emerald-900/15 pointer-events-none" />
@@ -2467,7 +2497,9 @@ export default function App() {
                   <span className="text-[9px] sm:text-[10px] font-black uppercase text-emerald-700 tracking-wider leading-none mt-0.5">
                     {userRole === 'teacher' 
                       ? 'GV ADMIN' 
-                      : (userName && !isGuestUser(userName) ? 'GOOGLE USER' : 'DEMO USER')}
+                      : (isOfficialStudentAccount(userName, userRole)
+                          ? 'HỌC SINH'
+                          : (userName && !isGuestUser(userName) ? 'GOOGLE USER' : 'DEMO USER'))}
                   </span>
                 )}
               </div>
@@ -2509,7 +2541,11 @@ export default function App() {
             >
               <span className="font-black text-xs sm:text-sm leading-none drop-shadow-xs">
                 {isLoggedIn 
-                  ? (userRole === 'teacher' ? 'Giáo viên' : (userName && !isGuestUser(userName) ? 'Google User' : 'Guest')) 
+                  ? (userRole === 'teacher' 
+                      ? 'Giáo viên' 
+                      : (isOfficialStudentAccount(userName, userRole)
+                          ? 'Học sinh'
+                          : (userName && !isGuestUser(userName) ? 'Google User' : 'Guest'))) 
                   : 'Log in'}
               </span>
               <span className="text-[9px] sm:text-[10px] text-emerald-100 font-medium leading-none mt-0.5">
@@ -4333,7 +4369,7 @@ export default function App() {
 
       {/* MODAL: LOGIN & USER ACCOUNT */}
       {activeModal === 'login' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+        <div id="login-modal" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-[#f0faf4] rounded-3xl max-w-sm sm:max-w-md w-full p-5 sm:p-6 shadow-2xl relative border-[3px] border-[#86c898] flex flex-col gap-3.5 max-h-[90vh] overflow-y-auto">
             
             {/* Close button */}
@@ -4368,9 +4404,11 @@ export default function App() {
                     <span className="text-xs font-bold text-emerald-800 truncate">
                       {userRole === 'teacher' 
                         ? 'Giáo viên / Quản trị viên' 
-                        : (userName && !isGuestUser(userName) 
-                            ? 'Google User' 
-                            : 'Khách trải nghiệm')}
+                        : (isOfficialStudentAccount(userName, userRole)
+                            ? 'Học sinh chính thức'
+                            : (userName && !isGuestUser(userName) 
+                                ? 'Google User' 
+                                : 'Khách trải nghiệm'))}
                     </span>
                   </div>
                 </div>
@@ -4422,9 +4460,9 @@ export default function App() {
                         <span className="font-bold text-emerald-950">
                           {userRole === 'teacher' 
                             ? 'Khối 3, 4, 5' 
-                            : (!isGuestMode && userName && !isGuestUser(userName)
+                            : (isOfficialStudentAccount(userName, userRole) || (!isGuestMode && userName && !isGuestUser(userName)))
                                 ? studentClassInput
-                                : 'Trải nghiệm trực tuyến / Online Visitor')}
+                                : 'Trải nghiệm trực tuyến / Online Visitor'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
@@ -4432,9 +4470,11 @@ export default function App() {
                         <span className="font-bold text-emerald-950">
                           {userRole === 'teacher' 
                             ? 'Giáo viên / Admin' 
-                            : (userName && !isGuestUser(userName) 
-                                ? 'Google User (Tài khoản Google)' 
-                                : 'Khách trải nghiệm')}
+                            : (isOfficialStudentAccount(userName, userRole)
+                                ? 'Học sinh (Tài khoản lớp học)'
+                                : (userName && !isGuestUser(userName) 
+                                    ? 'Google User (Tài khoản Google)' 
+                                    : 'Khách trải nghiệm'))}
                         </span>
                       </div>
                       {!isGuestMode && userRole === 'student' && (
