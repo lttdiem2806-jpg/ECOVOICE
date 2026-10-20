@@ -2079,11 +2079,6 @@ export default function App() {
         updateStudentProgress(userName, score, nextTrees, 10);
         if (activeAssignmentId) {
           recordStudentAssignmentCompletion(userName, activeAssignmentId);
-        } else {
-          const asgs = getTeacherAssignments().filter(a => isAssignmentForStudent(a, studentClassInput, selectedGrade));
-          if (asgs.length > 0) {
-            recordStudentAssignmentCompletion(userName, asgs[0].id);
-          }
         }
       } else {
         if (activeAssignmentId) {
@@ -2972,11 +2967,6 @@ export default function App() {
                   updateStudentProgress(userName, 90, nextTrees, ep);
                   if (activeAssignmentId) {
                     recordStudentAssignmentCompletion(userName, activeAssignmentId);
-                  } else {
-                    const asgs = getTeacherAssignments().filter(a => isAssignmentForStudent(a, studentClassInput, selectedGrade));
-                    if (asgs.length > 0) {
-                      recordStudentAssignmentCompletion(userName, asgs[0].id);
-                    }
                   }
                 } else {
                   if (activeAssignmentId) {

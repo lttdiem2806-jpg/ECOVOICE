@@ -194,19 +194,19 @@ export const PERMS_EVENT = 'ecovoice_perms_updated';
 
 // Default student accounts: Chi Vy has completed 100% Unit 1 (10/10 words, 5/5 sentences), unlocking Unit 2
 export const DEFAULT_STUDENTS: StudentAccount[] = [
-  { id: 'st_chivy', name: 'Chí Vỹ', className: '4A3', grade: '4', password: '123', score: 95, trees: 2, ecoPoints: 100, status: 'Đang học Unit 2', lastPractice: 'Vừa xong' }
+  { id: 'st_chivy', name: 'Chí Vỹ', className: '4A3', grade: '4', password: '123', score: 95, trees: 2, ecoPoints: 60, status: 'Đang học Unit 2', lastPractice: 'Vừa xong', completedAssignments: [] }
 ];
 
-// Default classes: initialized with accurate progress
+// Default classes: initialized with accurate progress matching real student accounts
 export const DEFAULT_CLASSES: TeacherClass[] = [
-  { id: 'c_3a1', name: '3A1', grade: '3', studentCount: 35, teacherName: 'Cô Nguyễn Mai', currentUnit: 'Unit 9: Colours', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_3a2', name: '3A2', grade: '3', studentCount: 34, teacherName: 'Thầy Trần Tuấn', currentUnit: 'Unit 9: Colours', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_4a1', name: '4A1', grade: '4', studentCount: 36, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 8: School Subjects', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_4a2', name: '4A2', grade: '4', studentCount: 33, teacherName: 'Cô Nguyễn Mai', currentUnit: 'Chưa giao bài', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_4a3', name: '4A3', grade: '4', studentCount: 34, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 2: Time and daily routines', completionRate: 10, averageSpeakingScore: 95, plantedTrees: 2 },
-  { id: 'c_5a1', name: '5A1', grade: '5', studentCount: 38, teacherName: 'Thầy Phạm Minh', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_5a2', name: '5A2', grade: '5', studentCount: 35, teacherName: 'Cô Hoàng Yến', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
-  { id: 'c_5a3', name: '5A3', grade: '5', studentCount: 36, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 }
+  { id: 'c_3a1', name: '3A1', grade: '3', studentCount: 0, teacherName: 'Cô Nguyễn Mai', currentUnit: 'Unit 9: Colours', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
+  { id: 'c_3a2', name: '3A2', grade: '3', studentCount: 0, teacherName: 'Thầy Trần Tuấn', currentUnit: 'Unit 9: Colours', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
+  { id: 'c_4a1', name: '4A1', grade: '4', studentCount: 0, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 8: School Subjects', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
+  { id: 'c_4a2', name: '4A2', grade: '4', studentCount: 0, teacherName: 'Cô Nguyễn Mai', currentUnit: 'Chưa giao bài', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
+  { id: 'c_4a3', name: '4A3', grade: '4', studentCount: 1, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 2: Time and daily routines', completionRate: 0, averageSpeakingScore: 95, plantedTrees: 2 },
+  { id: 'c_5a1', name: '5A1', grade: '5', studentCount: 0, teacherName: 'Thầy Phạm Minh', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
+  { id: 'c_5a2', name: '5A2', grade: '5', studentCount: 0, teacherName: 'Cô Hoàng Yến', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 },
+  { id: 'c_5a3', name: '5A3', grade: '5', studentCount: 0, teacherName: 'Cô Lê Hương', currentUnit: 'Unit 7: My favourite sport', completionRate: 0, averageSpeakingScore: 0, plantedTrees: 0 }
 ];
 
 // Default assignments: All initialized with submittedCount = 0 (actual student submissions only)
@@ -544,19 +544,12 @@ export const CLASSES_EVENT = 'ecovoice_classes_updated';
  */
 export function calculateClassSpeakingAverage(classStudents: StudentAccount[]): number {
   if (!classStudents || classStudents.length === 0) return 0;
-  const classTrees = classStudents.reduce((acc, s) => acc + (s.trees || 0), 0);
   const practiced = classStudents.filter(
-    s => (s.lastPractice && s.lastPractice !== 'Chưa luyện tập') || (s.score || 0) > 0 || (s.trees || 0) > 0 || (s.ecoPoints || 0) > 0
+    s => (s.score || 0) > 0 || (s.lastPractice && s.lastPractice !== 'Chưa luyện tập')
   );
-  if (practiced.length === 0 && classTrees === 0) return 0;
-  if (practiced.length === 0 && classTrees > 0) return 88;
-  const total = practiced.reduce((sum, s) => {
-    const sc = (s.score || 0) > 0 ? (s.score || 0) : ((s.trees || 0) > 0 ? 88 : 0);
-    return sum + sc;
-  }, 0);
-  const avg = Math.round(total / practiced.length);
-  if (classTrees > 0 && avg === 0) return 88;
-  return avg;
+  if (practiced.length === 0) return 0;
+  const total = practiced.reduce((sum, s) => sum + (s.score || 0), 0);
+  return Math.round(total / practiced.length);
 }
 
 /**
@@ -659,7 +652,7 @@ export function getTeacherClasses(): TeacherClass[] {
       const actualCompletedCount = Math.max(totalClassSubmissions, studentCompletedCount);
       const totalExpected = (classStudents.length > 0 ? classStudents.length : (cls.studentCount || 0)) * classAssignments.length;
 
-      const completionRate = (classAssignments.length === 0 || actualCompletedCount === 0 || totalExpected === 0)
+      const completionRate = (classStudents.length === 0 || classAssignments.length === 0 || actualCompletedCount === 0 || totalExpected === 0)
         ? 0
         : Math.min(100, Math.round((actualCompletedCount / totalExpected) * 100));
 
@@ -798,20 +791,35 @@ export function getStudentAccounts(): StudentAccount[] {
     // Sanitize any student whose lastPractice is 'Chưa luyện tập' to have 0% and 0 trees, 0 EP
     let needsUpdate = false;
     let sanitized = parsed.map((s: StudentAccount) => {
-      // Chí Vỹ is actively studying Unit 1 with 60 EP and 2 trees (60 EP / 30 = 2 trees)
+      // Chí Vỹ is actively studying Unit 2 with 60 EP, 2 trees and 95% speaking accuracy
       if (s.name && s.name.trim().toLowerCase() === 'chí vỹ') {
-        const currentEP = Math.max(60, s.ecoPoints || 60);
-        const logicalTrees = Math.floor(currentEP / 30);
+        const hasLegacyArtifacts = (
+          s.trees === 41 ||
+          (s.trees || 0) > 10 ||
+          (s.ecoPoints || 0) >= 1000 ||
+          s.score === 100 ||
+          (s.completedAssignments && s.completedAssignments.includes('asg_animal_homes_4a3'))
+        );
+        const actualTrees = hasLegacyArtifacts ? 2 : Math.max(0, s.trees || 2);
+        const actualEP = hasLegacyArtifacts ? 60 : Math.max(0, s.ecoPoints || (actualTrees * 30));
+        const actualScore = (hasLegacyArtifacts || s.score === 100 || !s.score) ? 95 : s.score;
+        const cleanedCompleted = hasLegacyArtifacts ? [] : (s.completedAssignments || []);
 
-        if (s.ecoPoints !== currentEP || s.trees !== logicalTrees) {
+        if (
+          s.trees !== actualTrees ||
+          s.ecoPoints !== actualEP ||
+          s.score !== actualScore ||
+          (s.completedAssignments && s.completedAssignments.length !== cleanedCompleted.length)
+        ) {
           needsUpdate = true;
           return {
             ...s,
-            score: s.score || 95,
-            trees: logicalTrees,
-            ecoPoints: currentEP,
-            status: 'Đang học Unit 1',
-            lastPractice: s.lastPractice || 'Vừa xong'
+            score: actualScore,
+            trees: actualTrees,
+            ecoPoints: actualEP,
+            completedAssignments: cleanedCompleted,
+            status: 'Đang học Unit 2',
+            lastPractice: s.lastPractice && s.lastPractice !== 'Chưa luyện tập' ? s.lastPractice : 'Vừa xong'
           };
         }
         return s;
@@ -934,55 +942,7 @@ export function getStudentAccounts(): StudentAccount[] {
         return st;
       }
 
-      // Nếu đã có Cây xanh (> 0) hoặc điểm EP (> 0):
-      if ((st.trees || 0) > 0 || (st.ecoPoints || 0) > 0) {
-        let updated = false;
-        let score = st.score;
-        let completedAssignments = st.completedAssignments ? [...st.completedAssignments] : [];
-        let lastPractice = st.lastPractice;
-        let status = st.status;
-
-        // Độ chuẩn phát âm: Nếu chưa có điểm hoặc bằng 0, gán điểm Web Speech chuẩn của học sinh đã trồng cây
-        if (!score || score === 0) {
-          score = 88;
-          updated = true;
-        }
-
-        if (!lastPractice || lastPractice === 'Chưa luyện tập') {
-          lastPractice = 'Hôm nay';
-          updated = true;
-        }
-
-        if (!status || status === 'Chưa luyện tập') {
-          status = score >= 80 ? 'Giỏi' : 'Đang tiến bộ';
-          updated = true;
-        }
-
-        // Tỷ lệ hoàn thành: Liên kết bài tập của lớp tương ứng để hiển thị tiến độ thực tế > 0%
-        if (completedAssignments.length === 0) {
-          const classAssignments = getTeacherAssignments().filter(a => isAssignmentForStudent(a, st.className, st.grade));
-          if (classAssignments.length > 0) {
-            completedAssignments = [classAssignments[0].id];
-            updated = true;
-            if ((classAssignments[0].submittedCount || 0) === 0) {
-              classAssignments[0].submittedCount = 1;
-              saveTeacherAssignment(classAssignments[0]);
-            }
-          }
-        }
-
-        if (updated) {
-          needsUpdate = true;
-          return {
-            ...st,
-            score,
-            completedAssignments,
-            lastPractice,
-            status
-          };
-        }
-      }
-
+      // Với học sinh đã có dữ liệu hoạt động: giữ nguyên dữ liệu thực tế, không gán giá trị mẫu
       return st;
     });
 
@@ -1092,21 +1052,11 @@ export function updateStudentProgress(
     if (currentScore === 0) {
       updatedScore = Math.round(newScore);
     } else {
-      updatedScore = Math.round(Math.max(currentScore, newScore));
+      updatedScore = Math.round((currentScore * 0.7) + (newScore * 0.3));
     }
-  } else if ((updatedTrees > 0 || updatedEP > 0) && updatedScore === 0) {
-    updatedScore = 88;
   }
 
-  // Tự động liên kết bài tập của lớp nếu đã trồng cây/nhận điểm EP
   let completedAssignments = student.completedAssignments ? [...student.completedAssignments] : [];
-  if (completedAssignments.length === 0 && (updatedTrees > 0 || updatedEP > 0)) {
-    const classAssignments = getTeacherAssignments().filter(a => isAssignmentForStudent(a, student.className, student.grade));
-    if (classAssignments.length > 0) {
-      completedAssignments = [classAssignments[0].id];
-      recordStudentAssignmentCompletion(studentName, classAssignments[0].id);
-    }
-  }
 
   let status = 'Đang tiến bộ';
   if (updatedScore >= 90) status = 'Xuất sắc';

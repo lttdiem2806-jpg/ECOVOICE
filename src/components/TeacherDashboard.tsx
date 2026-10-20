@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
   GraduationCap, 
   Search, 
@@ -376,6 +376,34 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     };
   }, []);
 
+  // Tự động rà soát và đồng bộ các bài tập với bài đã nộp thực tế của học sinh (loại bỏ dữ liệu mẫu cũ)
+  useEffect(() => {
+    const currentStudents = getStudentAccounts();
+    const currentAssignments = getTeacherAssignments();
+    let modified = false;
+
+    const reconciled = currentAssignments.map(asg => {
+      const actualSubmissions = currentStudents.filter(
+        st => isAssignmentForStudent(asg, st.className, st.grade) && (st.completedAssignments || []).includes(asg.id)
+      ).length;
+
+      if ((asg.submittedCount || 0) !== actualSubmissions) {
+        modified = true;
+        return { ...asg, submittedCount: actualSubmissions };
+      }
+      return asg;
+    });
+
+    if (modified) {
+      localStorage.setItem('ecovoice_teacher_assignments', JSON.stringify(reconciled));
+      setAssignmentsList(reconciled);
+    }
+
+    // Luôn đồng bộ dữ liệu học sinh & lớp học đã được làm sạch trên giao diện
+    setStudentsList(currentStudents);
+    setClassesList(getTeacherClasses());
+  }, []);
+
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification({ message, type });
     if (playSoundEffect) {
@@ -587,35 +615,38 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     return studentsList.filter(s => activeClassNames.has(s.className.toLowerCase().trim()));
   }, [studentsList, activeClassNames]);
 
-  const totalStudents = activeClassStudents.length;
-  const totalTreesPlanted = activeClassStudents.reduce((acc, s) => acc + (s.trees || 0), 0);
-  
-  // Calculate speaking average across practicing students in current active classes
-  // 1. Độ chuẩn phát âm: Tính % điểm phát âm trung bình thực tế từ công nghệ Web Speech của tất cả lượt luyện nói của học sinh trong lớp.
-  // 2. Ràng buộc logic:
-  // - Nếu học sinh chưa từng luyện nói bài nào (lượt làm = 0), thì Độ chuẩn phát âm = 0%.
-  // - Nếu đã có điểm EP/Cây xanh, các chỉ số phát âm tương ứng phải hiển thị con số thực tế > 0%.
-  const activePracticedStudents = useMemo(() => {
-    return activeClassStudents.filter(
-      s => (s.lastPractice && s.lastPractice !== 'Chưa luyện tập') || (s.score || 0) > 0 || (s.trees || 0) > 0 || (s.ecoPoints || 0) > 0
-    );
-  }, [activeClassStudents]);
+  // Sĩ số thực tế của từng lớp: đếm số học sinh thuộc lớp đó trong cơ sở dữ liệu
+  const getClassStudentCount = useCallback((className: string): number => {
+    const target = className.toLowerCase().trim();
+    return studentsList.filter(s => s.className.toLowerCase().trim() === target).length;
+  }, [studentsList]);
 
+  // Lọc danh sách các lớp thực tế có học sinh (> 0 em)
+  const classesWithStudents = useMemo(() => {
+    return classesList.filter(c => getClassStudentCount(c.name) > 0);
+  }, [classesList, getClassStudentCount]);
+
+  const activeClassesCount = classesWithStudents.length;
+
+  // Yêu cầu 1: Tổng số học sinh ở thẻ tổng quan được tính bằng cách cộng dồn Sĩ số thực tế của tất cả các lớp có trong danh sách bảng dữ liệu
+  const totalStudents = useMemo(() => {
+    return classesList.reduce((acc, c) => acc + getClassStudentCount(c.name), 0);
+  }, [classesList, getClassStudentCount]);
+
+  // Tổng số cây xanh đã trồng: cộng dồn tổng số cây xanh thực tế từ trường dữ liệu trees của tất cả học sinh
+  const totalTreesPlanted = useMemo(() => {
+    return studentsList.reduce((acc, s) => acc + (s.trees || 0), 0);
+  }, [studentsList]);
+  
+  // Độ chuẩn phát âm: Lấy giá trị điểm phát âm trung bình thực tế của các học sinh có trong hệ thống (không gán cứng 100%)
   const avgAccuracy = useMemo(() => {
-    if (totalTreesPlanted === 0 && activePracticedStudents.length === 0) {
+    const studentsWithScore = studentsList.filter(s => (s.score || 0) > 0);
+    if (studentsWithScore.length === 0) {
       return 0;
     }
-    if (activePracticedStudents.length === 0) {
-      return totalTreesPlanted > 0 ? 88 : 0;
-    }
-    const totalScore = activePracticedStudents.reduce((acc, s) => {
-      const studentScore = (s.score || 0) > 0 ? (s.score || 0) : ((s.trees || 0) > 0 ? 88 : 0);
-      return acc + studentScore;
-    }, 0);
-    const scoreVal = Math.round(totalScore / activePracticedStudents.length);
-    if (totalTreesPlanted > 0 && scoreVal === 0) return 88;
-    return scoreVal;
-  }, [activePracticedStudents, totalTreesPlanted]);
+    const totalScore = studentsWithScore.reduce((acc, s) => acc + (s.score || 0), 0);
+    return Math.round(totalScore / studentsWithScore.length);
+  }, [studentsList]);
 
   // Dynamic sync for class lesson and completion rate based on actual student activity
   const getClassLessonInfo = (c: TeacherClass): { unitName: string; lessonName?: string } => {
@@ -633,63 +664,59 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     return getClassLessonInfo(c).unitName;
   };
 
-  const getClassCompletionRate = (c: TeacherClass): number => {
-    const classAssignments = assignmentsList.filter(a => isAssignmentForStudent(a, c.name, c.grade));
-    if (classAssignments.length === 0) return 0;
-
+  const getClassCompletionRate = useCallback((c: TeacherClass): number => {
     const classStudents = studentsList.filter(
       s => s.className.toLowerCase().trim() === c.name.toLowerCase().trim()
     );
+    // Lớp có sĩ số 0 em không được hiển thị tiến độ 100%, phải trả về 0%
+    if (classStudents.length === 0) return 0;
 
-    let totalSubmissions = 0;
-    classAssignments.forEach(asg => {
-      totalSubmissions += (asg.submittedCount || 0);
-    });
+    const classAssignments = assignmentsList.filter(a => isAssignmentForStudent(a, c.name, c.grade));
+    if (classAssignments.length === 0) return 0;
 
     let studentCompletedCount = 0;
     classStudents.forEach(st => {
-      if (st.completedAssignments && st.completedAssignments.length > 0) {
-        studentCompletedCount += st.completedAssignments.length;
-      }
+      const completedSet = new Set(st.completedAssignments || []);
+      classAssignments.forEach(asg => {
+        if (completedSet.has(asg.id)) {
+          studentCompletedCount += 1;
+        }
+      });
     });
 
-    const classPlantedTrees = classStudents.reduce((acc, s) => acc + (s.trees || 0), 0);
-    const actualCompleted = Math.max(totalSubmissions, studentCompletedCount);
-
-    // Ràng buộc logic: Nếu học sinh chưa làm bài tập nào và chưa trồng cây (lượt làm = 0), bắt buộc hiển thị 0%
-    if (actualCompleted === 0 && classPlantedTrees === 0) return 0;
-
-    const studentBase = classStudents.length > 0 ? classStudents.length : 1;
-    const totalExpected = studentBase * classAssignments.length;
+    const totalExpected = classStudents.length * classAssignments.length;
     if (totalExpected === 0) return 0;
 
-    const effectiveCompleted = actualCompleted > 0 ? actualCompleted : (classPlantedTrees > 0 ? 1 : 0);
-    return Math.min(100, Math.round((effectiveCompleted / totalExpected) * 100));
-  };
+    return Math.min(100, Math.round((studentCompletedCount / totalExpected) * 100));
+  }, [studentsList, assignmentsList]);
 
-  // Tỷ lệ hoàn thành: Tính % số bài tập/bài học đã hoàn thành trên tổng số bài tập được giao
+  // Tỷ lệ hoàn thành: Tính toán dựa trên tiến độ hoàn thành bài học thực tế của các em học sinh (số bài đã học / tổng số bài)
   const avgCompletion = useMemo(() => {
-    // Ràng buộc logic: Nếu học sinh chưa từng luyện nói bài nào (lượt làm = 0), Tỷ lệ hoàn thành = 0%
-    if (totalTreesPlanted === 0 && activePracticedStudents.length === 0) {
+    if (studentsList.length === 0) {
       return 0;
     }
 
-    const classesWithAssignments = classesList.filter(c => 
-      assignmentsList.some(a => isAssignmentForStudent(a, c.name, c.grade))
-    );
+    let totalAssigned = 0;
+    let totalCompleted = 0;
 
-    if (classesWithAssignments.length > 0) {
-      const totalRate = classesWithAssignments.reduce((acc, c) => acc + getClassCompletionRate(c), 0);
-      const computed = Math.round(totalRate / classesWithAssignments.length);
-      if (computed > 0) return computed;
+    studentsList.forEach(st => {
+      const studentAssignments = assignmentsList.filter(a => isAssignmentForStudent(a, st.className, st.grade));
+      totalAssigned += studentAssignments.length;
+
+      const completedSet = new Set(st.completedAssignments || []);
+      studentAssignments.forEach(asg => {
+        if (completedSet.has(asg.id)) {
+          totalCompleted += 1;
+        }
+      });
+    });
+
+    if (totalAssigned === 0) {
+      return 0;
     }
 
-    if (totalTreesPlanted > 0) {
-      return 100;
-    }
-
-    return 0;
-  }, [classesList, assignmentsList, totalTreesPlanted, activePracticedStudents]);
+    return Math.min(100, Math.round((totalCompleted / totalAssigned) * 100));
+  }, [studentsList, assignmentsList]);
 
   // File upload handler
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1603,7 +1630,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     {totalStudents}
                   </span>
                   <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                    Đang hoạt động trong {classesList.length} lớp
+                    {activeClassesCount > 0
+                      ? `Đang hoạt động trong ${activeClassesCount} lớp học`
+                      : `Phân bổ trên tổng số ${classesList.length} lớp học`}
                   </p>
                 </div>
               </div>
@@ -1791,23 +1820,35 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             )}
                           </td>
                           <td className="py-3 px-3">
-                            <span className="text-emerald-700 font-black">{cAvg}%</span>
+                            {cCount === 0 ? (
+                              <span className="text-gray-400 font-semibold italic">N/A</span>
+                            ) : (
+                              <span className="text-emerald-700 font-black">{cAvg}%</span>
+                            )}
                           </td>
                           <td className="py-3 px-3">
                             <span>{cTrees} 🌲</span>
                           </td>
                           <td className="py-3 px-3 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <span className={`font-black ${cRate > 0 ? 'text-emerald-800' : 'text-gray-400'}`}>
-                                {cRate}%
-                              </span>
-                              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-emerald-600 rounded-full transition-all duration-300" 
-                                  style={{ width: `${cRate}%` }} 
-                                />
+                            {cCount === 0 ? (
+                              <div className="flex items-center justify-end">
+                                <span className="text-[11px] font-semibold text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-md italic">
+                                  Chưa có dữ liệu học tập
+                                </span>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="flex items-center justify-end gap-2">
+                                <span className={`font-black ${cRate > 0 ? 'text-emerald-800' : 'text-gray-400'}`}>
+                                  {cRate}%
+                                </span>
+                                <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-emerald-600 rounded-full transition-all duration-300" 
+                                    style={{ width: `${cRate}%` }} 
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );
@@ -1960,7 +2001,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         </div>
                         <div>
                           <span className="text-[10px] text-emerald-700 font-bold block">Phát âm TB</span>
-                          <span className="text-sm font-black text-emerald-700">{classAvgSpeaking}%</span>
+                          <span className="text-sm font-black text-emerald-700">
+                            {classStudentCount === 0 ? 'N/A' : `${classAvgSpeaking}%`}
+                          </span>
                         </div>
                         <div>
                           <span className="text-[10px] text-emerald-700 font-bold block">Cây xanh</span>
