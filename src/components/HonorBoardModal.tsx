@@ -549,13 +549,17 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
 
           {/* Full Leaderboard Table - Ẩn hoàn toàn khi chưa có dữ liệu học sinh */}
           {students.length > 0 && (
-            <div className="bg-white rounded-2xl border-2 border-emerald-200 shadow-sm overflow-hidden">
-              <div className="p-3 bg-emerald-50/80 border-b border-emerald-200 flex items-center justify-between">
-                <h4 className="font-black text-xs sm:text-sm text-emerald-950 flex items-center gap-1.5">
-                  <Medal className="w-4 h-4 text-emerald-700" />
-                  <span>{isGuest ? 'Bảng thành tích phiên trải nghiệm' : `Bảng xếp hạng đầy đủ (${students.length} học sinh)`}</span>
-                </h4>
-                <span className="text-[11px] font-bold text-emerald-800">
+            <div className="bg-white rounded-2xl border-2 border-emerald-200 shadow-sm overflow-hidden mt-1">
+              <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-emerald-50/90 border-b border-emerald-200 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center shrink-0 shadow-2xs">
+                    <Medal className="w-3.5 h-3.5 text-emerald-700" />
+                  </div>
+                  <span className="font-black text-xs sm:text-sm text-emerald-950 truncate leading-snug">
+                    {isGuest ? 'Bảng thành tích phiên trải nghiệm' : `Bảng xếp hạng đầy đủ (${students.length} học sinh)`}
+                  </span>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-800 shrink-0 bg-white/90 px-2.5 py-0.5 rounded-lg border border-emerald-200 shadow-2xs">
                   Thời gian: {timeRange === 'week' ? 'Tuần này' : 'Tháng này'}
                 </span>
               </div>
