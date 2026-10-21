@@ -543,9 +543,28 @@ export default function App() {
             setIsGuestMode(false);
             setTeacherUnlocked(true);
           } else {
-            // CASE C: Google Sign-In strictly routes to Guest/Demo Mode interface
-            setIsGuestMode(true);
+            // Google Sign-In student: recognize as Student
+            setIsGuestMode(false);
+            setUserRole('student');
+            setCurrentUserRole('student');
             setTeacherUnlocked(false);
+
+            const accounts = getStudentAccounts();
+            const clean = (s: string) => (s || '').toLowerCase().replace(/^(bé|em|học sinh)\s+/i, '').replace(/[^a-z0-9]/g, '').trim();
+            const lowerName = clean(displayName);
+            const matchedStudent = accounts.find(s => {
+              const sClean = clean(s.name);
+              return sClean === lowerName || sClean.includes(lowerName) || lowerName.includes(sClean);
+            });
+
+            const studentClass = matchedStudent?.className || profile.className || '3A1';
+            setStudentClassInput(studentClass);
+
+            const effectiveEP = Math.max(profile.ecoPoints || 0, matchedStudent?.ecoPoints || 0);
+            if (effectiveEP > 0) {
+              setEcoPoints(effectiveEP);
+              setVirtualTrees(computeLogicalTrees(effectiveEP));
+            }
           }
         } catch (e) {
           console.warn('Auth state sync error:', e);
@@ -624,24 +643,40 @@ export default function App() {
           localStorage.setItem('ecovoice_user_name', displayName);
           setMascotBubble(`Xin chào Quản trị viên (${user.email || displayName})! Chúc Thầy/Cô một buổi dạy thật hứng khởi cùng các em học sinh! 👩‍🏫🌿`);
         } else {
-          // LUỒNG 2: Google Sign-In -> Routes into Guest Mode / Demo Interface (Google User)
-          setIsGuestMode(true);
-          setUserRole('guest');
-          setCurrentUserRole('guest');
+          // Student account via Google Sign-In: recognize as STUDENT
+          setIsGuestMode(false);
+          setUserRole('student');
+          setCurrentUserRole('student');
           setTeacherUnlocked(false);
           setShowTeacherDashboard(false);
-          localStorage.setItem('ecovoice_user_role', 'guest');
+          localStorage.setItem('ecovoice_user_role', 'student');
           localStorage.setItem('ecovoice_is_logged_in', 'true');
           localStorage.setItem('ecovoice_user_name', displayName);
-          localStorage.setItem('ecovoice_student_class', profile.className);
 
-          const sGrade = profile.grade || profile.className?.replace(/^Lớp\s+/i, '').trim().charAt(0) || '4';
+          // Match with school roster to retrieve class, points and grade
+          const accounts = getStudentAccounts();
+          const clean = (s: string) => (s || '').toLowerCase().replace(/^(bé|em|học sinh)\s+/i, '').replace(/[^a-z0-9]/g, '').trim();
+          const lowerName = clean(displayName);
+          const matchedStudent = accounts.find(s => {
+            const sClean = clean(s.name);
+            return sClean === lowerName || sClean.includes(lowerName) || lowerName.includes(sClean);
+          });
+
+          const studentClass = matchedStudent?.className || profile.className || '3A1';
+          setStudentClassInput(studentClass);
+          localStorage.setItem('ecovoice_student_class', studentClass);
+
+          const effectiveEP = Math.max(profile.ecoPoints || 0, matchedStudent?.ecoPoints || 0);
+          setEcoPoints(effectiveEP);
+          setVirtualTrees(computeLogicalTrees(effectiveEP));
+
+          const sGrade = profile.grade || matchedStudent?.grade || studentClass.replace(/^Lớp\s+/i, '').trim().charAt(0) || '3';
           if (sGrade === '3' || sGrade === '4' || sGrade === '5') {
             setSelectedGrade(sGrade);
             localStorage.setItem('ecovoice_selected_grade', sGrade);
           }
 
-          setMascotBubble(`Chào mừng ${displayName}! Mời bạn trải nghiệm các bài học mẫu & tính năng Luyện nói AI cùng Eco-Voice nhé! 🌟🌱`);
+          setMascotBubble(`Chào mừng bạn ${displayName} (Lớp ${studentClass})! Chúc bạn có buổi luyện phát âm thật hứng khởi cùng Eco-Voice! 🌟🌱`);
         }
 
         setLoginPromptNotice(null);
@@ -753,11 +788,16 @@ export default function App() {
   };
 
   const isOfficialStudentAccount = (name?: string, role?: string): boolean => {
-    if (role === 'teacher' || role === 'guest' || isGuestMode) return false;
+    if (role === 'teacher') return false;
     if (!name || isGuestUser(name)) return false;
+    if (role === 'student') return true;
     const accounts = getStudentAccounts();
-    const lower = name.trim().toLowerCase();
-    return accounts.some(s => s.name.trim().toLowerCase() === lower);
+    const clean = (str: string) => (str || '').toLowerCase().replace(/^(bé|em|học sinh)\s+/i, '').replace(/[^a-z0-9]/g, '').trim();
+    const lower = clean(name);
+    return accounts.some(s => {
+      const sClean = clean(s.name);
+      return sClean === lower || sClean.includes(lower) || lower.includes(sClean);
+    });
   };
 
   const handleChangePasswordSubmit = (e: React.FormEvent) => {
