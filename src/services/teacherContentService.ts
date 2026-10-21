@@ -897,8 +897,8 @@ export function getStudentAccounts(): StudentAccount[] {
       } catch {}
     }
 
-    // Ensure Chí Vỹ (Lớp 4A3) is always present for testing and grading
-    const chiVyIdx = sanitized.findIndex(s => s.name.trim().toLowerCase() === 'chí vỹ');
+    // Ensure Chí Vỹ (Lớp 4A3) is always present for testing and grading without duplicating ID
+    const chiVyIdx = sanitized.findIndex(s => s.id === 'st_chivy' || s.name.trim().toLowerCase() === 'chí vỹ');
     if (chiVyIdx < 0) {
       sanitized.push({
         id: 'st_chivy',
@@ -915,6 +915,25 @@ export function getStudentAccounts(): StudentAccount[] {
       });
       needsUpdate = true;
     }
+
+    // STRICT DEDUPLICATION BY ID:
+    // Ensure every student record in memory has a strictly unique ID to prevent React duplicate key crashes
+    const seenIds = new Set<string>();
+    const deduplicated: StudentAccount[] = [];
+    for (const st of sanitized) {
+      const cleanId = String(st.id || '').trim();
+      if (!cleanId) continue;
+      if (!seenIds.has(cleanId)) {
+        seenIds.add(cleanId);
+        deduplicated.push(st);
+      } else {
+        const uniqueId = `${cleanId}_${Math.random().toString(36).substring(2, 6)}`;
+        seenIds.add(uniqueId);
+        deduplicated.push({ ...st, id: uniqueId });
+        needsUpdate = true;
+      }
+    }
+    sanitized = deduplicated;
 
     // RÀNG BUỘC LOGIC KPI:
     // 1. Nếu học sinh chưa từng luyện nói bài nào (lượt làm = 0 hoặc lastPractice === 'Chưa luyện tập' và score === 0):

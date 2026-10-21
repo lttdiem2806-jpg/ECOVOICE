@@ -2565,14 +2565,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           </td>
                         </tr>
                       ) : (
-                        honorStudents.map((st) => {
+                        honorStudents.map((st, idx) => {
                           const isTop1 = st.rank === 1;
                           const isTop2 = st.rank === 2;
                           const isTop3 = st.rank === 3;
 
                           return (
                             <tr
-                              key={st.id}
+                              key={`${st.id}-${idx}`}
                               className={`hover:bg-emerald-50/60 transition-colors ${
                                 isTop1 ? 'bg-amber-50/40' : isTop2 ? 'bg-slate-50/40' : isTop3 ? 'bg-orange-50/30' : ''
                               }`}
@@ -3920,7 +3920,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 ) : (
                   classStudents.map((st, idx) => (
                     <div 
-                      key={st.id}
+                      key={`${st.id}-${idx}`}
                       className="bg-white p-3 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-2xs"
                     >
                       <div className="flex items-center gap-2.5 flex-1 min-w-0">

@@ -353,7 +353,7 @@ export const HonorBoardWidget: React.FC<HonorBoardWidgetProps> = ({
             </div>
           </div>
         ) : (
-          top3.map((student) => {
+          top3.map((student, idx) => {
             const isRank1 = student.rank === 1;
             const isRank2 = student.rank === 2;
             const isRank3 = student.rank === 3;
@@ -361,7 +361,7 @@ export const HonorBoardWidget: React.FC<HonorBoardWidgetProps> = ({
 
             return (
               <div
-                key={student.id}
+                key={`${student.id}-${idx}`}
                 className={`flex items-center justify-between gap-1.5 px-2 py-1.5 rounded-xl border transition-all ${
                   isRank1
                     ? 'bg-gradient-to-r from-amber-50 to-amber-100/90 border-amber-300 shadow-2xs'

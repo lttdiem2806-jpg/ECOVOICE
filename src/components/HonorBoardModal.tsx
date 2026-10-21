@@ -580,7 +580,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
               </div>
 
               <div className="divide-y divide-emerald-100">
-              {students.map((st) => {
+              {students.map((st, idx) => {
                 const hasPoints = st.ecoPoints > 0 || st.trees > 0;
                 const isTop1 = hasPoints && st.rank === 1;
                 const isTop2 = hasPoints && st.rank === 2;
@@ -589,7 +589,7 @@ export const HonorBoardModal: React.FC<HonorBoardModalProps> = ({
 
                 return (
                   <div
-                    key={st.id}
+                    key={`${st.id}-${idx}`}
                     className={`px-3 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-4 transition-colors ${
                       isMe 
                         ? 'bg-emerald-100/70 font-bold' 
