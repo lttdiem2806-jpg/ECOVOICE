@@ -10,6 +10,8 @@ interface InteractivePronunciationFeedbackProps {
   onListen: (slow?: boolean) => void;
   onPracticeAgain: () => void;
   isSpeakingActive: boolean;
+  onNextItem?: () => void;
+  hasNextItem?: boolean;
 }
 
 export const InteractivePronunciationFeedback: React.FC<InteractivePronunciationFeedbackProps> = ({
@@ -19,7 +21,9 @@ export const InteractivePronunciationFeedback: React.FC<InteractivePronunciation
   attemptCount,
   onListen,
   onPracticeAgain,
-  isSpeakingActive
+  isSpeakingActive,
+  onNextItem,
+  hasNextItem = true
 }) => {
   const { tier, score, tierBadgeEn, tierBadgeVi, feedbackEn, feedbackVi, tip, wordAnalysis, isPassed } = evaluation;
 
@@ -149,45 +153,52 @@ export const InteractivePronunciationFeedback: React.FC<InteractivePronunciation
         </div>
       )}
 
-      {/* 5. Practice Loop Action Buttons: Listen Sample, Listen Slowly, Speak Again */}
-      {!isPassed && (
-        <div className="flex items-center gap-2 pt-1 flex-wrap">
+      {/* 5. Practice Loop Action Buttons: Listen Sample, Listen Slowly, Speak Again & Next Button */}
+      <div className="flex items-center gap-2 pt-1 flex-wrap">
+        <button
+          type="button"
+          onClick={() => onListen(false)}
+          className="flex-1 min-w-[100px] py-1.5 px-2.5 bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+        >
+          <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+          <span>Nghe mẫu</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onListen(true)}
+          className="flex-1 min-w-[100px] py-1.5 px-2.5 bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+        >
+          <span>🐢</span>
+          <span>Nghe chậm</span>
+        </button>
+
+        {isPassed && onNextItem && hasNextItem ? (
           <button
             type="button"
-            onClick={() => onListen(false)}
-            className="flex-1 min-w-[110px] py-1.5 px-2.5 bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            onClick={onNextItem}
+            className="w-full sm:w-auto sm:flex-1 min-w-[130px] py-2 px-3 bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] text-white font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ring-2 ring-emerald-400/80 animate-bounce-subtle"
           >
-            <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Nghe mẫu (Listen)</span>
+            <span>Next (Tiếp)</span>
+            <ChevronRight className="w-4 h-4 text-white" />
           </button>
-
+        ) : attemptCount >= 4 && !isPassed ? (
+          <div className="w-full sm:w-auto sm:flex-1 min-w-[130px] py-1.5 px-3 bg-amber-500 text-white rounded-xl text-xs font-black transition-all shadow-sm flex items-center justify-center gap-1.5 animate-pulse">
+            <span>⏩</span>
+            <span>Đang chuyển thử thách tiếp theo...</span>
+          </div>
+        ) : (
           <button
             type="button"
-            onClick={() => onListen(true)}
-            className="flex-1 min-w-[110px] py-1.5 px-2.5 bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            onClick={onPracticeAgain}
+            disabled={isSpeakingActive}
+            className="w-full sm:w-auto sm:flex-1 min-w-[130px] py-1.5 px-3 bg-gradient-to-r from-[#0c4326] to-[#16a34a] hover:from-[#0f5430] hover:to-[#22c55e] text-white rounded-xl text-xs font-black transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ring-2 ring-emerald-300/40"
           >
-            <span>🐢</span>
-            <span>Nghe chậm (Slowly)</span>
+            <Mic className="w-3.5 h-3.5 text-white" />
+            <span>Luyện nói lại</span>
           </button>
-
-          {attemptCount >= 4 ? (
-            <div className="w-full sm:w-auto sm:flex-1 min-w-[130px] py-1.5 px-3 bg-amber-500 text-white rounded-xl text-xs font-black transition-all shadow-sm flex items-center justify-center gap-1.5 animate-pulse">
-              <span>⏩</span>
-              <span>Đang chuyển thử thách tiếp theo...</span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={onPracticeAgain}
-              disabled={isSpeakingActive}
-              className="w-full sm:w-auto sm:flex-1 min-w-[130px] py-1.5 px-3 bg-gradient-to-r from-[#0c4326] to-[#16a34a] hover:from-[#0f5430] hover:to-[#22c55e] text-white rounded-xl text-xs font-black transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ring-2 ring-emerald-300/40 animate-pulse"
-            >
-              <Mic className="w-3.5 h-3.5 text-white" />
-              <span>Luyện nói lại (Try Again)</span>
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

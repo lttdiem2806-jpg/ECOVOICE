@@ -360,28 +360,29 @@ export const analyzeSentenceWords = (target: string, spoken: string): WordAnalys
 export const evaluateSmartPronunciation = (
   transcript: string,
   target: string,
-  score: number,
+  score: number | string,
   phonetic?: string,
   attemptCount: number = 1
 ): PronunciationEvaluationResult => {
+  const numScore = typeof score === 'string' ? parseFloat(score) || 0 : Number(score) || 0;
   const isSentence = target.trim().split(/\s+/).length > 1;
   const tip = getPhonicsTipForTarget(target, phonetic);
   const wordAnalysis = isSentence ? analyzeSentenceWords(target, transcript) : undefined;
 
   // Tier 1: Excellent (Xuất sắc) - Score >= 80%
-  if (score >= 80) {
+  if (numScore >= 80) {
     const isImproved = attemptCount > 1;
     return {
-      score,
+      score: numScore,
       tier: 'excellent',
       tierBadgeEn: 'Excellent!',
       tierBadgeVi: 'Xuất sắc!',
       feedbackEn: isImproved 
-        ? `Brilliant improvement! You scored ${score}% on your practice loop! ⭐` 
-        : `Awesome pronunciation! Clear, accurate, and natural (${score}%)! ⭐`,
+        ? `Brilliant improvement! You scored ${numScore}% on your practice loop! ⭐` 
+        : `Awesome pronunciation! Clear, accurate, and natural (${numScore}%)! ⭐`,
       feedbackVi: isImproved
-        ? `🎉 Tuyệt vời! Bạn đã vượt lên chính mình sau ${attemptCount} lần luyện tập (${score}%). Thưởng +10 EP! ⭐`
-        : `🎉 Xuất sắc! Phát âm rất chuẩn xác và tự tin (${score}%). Thưởng +10 EP! ⭐`,
+        ? `🎉 Tuyệt vời! Bạn đã vượt lên chính mình sau ${attemptCount} lần luyện tập (${numScore}%). Thưởng +10 EP! ⭐`
+        : `🎉 Xuất sắc! Phát âm rất chuẩn xác và tự tin (${numScore}%). Thưởng +10 EP! ⭐`,
       mascotEncouragement: `Awesome job! Bạn phát âm từ "${target}" rất chuẩn xác! ⭐`,
       tip,
       wordAnalysis,
@@ -389,11 +390,11 @@ export const evaluateSmartPronunciation = (
     };
   }
 
-  // Special encouragement when reaching max 4 attempts without passing
+  // Special encouragement when reaching max 4 attempts: allow passing
   if (attemptCount >= 4) {
     return {
-      score,
-      tier: score >= 50 ? 'good' : 'needs_practice',
+      score: numScore,
+      tier: numScore >= 50 ? 'good' : 'needs_practice',
       tierBadgeEn: 'Completed Attempts',
       tierBadgeVi: 'Đã thử 4 lần',
       feedbackEn: "Good effort! Let's move to the next challenge! 🌟",
@@ -401,35 +402,34 @@ export const evaluateSmartPronunciation = (
       mascotEncouragement: "Cố gắng lắm! Em đã thử 4 lần rất kiên trì. Let's move to the next challenge! Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
       tip,
       wordAnalysis,
-      isPassed: false
+      isPassed: true
     };
   }
 
-  // Tier 2: Good Effort (Cố gắng rất tốt) - 50% <= Score < 80%
-  if (score >= 50) {
+  // Tier 2: Good Effort (Cố gắng rất tốt) - 50% <= Score < 80% (Passing grade unlocked)
+  if (numScore >= 50) {
     return {
-      score,
+      score: numScore,
       tier: 'good',
       tierBadgeEn: 'Good Progress!',
       tierBadgeVi: 'Tiến bộ tốt!',
-      feedbackEn: `Great effort! Almost there! Let's listen again and level up! 👍`,
-      feedbackVi: `👍 Cố gắng rất tốt! Bạn đã phát âm gần chuẩn rồi (${score}%). Hãy nghe lại âm mẫu chuẩn và nói lại để đạt điểm tối đa nhé!`,
-      mascotEncouragement: `Keep it up! Bạn làm rất tốt, nghe lại mẫu một lần nữa nhé! 🎧`,
+      feedbackEn: `Great effort! Almost there! Let's move to the next challenge or practice again! 👍`,
+      feedbackVi: `👍 Cố gắng rất tốt! Bạn đã phát âm đạt yêu cầu (${numScore}%). Bấm 'Next (Tiếp)' để sang từ tiếp theo hoặc luyện nói lại nhé!`,
+      mascotEncouragement: `Keep it up! Bạn phát âm đạt yêu cầu rồi, bấm Next để tiếp tục nhé! 🎧`,
       tip,
       wordAnalysis,
-      isPassed: false
+      isPassed: true
     };
   }
 
   // Tier 3: Needs Practice (Cần luyện thêm / Cố gắng lắm) - Score < 50%
-  // TUYỆT ĐỐI KHÔNG DÙNG TỪ TIÊU CỰC (Fail, Sai rồi, Kém)
   return {
-    score,
+    score: numScore,
     tier: 'needs_practice',
     tierBadgeEn: 'Needs Practice',
     tierBadgeVi: 'Cần luyện thêm',
     feedbackEn: `Good effort! Let's check the audio sample again! 🌱`,
-    feedbackVi: `🌱 Good effort! Let's check the audio sample again! / Cố gắng lắm! Hãy nghe lại mẫu chuẩn và thử lại nhé!`,
+    feedbackVi: `🌱 Cố gắng lắm! Hãy nghe lại mẫu chuẩn và thử lại để đạt điểm qua bài nhé!`,
     mascotEncouragement: `You can do it! / Bạn làm được mà! Hãy nghe mẫu chậm 🐢 rồi đọc to rõ hơn nào!`,
     tip,
     wordAnalysis,

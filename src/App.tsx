@@ -3707,14 +3707,14 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Previous & Next buttons appear when student has practiced */}
-                  {(speechSuccess === true || practicedItems.has(currentVocab.id)) && (
+                  {/* Previous & Next buttons appear when student has practiced or passed score */}
+                  {(speechSuccess === true || (pronunciationEvaluation && Number(pronunciationEvaluation.score) >= 50) || (activeTab === 'vocabulary' ? (currentVocab && practicedItems.has(currentVocab.id)) : selectedSentenceIndex > 0)) && (
                     <div className="flex items-center justify-between gap-2.5 w-full mt-2.5 pt-0.5 animate-fadeIn">
                       <button
                         onClick={handlePreviousItem}
-                        disabled={currentVocabIndex === 0}
+                        disabled={activeTab === 'vocabulary' ? currentVocabIndex === 0 : selectedSentenceIndex === 0}
                         className={`flex-1 py-2 px-3 rounded-xl border-2 flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-xs ${
-                          currentVocabIndex === 0
+                          (activeTab === 'vocabulary' ? currentVocabIndex === 0 : selectedSentenceIndex === 0)
                             ? 'bg-[#e2f4e8]/60 text-emerald-700/50 border-[#86c898]/40 cursor-not-allowed opacity-60'
                             : 'bg-[#e0f4e7] hover:bg-[#cfeedb] text-emerald-950 border-[#86c898] cursor-pointer active:scale-95'
                         }`}
@@ -3726,16 +3726,16 @@ export default function App() {
 
                       <button
                         onClick={handleNextItem}
-                        disabled={currentVocabIndex === vocabularyList.length - 1}
+                        disabled={activeTab === 'vocabulary' ? currentVocabIndex === vocabularyList.length - 1 : selectedSentenceIndex === sentencesList.length - 1}
                         className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-sm border border-emerald-400/40 ${
-                          currentVocabIndex === vocabularyList.length - 1
+                          (activeTab === 'vocabulary' ? currentVocabIndex === vocabularyList.length - 1 : selectedSentenceIndex === sentencesList.length - 1)
                             ? 'bg-[#e2f4e8]/60 text-emerald-700/50 border-[#86c898]/40 cursor-not-allowed opacity-60'
-                            : 'bg-gradient-to-r from-[#0c4326] to-[#16a34a] hover:from-[#0f5430] hover:to-[#22c55e] text-white cursor-pointer active:scale-95'
+                            : 'bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] text-white cursor-pointer active:scale-95 ring-2 ring-emerald-400/60 animate-bounce-subtle'
                         }`}
                         title="Chuyển sang mục tiếp theo"
                       >
                         <span>Next (Tiếp)</span>
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4 text-white" />
                       </button>
                     </div>
                   )}
@@ -3756,6 +3756,8 @@ export default function App() {
                   onListen={handleListen}
                   onPracticeAgain={handleStartSpeak}
                   isSpeakingActive={isSpeakingActive}
+                  onNextItem={handleNextItem}
+                  hasNextItem={activeTab === 'vocabulary' ? currentVocabIndex < vocabularyList.length - 1 : selectedSentenceIndex < sentencesList.length - 1}
                 />
               ) : (
                 <div className={`rounded-full px-4 py-2 text-sm font-semibold flex items-center justify-center gap-2 transition-all flex-wrap ${
