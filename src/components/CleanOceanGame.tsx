@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Volume2, 
   Mic, 
+  Square,
   ArrowLeft, 
   CheckCircle2, 
   RotateCcw, 
@@ -214,6 +215,8 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
 
   const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<any>(null);
+  const isListeningRef = useRef<boolean>(false);
+  const accumulatedTranscriptRef = useRef<string>('');
 
   const clearTimer = () => {
     if (timeoutRef.current) {
@@ -297,7 +300,10 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
           'What is your name?',
           'How are you today?',
           'Nice to meet you.',
-          'Goodbye, see you again.'
+          'Goodbye, see you again.',
+          'Where are you from?',
+          'What is your favourite color?',
+          'I like learning English.'
         ];
         for (const fb of fallbackSentences) {
           if (distractorSentences.length >= 3) break;
@@ -361,7 +367,9 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
             { word: 'SCHOOL', phonetic: '/skuːl/', icon: '🏫' },
             { word: 'TEACHER', phonetic: '/ˈtiːtʃər/', icon: '👩‍🏫' },
             { word: 'STUDENT', phonetic: '/ˈstjuːdnt/', icon: '🎒' },
-            { word: 'HELLO', phonetic: '/həˈləʊ/', icon: '👋' }
+            { word: 'HELLO', phonetic: '/həˈləʊ/', icon: '👋' },
+            { word: 'FAMILY', phonetic: '/ˈfæməli/', icon: '👨‍👩‍👧‍👦' },
+            { word: 'BOOK', phonetic: '/bʊk/', icon: '📚' }
           ];
           for (const item of globalSuccessCore) {
             if (distractorWords.length >= 3) break;
@@ -421,7 +429,7 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
     initGameSession();
   }, [vocabularyList, sentenceList, allUnitVocabularies, allUnitSentences]);
 
-  const currentQ: CleanOceanQuestion = questions[currentIndex] || {
+  const currentQ: CleanOceanQuestion = questions[currentIndex] || questions[0] || {
     id: 'default',
     type: 'vocabulary',
     targetWord: 'HELLO',
@@ -477,31 +485,31 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
       setCleanedCount(nextCleaned);
 
       // Check if all 5 questions done
-      if (nextCleaned >= TOTAL_QUESTIONS) {
+      if (currentIndex + 1 >= TOTAL_QUESTIONS || nextCleaned >= TOTAL_QUESTIONS) {
         setFeedback({
           text: `🎉 Wonderful! You answered all ${TOTAL_QUESTIONS}/${TOTAL_QUESTIONS} questions correctly! Retrieved ${targetTrash.nameEn} (${targetTrash.nameVi})! The ocean is now crystal clear and sea creatures rejoice! / Tuyệt vời! Bạn đã hoàn thành xuất sắc toàn bộ câu hỏi của ${selectedUnitName} và vớt sạch rác thải nhựa! Toàn bộ đại dương xanh biếc trở lại! 🌊🐬`,
           isCorrect: true
         });
 
-        // 3. Trigger Eco-Knowledge popup after 1.2s to enjoy ocean celebration
+        // Trigger Eco-Knowledge popup after 1.2s to enjoy ocean celebration
         setTimeout(() => {
           playSoundEffect('celebrate');
           setShowEcoKnowledgePopup(true);
         }, 1200);
       } else {
         setFeedback({
-          text: `🌊 Great job! Successfully retrieved "${targetTrash.nameEn}" (${targetTrash.nameVi})! / Giỏi lắm! Em vừa trả lời đúng từ vựng bài học và vớt sạch "${targetTrash.nameVi}" ra khỏi biển! (+6 EP)`,
+          text: `🎉 Excellent! Tuyệt vời! Em vừa trả lời đúng và vớt sạch "${targetTrash.nameVi}" ra khỏi đại dương! (+6 EP)`,
           isCorrect: true
         });
 
         // Advance to next question after 1.4s
         setTimeout(() => {
           setSpeechAttempts(0);
-          setCurrentIndex(prev => prev + 1);
+          setCurrentIndex(prev => Math.min(TOTAL_QUESTIONS - 1, prev + 1));
           setSelectedOptionId(null);
           setJustCleanedIndex(null);
           setFeedback({
-            text: 'Listen and choose the correct meaning for the next question to clean more trash! / Nghe phát âm và chọn đúng nghĩa cho câu tiếp theo để vớt thêm rác nhé!',
+            text: 'Nghe phát âm và chọn đúng nghĩa cho câu tiếp theo để vớt thêm rác nhé! 🌊',
             isCorrect: null
           });
         }, 1400);
@@ -509,7 +517,7 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
     } else {
       playSoundEffect('fail');
       setFeedback({
-        text: `🌱 Not quite right, listen again and try! / Chưa chính xác rồi! Em hãy bấm nghe lại phát âm rồi chọn đáp án đúng nhé! 🎧`,
+        text: `Try again! Chưa chính xác rồi! Em hãy bấm nghe lại phát âm hoặc thử lại nhé! 🎧`,
         isCorrect: false
       });
       setTimeout(() => {
@@ -520,12 +528,67 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
 
   // Speech Recognition fallback (allow kids to speak the word too!)
   const startListening = () => {
-    if (isListening) {
+    // If currently active recording, stop & evaluate accumulated speech immediately
+    if (isListening || isListeningRef.current) {
       clearTimer();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-      }
+      isListeningRef.current = false;
       setIsListening(false);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+      playSoundEffect('click');
+      const textSpoken = accumulatedTranscriptRef.current.trim().toLowerCase();
+      const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
+      const isMatch = checkSpeechAnswerMatch(textSpoken, target) || textSpoken.includes(target) || target.includes(textSpoken);
+
+      if (isMatch) {
+        setSpeechAttempts(0);
+        const correctOpt = currentQ.options.find(o => o.isCorrect);
+        if (correctOpt) {
+          handleSelectOption(correctOpt);
+        }
+      } else if (textSpoken) {
+        const newAttempts = speechAttempts + 1;
+        setSpeechAttempts(newAttempts);
+
+        if (newAttempts >= 4) {
+          playSoundEffect('chime');
+          setFeedback({
+            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            isCorrect: null
+          });
+
+          setJustCleanedIndex(currentIndex);
+          setCleanedCount(prev => Math.min(TOTAL_QUESTIONS, prev + 1));
+
+          setTimeout(() => {
+            setSpeechAttempts(0);
+            if (currentIndex + 1 >= TOTAL_QUESTIONS) {
+              playSoundEffect('celebrate');
+              setShowEcoKnowledgePopup(true);
+            } else {
+              setCurrentIndex(prev => Math.min(TOTAL_QUESTIONS - 1, prev + 1));
+              setSelectedOptionId(null);
+              setJustCleanedIndex(null);
+              setFeedback({
+                text: 'Nghe phát âm và chọn đúng nghĩa cho câu tiếp theo để vớt thêm rác nhé! 🌊',
+                isCorrect: null
+              });
+            }
+          }, 2000);
+        } else {
+          playSoundEffect('fail');
+          setFeedback({
+            text: `Try again! Chưa chính xác (Em nói: "${textSpoken}"). Em có thể bấm 'Speak with Mic' để đọc lại HOẶC chọn trực tiếp các đáp án A, B, C, D phía trên! 🎤`,
+            isCorrect: false
+          });
+        }
+      } else {
+        setFeedback({
+          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          isCorrect: false
+        });
+      }
       return;
     }
 
@@ -541,113 +604,113 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
         try { recognitionRef.current.abort(); } catch {}
       }
       clearTimer();
+      accumulatedTranscriptRef.current = '';
+
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isListeningRef.current = true;
         setIsListening(true);
         setFeedback({
-          text: `Listening... Please pronounce "${currentQ.targetWord}"! / Đang nghe... Bé hãy phát âm "${currentQ.targetWord}"! 🎤`,
+          text: `🎤 Đang lắng nghe... Hãy đọc trọn vẹn câu rồi bấm nút "Dừng & Chấm điểm" nhé!`,
           isCorrect: null
         });
+        // 25s generous safety timeout
+        clearTimer();
         timeoutRef.current = setTimeout(() => {
-          try { recognition.abort(); } catch {}
-          setIsListening(false);
-          const newAttempts = speechAttempts + 1;
-          setSpeechAttempts(newAttempts);
+          if (isListeningRef.current) {
+            isListeningRef.current = false;
+            setIsListening(false);
+            try { recognition.stop(); } catch {}
 
-          if (newAttempts >= 4) {
-            playSoundEffect('chime');
-            setFeedback({
-              text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
-              isCorrect: null
-            });
-            setTimeout(() => {
+            const textSpoken = accumulatedTranscriptRef.current.trim().toLowerCase();
+            const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
+            const isMatch = checkSpeechAnswerMatch(textSpoken, target) || textSpoken.includes(target) || target.includes(textSpoken);
+
+            if (isMatch) {
               setSpeechAttempts(0);
-              const nextIndex = currentIndex + 1;
-              if (nextIndex >= TOTAL_QUESTIONS) {
-                playSoundEffect('celebrate');
-                setShowEcoKnowledgePopup(true);
-              } else {
-                setCurrentIndex(nextIndex);
-                setSelectedOptionId(null);
-                setJustCleanedIndex(null);
+              const correctOpt = currentQ.options.find(o => o.isCorrect);
+              if (correctOpt) {
+                handleSelectOption(correctOpt);
+              }
+            } else {
+              const newAttempts = speechAttempts + 1;
+              setSpeechAttempts(newAttempts);
+
+              if (newAttempts >= 4) {
+                playSoundEffect('chime');
                 setFeedback({
-                  text: 'Nghe phát âm và chọn đúng nghĩa cho câu tiếp theo để vớt thêm rác nhé! 🌊',
+                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
                   isCorrect: null
                 });
+
+                setJustCleanedIndex(currentIndex);
+                setCleanedCount(prev => Math.min(TOTAL_QUESTIONS, prev + 1));
+
+                setTimeout(() => {
+                  setSpeechAttempts(0);
+                  if (currentIndex + 1 >= TOTAL_QUESTIONS) {
+                    playSoundEffect('celebrate');
+                    setShowEcoKnowledgePopup(true);
+                  } else {
+                    setCurrentIndex(prev => Math.min(TOTAL_QUESTIONS - 1, prev + 1));
+                    setSelectedOptionId(null);
+                    setJustCleanedIndex(null);
+                    setFeedback({
+                      text: 'Nghe phát âm và chọn đúng nghĩa cho câu tiếp theo để vớt thêm rác nhé! 🌊',
+                      isCorrect: null
+                    });
+                  }
+                }, 2000);
+              } else {
+                playSoundEffect('fail');
+                setFeedback({
+                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm đọc lại nhé! 🎤`,
+                  isCorrect: false
+                });
               }
-            }, 2000);
-          } else {
-            setFeedback({
-              text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm đọc lại nhé! 🎤`,
-              isCorrect: false
-            });
+            }
           }
-        }, 8000);
+        }, 25000);
       };
 
       recognition.onresult = (event: any) => {
-        clearTimer();
-        setIsListening(false);
-        const transcript = (event.results && event.results[0] && event.results[0][0])
-          ? event.results[0][0].transcript.trim().toLowerCase()
-          : '';
-        const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
-        const isMatch = checkSpeechAnswerMatch(transcript, target) || transcript.includes(target) || target.includes(transcript);
-        if (isMatch) {
-          setSpeechAttempts(0);
-          const correctOpt = currentQ.options.find(o => o.isCorrect);
-          if (correctOpt) {
-            handleSelectOption(correctOpt);
-          }
-        } else {
-          const newAttempts = speechAttempts + 1;
-          setSpeechAttempts(newAttempts);
-
-          if (newAttempts >= 4) {
-            playSoundEffect('chime');
-            setFeedback({
-              text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
-              isCorrect: null
-            });
-
-            // Auto-skip to next question without awarding EP
-            setTimeout(() => {
-              setSpeechAttempts(0);
-              const nextIndex = currentIndex + 1;
-              if (nextIndex >= TOTAL_QUESTIONS) {
-                playSoundEffect('celebrate');
-                setShowEcoKnowledgePopup(true);
-              } else {
-                setCurrentIndex(nextIndex);
-                setSelectedOptionId(null);
-                setJustCleanedIndex(null);
-                setFeedback({
-                  text: 'Nghe phát âm và chọn đúng nghĩa cho câu tiếp theo để vớt thêm rác nhé! 🌊',
-                  isCorrect: null
-                });
-              }
-            }, 2000);
-          } else {
-            playSoundEffect('fail');
-            setFeedback({
-              text: `You said: "${transcript || 'unclear'}". Lần thử ${newAttempts}/4. Listen again and try! / Em nói: "${transcript || 'chưa rõ'}". Lần thử ${newAttempts}/4. Hãy nghe lại rồi thử nhé! 🎤`,
-              isCorrect: false
-            });
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullText += event.results[i][0].transcript + ' ';
           }
         }
+        const transcript = fullText.trim().toLowerCase();
+        if (!transcript) return;
+
+        accumulatedTranscriptRef.current = transcript;
+        setFeedback({
+          text: `🎙️ "${transcript}" (Bấm "Dừng & Chấm điểm" khi đọc xong)`,
+          isCorrect: null
+        });
       };
 
-      recognition.onerror = () => {
+      recognition.onerror = (event: any) => {
+        if (event.error === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          return;
+        }
         clearTimer();
+        isListeningRef.current = false;
         setIsListening(false);
       };
 
       recognition.onend = () => {
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
         clearTimer();
         setIsListening(false);
       };
@@ -656,6 +719,7 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
       recognition.start();
     } catch {
       clearTimer();
+      isListeningRef.current = false;
       setIsListening(false);
     }
   };
@@ -1114,22 +1178,26 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
               })}
             </div>
 
-            {/* Optional Speak Voice Trigger (Bilingual format) */}
+            {/* Click to Start / Click to Stop Speak Voice Trigger */}
             <button
               type="button"
               onClick={startListening}
-              className={`w-full py-2.5 px-3 rounded-2xl border font-bold text-xs flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer transition-all ${
+              className={`w-full py-3 px-4 rounded-2xl border-2 font-black text-xs sm:text-sm flex items-center justify-between gap-2 cursor-pointer transition-all active:scale-98 ${
                 isListening 
-                  ? 'bg-rose-500 text-white border-rose-600 animate-pulse' 
-                  : 'bg-sky-50 hover:bg-sky-100 text-sky-900 border-sky-300 shadow-2xs'
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-500 shadow-lg ring-4 ring-rose-300 animate-pulse' 
+                  : 'bg-sky-50 hover:bg-sky-100 text-sky-950 border-sky-300 shadow-2xs'
               }`}
             >
-              <div className="flex items-center gap-1.5">
-                <Mic className="w-4 h-4 shrink-0" />
-                <span className="font-extrabold">{isListening ? 'Listening to your voice...' : 'Speak with Mic · Luyện phát âm trực tiếp'}</span>
+              <div className="flex items-center gap-2">
+                {isListening ? <Square className="w-4 h-4 fill-white shrink-0" /> : <Mic className="w-4 h-4 text-sky-700 shrink-0" />}
+                <span className="font-extrabold">
+                  {isListening ? 'Stop & Evaluate / Dừng & Chấm điểm 🛑' : 'Speak with Mic · Luyện phát âm trực tiếp 🎤'}
+                </span>
               </div>
-              <span className="text-[10px] text-sky-700 font-semibold sm:border-l sm:border-sky-300 sm:pl-2">
-                {isListening ? '(Đang lắng nghe...)' : '(Bấm để nói từ tiếng Anh)'}
+              <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full ${
+                isListening ? 'bg-white/25 text-white' : 'bg-sky-200/80 text-sky-900'
+              }`}>
+                {isListening ? 'Bấm khi đọc xong' : 'Bấm để nói'}
               </span>
             </button>
 

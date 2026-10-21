@@ -332,6 +332,8 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
 
   // Speech recognition
   const [isListening, setIsListening] = useState<boolean>(false);
+  const isListeningRef = useRef<boolean>(false);
+  const accumulatedTranscriptRef = useRef<string>('');
   const [speechAttempts, setSpeechAttempts] = useState<number>(0);
   const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<any>(null);
@@ -691,14 +693,69 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
     handleDropIntoBin(binId);
   };
 
-  // Speech Recognition fallback
+  // Speech Recognition fallback (Click to Start / Click to Stop)
   const startListening = () => {
-    if (isListening) {
+    // If currently active recording, stop & evaluate accumulated speech immediately
+    if (isListening || isListeningRef.current) {
       clearTimer();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-      }
+      isListeningRef.current = false;
       setIsListening(false);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+
+      playSoundEffect('click');
+      const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+      const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
+      const isMatch = checkSpeechAnswerMatch(transcript, target) || transcript.includes(target) || target.includes(transcript);
+
+      if (isMatch) {
+        setSpeechAttempts(0);
+        const correctOpt = currentQ.options.find(o => o.isCorrect);
+        if (correctOpt) {
+          handleSelectOption(correctOpt);
+        }
+      } else if (transcript) {
+        const newAttempts = speechAttempts + 1;
+        setSpeechAttempts(newAttempts);
+
+        if (newAttempts >= 4) {
+          playSoundEffect('chime');
+          setFeedback({
+            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            isCorrect: null
+          });
+
+          setTimeout(() => {
+            setSpeechAttempts(0);
+            const nextRound = currentRound + 1;
+            if (nextRound >= TOTAL_ROUNDS) {
+              playSoundEffect('celebrate');
+              setShowEcoKnowledgePopup(true);
+            } else {
+              setCurrentRound(nextRound);
+              setPhase('qa');
+              setActiveTrash(null);
+              setSelectedBinId(null);
+              setFeedback({
+                text: 'Bước 1: Nghe và chọn đúng từ vựng/mẫu câu cho lượt tiếp theo nhé! 🎧',
+                isCorrect: null
+              });
+            }
+          }, 2000);
+        } else {
+          playSoundEffect('fail');
+          setFeedback({
+            text: `Try again! Chưa chính xác (Em nói: "${transcript}"). Em có thể bấm 'Speak with Mic' để phát âm lại HOẶC bấm chọn trực tiếp các đáp án A, B, C, D ở phía trên! 🎤`,
+            isCorrect: false
+          });
+        }
+      } else {
+        setFeedback({
+          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          isCorrect: false
+        });
+      }
       return;
     }
 
@@ -714,115 +771,112 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
         try { recognitionRef.current.abort(); } catch {}
       }
       clearTimer();
+      accumulatedTranscriptRef.current = '';
+
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isListeningRef.current = true;
         setIsListening(true);
         setFeedback({
-          text: `Listening... Please pronounce "${currentQ.targetWord}"! / Đang nghe... Bé hãy phát âm "${currentQ.targetWord}"! 🎤`,
+          text: `🎤 Đang lắng nghe... Đọc hết câu rồi bấm nút "Dừng & Chấm điểm" nhé!`,
           isCorrect: null
         });
-        timeoutRef.current = setTimeout(() => {
-          try { recognition.abort(); } catch {}
-          setIsListening(false);
-          const newAttempts = speechAttempts + 1;
-          setSpeechAttempts(newAttempts);
 
-          if (newAttempts >= 4) {
-            playSoundEffect('chime');
-            setFeedback({
-              text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
-              isCorrect: null
-            });
-            setTimeout(() => {
+        // 25s safety timeout
+        clearTimer();
+        timeoutRef.current = setTimeout(() => {
+          if (isListeningRef.current) {
+            isListeningRef.current = false;
+            setIsListening(false);
+            try { recognition.stop(); } catch {}
+
+            const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+            const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
+            const isMatch = checkSpeechAnswerMatch(transcript, target) || transcript.includes(target) || target.includes(transcript);
+
+            if (isMatch) {
               setSpeechAttempts(0);
-              const nextRound = currentRound + 1;
-              if (nextRound >= TOTAL_ROUNDS) {
-                playSoundEffect('celebrate');
-                setShowEcoKnowledgePopup(true);
-              } else {
-                setCurrentRound(nextRound);
-                setPhase('qa');
-                setActiveTrash(null);
-                setSelectedBinId(null);
+              const correctOpt = currentQ.options.find(o => o.isCorrect);
+              if (correctOpt) {
+                handleSelectOption(correctOpt);
+              }
+            } else {
+              const newAttempts = speechAttempts + 1;
+              setSpeechAttempts(newAttempts);
+
+              if (newAttempts >= 4) {
+                playSoundEffect('chime');
                 setFeedback({
-                  text: 'Bước 1: Nghe và chọn đúng từ vựng/mẫu câu cho lượt tiếp theo nhé! 🎧',
+                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
                   isCorrect: null
                 });
+
+                setTimeout(() => {
+                  setSpeechAttempts(0);
+                  const nextRound = currentRound + 1;
+                  if (nextRound >= TOTAL_ROUNDS) {
+                    playSoundEffect('celebrate');
+                    setShowEcoKnowledgePopup(true);
+                  } else {
+                    setCurrentRound(nextRound);
+                    setPhase('qa');
+                    setActiveTrash(null);
+                    setSelectedBinId(null);
+                    setFeedback({
+                      text: 'Bước 1: Nghe và chọn đúng từ vựng/mẫu câu cho lượt tiếp theo nhé! 🎧',
+                      isCorrect: null
+                    });
+                  }
+                }, 2000);
+              } else {
+                setFeedback({
+                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm nói nhé! 🎤`,
+                  isCorrect: false
+                });
               }
-            }, 2000);
-          } else {
-            setFeedback({
-              text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm nói nhé! 🎤`,
-              isCorrect: false
-            });
+            }
           }
-        }, 8000);
+        }, 25000);
       };
 
       recognition.onresult = (event: any) => {
-        clearTimer();
-        setIsListening(false);
-        const transcript = (event.results && event.results[0] && event.results[0][0])
-          ? event.results[0][0].transcript.trim().toLowerCase()
-          : '';
-        const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
-        const isMatch = checkSpeechAnswerMatch(transcript, target) || transcript.includes(target) || target.includes(transcript);
-        if (isMatch) {
-          setSpeechAttempts(0);
-          const correctOpt = currentQ.options.find(o => o.isCorrect);
-          if (correctOpt) {
-            handleSelectOption(correctOpt);
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullText += event.results[i][0].transcript + ' ';
           }
-        } else {
-          const newAttempts = speechAttempts + 1;
-          setSpeechAttempts(newAttempts);
-
-          if (newAttempts >= 4) {
-            playSoundEffect('chime');
-            setFeedback({
-              text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
-              isCorrect: null
-            });
-
-            // Auto-skip to next round without awarding EP
-            setTimeout(() => {
-              setSpeechAttempts(0);
-              const nextRound = currentRound + 1;
-              if (nextRound >= TOTAL_ROUNDS) {
-                playSoundEffect('celebrate');
-                setShowEcoKnowledgePopup(true);
-              } else {
-                setCurrentRound(nextRound);
-                setPhase('qa');
-                setActiveTrash(null);
-                setSelectedBinId(null);
-                setFeedback({
-                  text: 'Bước 1: Nghe và chọn đúng từ vựng/mẫu câu cho lượt tiếp theo nhé! 🎧',
-                  isCorrect: null
-                });
-              }
-            }, 2000);
-          } else {
-            playSoundEffect('fail');
-            setFeedback({
-              text: `You said: "${transcript || 'unclear'}". Lần thử ${newAttempts}/4. Click Speaker to listen again! / Em nói: "${transcript || 'chưa rõ'}". Lần thử ${newAttempts}/4. Hãy nghe lại rồi thử nhé! 🎤`,
-              isCorrect: false
-            });
-          }
+        }
+        const clean = fullText.trim().toLowerCase();
+        if (clean) {
+          accumulatedTranscriptRef.current = clean;
+          setFeedback({
+            text: `🎙️ "${clean}" (Bấm "Dừng & Chấm điểm" khi đọc xong)`,
+            isCorrect: null
+          });
         }
       };
 
-      recognition.onerror = () => {
+      recognition.onerror = (event: any) => {
+        if (event.error === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          return;
+        }
         clearTimer();
+        isListeningRef.current = false;
         setIsListening(false);
       };
 
       recognition.onend = () => {
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
         clearTimer();
         setIsListening(false);
       };
@@ -831,6 +885,7 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
       recognition.start();
     } catch {
       clearTimer();
+      isListeningRef.current = false;
       setIsListening(false);
     }
   };

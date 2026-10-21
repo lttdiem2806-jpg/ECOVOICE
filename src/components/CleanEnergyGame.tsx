@@ -13,8 +13,11 @@ import {
   Award, 
   Check, 
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  Mic,
+  Square
 } from 'lucide-react';
+import { checkSpeechAnswerMatch } from '../services/pronunciationFeedbackService';
 
 export interface CleanEnergyQuestion {
   id: string;
@@ -255,6 +258,11 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
   const [hasClaimedReward, setHasClaimedReward] = useState<boolean>(false);
   const [claimSuccessMsg, setClaimSuccessMsg] = useState<string | null>(null);
 
+  // Speech Recognition States
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const isListeningRef = useRef<boolean>(false);
+  const recognitionRef = useRef<any>(null);
+  const accumulatedTranscriptRef = useRef<string>('');
   const timeoutRef = useRef<any>(null);
 
   const clearTimer = () => {
@@ -312,6 +320,134 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
       utterance.onend = () => setIsPlayingAudio(false);
       utterance.onerror = () => setIsPlayingAudio(false);
       window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Speech Recognition handler (Click to Start / Click to Stop)
+  const startListening = () => {
+    // If currently active recording, stop & evaluate accumulated speech immediately
+    if (isListening || isListeningRef.current) {
+      clearTimer();
+      isListeningRef.current = false;
+      setIsListening(false);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+
+      playSoundEffect('click');
+      const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+      
+      if (transcript) {
+        // Find matching option
+        const correctOpt = currentQ.options.find(o => o.isCorrect);
+        const spokenMatchesOption = currentQ.options.find(o => 
+          transcript.includes(o.id.toLowerCase()) ||
+          transcript.includes(o.text.toLowerCase()) ||
+          o.text.toLowerCase().includes(transcript)
+        );
+
+        if (spokenMatchesOption) {
+          handleSelectOption(spokenMatchesOption);
+        } else if (correctOpt && checkSpeechAnswerMatch(transcript, correctOpt.text)) {
+          handleSelectOption(correctOpt);
+        } else {
+          playSoundEffect('fail');
+          setIsAnswerCorrect(false);
+        }
+      }
+      return;
+    }
+
+    playSoundEffect('click');
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      speakQuestion(currentQ.speechText);
+      return;
+    }
+
+    try {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
+      clearTimer();
+      accumulatedTranscriptRef.current = '';
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isListeningRef.current = true;
+        setIsListening(true);
+
+        // 25s safety timeout
+        clearTimer();
+        timeoutRef.current = setTimeout(() => {
+          if (isListeningRef.current) {
+            isListeningRef.current = false;
+            setIsListening(false);
+            try { recognition.stop(); } catch {}
+
+            const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+            if (transcript) {
+              const correctOpt = currentQ.options.find(o => o.isCorrect);
+              const spokenMatchesOption = currentQ.options.find(o => 
+                transcript.includes(o.id.toLowerCase()) ||
+                transcript.includes(o.text.toLowerCase()) ||
+                o.text.toLowerCase().includes(transcript)
+              );
+
+              if (spokenMatchesOption) {
+                handleSelectOption(spokenMatchesOption);
+              } else if (correctOpt && checkSpeechAnswerMatch(transcript, correctOpt.text)) {
+                handleSelectOption(correctOpt);
+              }
+            }
+          }
+        }, 25000);
+      };
+
+      recognition.onresult = (event: any) => {
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullText += event.results[i][0].transcript + ' ';
+          }
+        }
+        const clean = fullText.trim().toLowerCase();
+        if (clean) {
+          accumulatedTranscriptRef.current = clean;
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        if (event.error === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          return;
+        }
+        clearTimer();
+        isListeningRef.current = false;
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
+        clearTimer();
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      clearTimer();
+      isListeningRef.current = false;
+      setIsListening(false);
     }
   };
 
@@ -728,6 +864,29 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
           </button>
         </div>
 
+        {/* Speak with Mic button (Click to Start / Click to Stop) */}
+        <button
+          type="button"
+          onClick={startListening}
+          className={`w-full py-3 px-4 rounded-2xl border-2 font-black text-xs sm:text-sm flex items-center justify-between gap-2 cursor-pointer transition-all active:scale-98 my-1 ${
+            isListening 
+              ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-500 shadow-lg ring-4 ring-rose-300 animate-pulse' 
+              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border-emerald-300 shadow-2xs'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {isListening ? <Square className="w-4 h-4 fill-white shrink-0" /> : <Mic className="w-4 h-4 text-emerald-700 shrink-0" />}
+            <span className="font-extrabold">
+              {isListening ? 'Stop & Evaluate / Dừng & Chấm điểm 🛑' : 'Speak with Mic · Luyện phát âm trực tiếp 🎤'}
+            </span>
+          </div>
+          <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full ${
+            isListening ? 'bg-white/25 text-white' : 'bg-emerald-200/80 text-emerald-900'
+          }`}>
+            {isListening ? 'Bấm khi đọc xong' : 'Bấm để nói'}
+          </span>
+        </button>
+
         {/* 4. ANSWER OPTIONS (A, B, C) - Clean English Only */}
         <div className="grid grid-cols-1 gap-3 w-full mt-1">
           {currentQ.options.map((opt) => {
@@ -781,13 +940,13 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
             {isAnswerCorrect === true && (
               <span className="text-emerald-700 flex items-center gap-1.5 font-black animate-fade-in">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Awesome! Clean power activated! (+25% Energy) ⚡</span>
+                <span>🎉 Excellent! Tuyệt vời! Clean power activated! (+25% Energy) ⚡</span>
               </span>
             )}
             {isAnswerCorrect === false && (
               <span className="text-amber-800 flex items-center gap-1.5 font-extrabold animate-fade-in">
                 <Lightbulb className="w-4 h-4 text-amber-600" />
-                <span>Not quite! Listen closely to the question and try again 💡</span>
+                <span>Try again! Chưa chính xác. Em có thể bấm 'Speak with Mic' để phát âm lại HOẶC bấm chọn các đáp án A, B, C phía trên! 💡</span>
               </span>
             )}
             {isAnswerCorrect === null && (

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Home, 
   Mic, 
+  Square,
   Gamepad2, 
   Sprout, 
   BookOpen, 
@@ -230,6 +231,7 @@ export default function App() {
   
   // Color learning states
   const [isSpeakingActive, setIsSpeakingActive] = useState<boolean>(false);
+  const isSpeakingActiveRef = useRef<boolean>(false);
   const [speechFeedback, setSpeechFeedback] = useState<string>('Nghe mẫu rồi nói nhé!');
   const [speechSuccess, setSpeechSuccess] = useState<boolean | null>(null);
 
@@ -243,6 +245,7 @@ export default function App() {
   }, []);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [recognizedTranscript, setRecognizedTranscript] = useState<string>('');
+  const accumulatedTranscriptRef = useRef<string>('');
   const [pronunciationEvaluation, setPronunciationEvaluation] = useState<PronunciationEvaluationResult | null>(null);
   const [practiceAttemptCount, setPracticeAttemptCount] = useState<number>(1);
 
@@ -2148,25 +2151,38 @@ export default function App() {
 
   // Mobile-Optimized Web Speech Recognition with synchronous user gesture, timeout guard & proper error handling
   const handleStartSpeak = () => {
-    // If already active, toggle off / cancel recognition cleanly
-    if (isSpeakingActive) {
+    const target = activeTab === 'vocabulary' ? currentVocab.speechText : currentSentence.speechText;
+
+    // If currently active recording, stop & evaluate accumulated speech immediately
+    if (isSpeakingActive || isSpeakingActiveRef.current) {
       clearSpeechTimeout();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-      }
+      isSpeakingActiveRef.current = false;
       setIsSpeakingActive(false);
-      setSpeechFeedback('Đã dừng nghe. Bé bấm nút khi sẵn sàng nói nhé!');
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+      playSoundEffect('click');
+      const finalSpoken = accumulatedTranscriptRef.current.trim();
+      if (finalSpoken) {
+        evaluatePronunciationResult(finalSpoken, target);
+      } else {
+        setSpeechSuccess(false);
+        setSpeechFeedback('Bé chưa phát âm xong, bấm nút và nói lại thật rõ ràng nhé! 🎤');
+        setMascotBubble('Bé nói to và rõ hơn một chút nhé!');
+      }
       return;
     }
 
     playSoundEffect('click');
     setSpeechSuccess(null);
     setRecognizedTranscript('');
+    accumulatedTranscriptRef.current = '';
+    isSpeakingActiveRef.current = true;
 
-    const target = activeTab === 'vocabulary' ? currentVocab.speechText : currentSentence.speechText;
     const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRec) {
+      isSpeakingActiveRef.current = false;
       setSpeechSuccess(false);
       setSpeechFeedback('⚠️ Trình duyệt chưa hỗ trợ Web Speech API. Bé hãy mở trên Google Chrome, Edge hoặc Safari nhé!');
       setMicNoticeModal({
@@ -2187,8 +2203,7 @@ export default function App() {
       }
     })();
 
-    // Synchronously launch SpeechRecognition directly inside click/touch event
-    // to preserve Mobile Safari / WebKit User Activation token
+    // Launch SpeechRecognition directly inside user gesture
     try {
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
@@ -2198,75 +2213,93 @@ export default function App() {
       const recognition = new SpeechRec();
       recognitionRef.current = recognition;
 
-      // 1. Mobile-optimized standard SpeechRecognition configuration
+      // 1. Continuous & Interim SpeechRecognition configuration
       recognition.lang = accent === 'UK' ? 'en-GB' : 'en-US';
-      recognition.continuous = false;      // Required false on mobile to prevent abrupt pipeline termination
-      recognition.interimResults = false;   // Required false on mobile to prevent stream stall
-      recognition.maxAlternatives = 1;     // Strict 1 alternative for fast, lightweight mobile performance
+      recognition.continuous = true;      // Continuous recording so brief pauses don't cut off long sentences
+      recognition.interimResults = true;   // Interim results so spoken words render live in real-time
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isSpeakingActiveRef.current = true;
         setIsSpeakingActive(true);
-        setSpeechFeedback(`🎤 Đang lắng nghe giọng của bé (${accent === 'UK' ? 'Chuẩn UK 🇬🇧' : 'Chuẩn US 🇺🇸'})... Hãy đọc to và rõ ràng nhé!`);
-        setMascotBubble('I am listening! Nói thật to và chuẩn nhé!');
+        setSpeechFeedback(`🎤 Đang lắng nghe... Đọc hết câu rồi bấm nút "Hoàn thành" để chấm điểm nhé!`);
+        setMascotBubble('I am listening! Hãy đọc hết câu thật tự tin rồi bấm Hoàn thành nhé!');
 
-        // 2. Mobile Timeout Guard: 8.5 seconds timeout if no speech or recognition hangs
+        // 2. Generous Safety Timeout Guard: 25 seconds limit for long sentences
         clearSpeechTimeout();
         speechTimeoutRef.current = setTimeout(() => {
-          try {
-            if (recognitionRef.current) {
-              recognitionRef.current.abort();
-            }
-          } catch {}
-          clearSpeechTimeout();
-          setIsSpeakingActive(false);
-          setSpeechSuccess(false);
-          playSoundEffect('chime');
-
-          if (practiceAttemptCount >= 4) {
-            const skipMsgVi = "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟";
-            setSpeechFeedback(skipMsgVi);
-            setMascotBubble("Cố gắng lắm! Em đã thử 4 lần rất kiên trì. Let's move to the next challenge! Cùng chuyển sang thử thách tiếp theo nhé! 🌟");
-            setTimeout(() => {
-              setPracticeAttemptCount(1);
-              setPronunciationEvaluation(null);
-              setSpeechSuccess(null);
-              if (activeTab === 'vocabulary') {
-                if (currentVocabIndex < vocabularyList.length - 1) {
-                  const nextItem = vocabularyList[currentVocabIndex + 1];
-                  setSelectedVocabId(nextItem.id);
-                  setSpeechFeedback(`Bé đã chuyển sang: ${nextItem.word} (${nextItem.meaning}). Nghe mẫu rồi nói nhé!`);
-                }
-              } else {
-                if (selectedSentenceIndex < sentencesList.length - 1) {
-                  setSelectedSentenceIndex(prev => prev + 1);
-                  setSpeechFeedback('Bé đã chuyển sang mẫu câu tiếp theo. Nghe mẫu rồi nói nhé!');
-                }
+          if (isSpeakingActiveRef.current) {
+            isSpeakingActiveRef.current = false;
+            setIsSpeakingActive(false);
+            try {
+              if (recognitionRef.current) {
+                recognitionRef.current.stop();
               }
-            }, 2200);
-          } else {
-            setSpeechFeedback(`Chưa nghe rõ giọng bé (Lần thử ${practiceAttemptCount}/4), bé bấm nút và nói lại nhé! 🎤`);
-            setMascotBubble(`Chưa nghe rõ giọng bé (Lần thử ${practiceAttemptCount}/4), bé bấm nút và nói lại nhé! 🎤`);
-            setPracticeAttemptCount(prev => prev + 1);
+            } catch {}
+            clearSpeechTimeout();
+
+            const spokenText = accumulatedTranscriptRef.current.trim();
+            if (spokenText) {
+              evaluatePronunciationResult(spokenText, target);
+            } else {
+              setSpeechSuccess(false);
+              playSoundEffect('chime');
+
+              if (practiceAttemptCount >= 4) {
+                const skipMsgVi = "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟";
+                setSpeechFeedback(skipMsgVi);
+                setMascotBubble("Cố gắng lắm! Em đã thử 4 lần rất kiên trì. Let's move to the next challenge! Cùng chuyển sang thử thách tiếp theo nhé! 🌟");
+                setTimeout(() => {
+                  setPracticeAttemptCount(1);
+                  setPronunciationEvaluation(null);
+                  setSpeechSuccess(null);
+                  if (activeTab === 'vocabulary') {
+                    if (currentVocabIndex < vocabularyList.length - 1) {
+                      const nextItem = vocabularyList[currentVocabIndex + 1];
+                      setSelectedVocabId(nextItem.id);
+                      setSpeechFeedback(`Bé đã chuyển sang: ${nextItem.word} (${nextItem.meaning}). Nghe mẫu rồi nói nhé!`);
+                    }
+                  } else {
+                    if (selectedSentenceIndex < sentencesList.length - 1) {
+                      setSelectedSentenceIndex(prev => prev + 1);
+                      setSpeechFeedback('Bé đã chuyển sang mẫu câu tiếp theo. Nghe mẫu rồi nói nhé!');
+                    }
+                  }
+                }, 2200);
+              } else {
+                setSpeechFeedback(`Chưa nghe rõ giọng bé (Lần thử ${practiceAttemptCount}/4), bé bấm nút và nói lại nhé! 🎤`);
+                setMascotBubble(`Chưa nghe rõ giọng bé (Lần thử ${practiceAttemptCount}/4), bé bấm nút và nói lại nhé! 🎤`);
+                setPracticeAttemptCount(prev => prev + 1);
+              }
+            }
           }
-        }, 8500);
+        }, 25000);
       };
 
       recognition.onresult = (event: any) => {
-        clearSpeechTimeout();
-        setIsSpeakingActive(false);
-
-        let bestTranscript = '';
-        if (event.results && event.results[0] && event.results[0][0]) {
-          bestTranscript = event.results[0][0].transcript;
+        let fullTranscript = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullTranscript += event.results[i][0].transcript + ' ';
+          }
         }
-
-        evaluatePronunciationResult(bestTranscript, target);
+        const cleanTranscript = fullTranscript.trim();
+        if (cleanTranscript) {
+          accumulatedTranscriptRef.current = cleanTranscript;
+          setRecognizedTranscript(cleanTranscript);
+          setSpeechFeedback(`🎙️ "${cleanTranscript}"`);
+        }
       };
 
       recognition.onerror = (event: any) => {
-        clearSpeechTimeout();
-        setIsSpeakingActive(false);
         const errType = event.error;
+        if (errType === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          // Ignore no-speech error if speech was already captured
+          return;
+        }
+        clearSpeechTimeout();
+        isSpeakingActiveRef.current = false;
+        setIsSpeakingActive(false);
 
         if (errType === 'no-speech') {
           playSoundEffect('chime');
@@ -2333,11 +2366,16 @@ export default function App() {
       };
 
       recognition.onend = () => {
+        if (isSpeakingActiveRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
         clearSpeechTimeout();
         setIsSpeakingActive(false);
       };
 
-      // Direct synchronous launch to satisfy mobile touch/click user activation policies
       recognition.start();
     } catch (err: any) {
       clearSpeechTimeout();
@@ -3673,23 +3711,27 @@ export default function App() {
                 {/* Big Primary Speak CTA Button - Gradient from dark forest to fresh bright green */}
                 <div className="w-full max-w-sm pt-1">
                   <button
+                    type="button"
                     onClick={handleStartSpeak}
-                    disabled={isSpeakingActive}
-                    className={`w-full py-3.5 px-5 rounded-2xl text-white shadow-[0_4px_16px_rgba(13,74,43,0.35)] flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer border border-emerald-400/40 ${
+                    className={`w-full py-3.5 px-5 rounded-2xl text-white shadow-[0_4px_16px_rgba(13,74,43,0.35)] flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer border border-emerald-400/40 active:scale-98 ${
                       isSpeakingActive
-                        ? 'bg-amber-600 ring-4 ring-amber-300 animate-pulse'
-                        : 'bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] hover:shadow-[0_6px_20px_rgba(22,163,74,0.4)] active:scale-98'
+                        ? 'bg-rose-600 hover:bg-rose-700 ring-4 ring-rose-300 animate-pulse'
+                        : 'bg-gradient-to-r from-[#0c4326] via-[#15803d] to-[#1cb75e] hover:from-[#0f5430] hover:to-[#22c55e] hover:shadow-[0_6px_20px_rgba(22,163,74,0.4)]'
                     }`}
                   >
                     <div className="p-1 rounded-full bg-white/20">
-                      <Mic className={`w-6 h-6 ${isSpeakingActive ? 'animate-bounce text-white' : 'text-white'}`} />
+                      {isSpeakingActive ? (
+                        <Square className="w-6 h-6 text-white fill-white" />
+                      ) : (
+                        <Mic className="w-6 h-6 text-white" />
+                      )}
                     </div>
                     <div className="flex flex-col text-left leading-tight">
                       <span className="font-black text-lg tracking-wide drop-shadow-xs">
-                        {isSpeakingActive ? 'Listening...' : 'Speak'}
+                        {isSpeakingActive ? 'Stop & Grade / Hoàn thành 🛑' : 'Speak / Bấm để nói 🎤'}
                       </span>
-                      <span className="text-[11px] text-emerald-100 font-normal">
-                        {isSpeakingActive ? 'Bé đang nói...' : 'Bấm để nói'}
+                      <span className="text-[11px] text-emerald-100 font-medium">
+                        {isSpeakingActive ? 'Bấm vào đây khi bé nói xong để chấm điểm' : 'Bấm để bắt đầu luyện phát âm'}
                       </span>
                     </div>
                   </button>

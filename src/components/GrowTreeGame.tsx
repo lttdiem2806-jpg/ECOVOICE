@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Volume2, 
   Mic, 
+  Square,
   ArrowLeft, 
   CheckCircle2, 
   RotateCcw, 
@@ -204,6 +205,8 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
   const [currentIndex, setCurrentIndex] = useState<number>(0); // 0, 1, 2
   const [completedCount, setCompletedCount] = useState<number>(0); // 0, 1, 2, 3
   const [isListening, setIsListening] = useState<boolean>(false);
+  const isListeningRef = useRef<boolean>(false);
+  const accumulatedTranscriptRef = useRef<string>('');
   const [isWatering, setIsWatering] = useState<boolean>(false);
   
   // Eco-Education popup & reward claim state
@@ -398,20 +401,20 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
         setShowEcoKnowledgePopup(true);
       }, 1200);
     } else {
-      setFeedback({
-        text: `Giỏi lắm! Cây đã lớn thêm một chút! (Độ chính xác: ${accuracy}%) (+10 EP)`,
-        isCorrect: true
-      });
-
-      // Advance to next word after 1.6s
-      setTimeout(() => {
-        setCurrentIndex(prev => prev + 1);
         setFeedback({
-          text: 'Nghe mẫu rồi nói nhé!',
-          isCorrect: null
+          text: `🎉 Excellent! Tuyệt vời! Cây xanh đã lớn thêm một bước! (Độ chính xác: ${accuracy}%) (+10 EP)`,
+          isCorrect: true
         });
-      }, 1600);
-    }
+
+        // Advance to next word after 1.6s
+        setTimeout(() => {
+          setCurrentIndex(prev => prev + 1);
+          setFeedback({
+            text: 'Nghe mẫu rồi nói nhé!',
+            isCorrect: null
+          });
+        }, 1600);
+      }
   };
 
   // Trigger retry speech flow with 4-attempt auto-skip without EP
@@ -450,29 +453,45 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
       }, 2000);
     } else {
       setFeedback({
-        text: `Em nói: "${spokenText || 'chưa rõ'}" (${accuracy}%). Lần thử ${newAttempts}/4. Em hãy nghe lại mẫu rồi bấm nói nhé! 🎤`,
+        text: `Try again! Chưa chính xác (Em phát âm: "${spokenText || 'chưa rõ'}" - ${accuracy}%). Em hãy bấm 'Speak with Mic' để phát âm lại nhé! 🎤`,
         isCorrect: false
       });
     }
   };
 
-  // Speech Recognition handler optimized for mobile browsers
+  // Speech Recognition handler optimized for mobile browsers (Click to Start / Click to Stop)
   const startListening = () => {
-    // If currently listening, toggle off
-    if (isListening) {
+    // If currently listening, stop & evaluate accumulated speech immediately
+    if (isListening || isListeningRef.current) {
       clearTimer();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-      }
+      isListeningRef.current = false;
       setIsListening(false);
-      setFeedback({
-        text: 'Đã dừng nghe. Bấm nút khi sẵn sàng nói nhé!',
-        isCorrect: null
-      });
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+
+      playSoundEffect('click');
+      const transcript = accumulatedTranscriptRef.current.trim();
+      const target = currentItem.word.trim();
+
+      if (transcript) {
+        const accuracy = calculateAccuracy(transcript, target);
+        if (accuracy >= 70) {
+          handleCorrectSpeech(transcript, accuracy);
+        } else {
+          handleIncorrectSpeech(transcript, accuracy);
+        }
+      } else {
+        setFeedback({
+          text: 'Bé chưa phát âm xong, hãy bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          isCorrect: false
+        });
+      }
       return;
     }
 
     playSoundEffect('click');
+    accumulatedTranscriptRef.current = '';
 
     // Check browser speech recognition
     const SpeechRecognition = 
@@ -480,10 +499,9 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
       (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      // Fallback if browser doesn't support Web Speech API
       setFeedback({
         text: 'Trình duyệt chưa hỗ trợ Web Speech API. Bé hãy mở ứng dụng trên Google Chrome hoặc Safari nhé!',
-        isCorrect: null
+        isCorrect: false
       });
       return;
     }
@@ -495,55 +513,67 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
       clearTimer();
 
       const recognition = new SpeechRecognition();
-      // 1. Mobile-optimized standard SpeechRecognition configuration
       recognition.lang = 'en-US';
-      recognition.continuous = false;      // Required false on mobile
-      recognition.interimResults = false;   // Required false on mobile
-      recognition.maxAlternatives = 1;     // Strict 1 alternative for mobile efficiency
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isListeningRef.current = true;
         setIsListening(true);
         setFeedback({
-          text: `Đang nghe... Hãy phát âm từ "${currentItem.word}"!`,
+          text: `🎤 Đang lắng nghe... Đọc hết từ "${currentItem.word}" rồi bấm "Dừng & Chấm điểm" nhé!`,
           isCorrect: null
         });
 
-        // 2. Mobile Timeout Guard: 8.5 seconds limit if onresult doesn't fire
+        // 25s safety timeout guard
         clearTimer();
         timeoutRef.current = setTimeout(() => {
-          try {
-            if (recognitionRef.current) {
-              recognitionRef.current.abort();
+          if (isListeningRef.current) {
+            isListeningRef.current = false;
+            setIsListening(false);
+            try { recognition.stop(); } catch {}
+            const spoken = accumulatedTranscriptRef.current.trim();
+            const target = currentItem.word.trim();
+            if (spoken) {
+              const accuracy = calculateAccuracy(spoken, target);
+              if (accuracy >= 70) {
+                handleCorrectSpeech(spoken, accuracy);
+              } else {
+                handleIncorrectSpeech(spoken, accuracy);
+              }
+            } else {
+              handleIncorrectSpeech('', 0);
             }
-          } catch {}
-          clearTimer();
-          setIsListening(false);
-          handleIncorrectSpeech('', 0);
-        }, 8500);
+          }
+        }, 25000);
       };
 
       recognition.onresult = (event: any) => {
-        clearTimer();
-        setIsListening(false);
-        const transcript = (event.results && event.results[0] && event.results[0][0])
-          ? event.results[0][0].transcript.trim()
-          : '';
-        const target = currentItem.word.trim();
-
-        const accuracy = calculateAccuracy(transcript, target);
-
-        // Accuracy threshold >= 70% as requested
-        if (accuracy >= 70) {
-          handleCorrectSpeech(transcript, accuracy);
-        } else {
-          handleIncorrectSpeech(transcript, accuracy);
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullText += event.results[i][0].transcript + ' ';
+          }
+        }
+        const clean = fullText.trim();
+        if (clean) {
+          accumulatedTranscriptRef.current = clean;
+          setFeedback({
+            text: `🎙️ "${clean}" (Bấm "Dừng & Chấm điểm" khi đọc xong)`,
+            isCorrect: null
+          });
         }
       };
 
       recognition.onerror = (event: any) => {
-        clearTimer();
-        setIsListening(false);
         const err = event.error;
+        if (err === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          return;
+        }
+        clearTimer();
+        isListeningRef.current = false;
+        setIsListening(false);
 
         if (err === 'not-allowed' || err === 'permission-denied' || err === 'service-not-allowed') {
           setFeedback({
@@ -552,7 +582,7 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
           });
         } else if (err === 'no-speech') {
           setFeedback({
-            text: 'Bé chưa nói gì nè, hãy thử lại nhé!',
+            text: 'Bé chưa nói gì nè, hãy bấm nói lại nhé! 🎤',
             isCorrect: false
           });
         } else if (err === 'audio-capture') {
@@ -574,15 +604,21 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
       };
 
       recognition.onend = () => {
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
         clearTimer();
         setIsListening(false);
       };
 
       recognitionRef.current = recognition;
-      // Launch directly inside click/touch event
       recognition.start();
     } catch (err) {
       clearTimer();
+      isListeningRef.current = false;
       setIsListening(false);
       setFeedback({
         text: 'Vui lòng cấp quyền truy cập Micro trên trình duyệt điện thoại để tiếp tục!',
@@ -966,10 +1002,9 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
               </button>
             </div>
 
-            {/* Primary Action Button: Speak (Bấm để nói) */}
+            {/* Primary Action Button: Speak (Click to Start / Click to Stop) */}
             <button
               onClick={startListening}
-              disabled={isListening}
               className={`w-full py-3.5 px-4 rounded-2xl font-black text-sm sm:text-base text-white shadow-md flex flex-col items-center justify-center cursor-pointer transition-all border border-emerald-400/40 relative overflow-hidden ${
                 isListening
                   ? 'bg-gradient-to-r from-red-600 to-rose-600 ring-4 ring-rose-200 animate-pulse'
@@ -978,10 +1013,10 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Mic className={`w-5 h-5 ${isListening ? 'animate-bounce text-white' : ''}`} />
-                <span>{isListening ? 'Listening...' : 'Speak'}</span>
+                <span>{isListening ? 'Stop & Evaluate / Dừng & Chấm điểm 🛑' : 'Speak with Mic · Luyện phát âm 🎤'}</span>
               </div>
-              <span className="text-[11px] font-medium text-emerald-100">
-                {isListening ? 'Đang lắng nghe giọng em...' : 'Bấm để nói'}
+              <span className="text-[11px] font-extrabold text-emerald-100">
+                {isListening ? 'Bấm vào đây khi bé đọc xong để chấm điểm' : 'Bấm để bắt đầu luyện phát âm'}
               </span>
             </button>
 

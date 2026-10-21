@@ -183,6 +183,8 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
   const [claimNotification, setClaimNotification] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
+  const isListeningRef = useRef<boolean>(false);
+  const accumulatedTranscriptRef = useRef<string>('');
   const timeoutRef = useRef<any>(null);
 
   const clearTimer = () => {
@@ -499,7 +501,7 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
     setRescuedCount(nextCount);
 
     setFeedback({
-      text: `🎉 Xuất sắc! Em đã phát âm chuẩn xác từ "${wordMatched}"! Bạn ${currentQ.animal.nameEn} đã trở về mái nhà an toàn! (+6 EP) ✨`,
+      text: `🎉 Excellent! Tuyệt vời! Em đã phát âm chuẩn xác từ "${wordMatched}"! Bạn ${currentQ.animal.nameEn} đã trở về mái nhà an toàn! (+6 EP) ✨`,
       isCorrect: true
     });
 
@@ -529,14 +531,76 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
     }, 1800);
   };
 
-  // Web Speech API Voice Recognition (AI Speech-to-Text)
+  // Web Speech API Voice Recognition (AI Speech-to-Text) - Click to Start / Click to Stop
   const startVoiceRecording = () => {
-    if (isListeningVoice) {
+    // If currently active recording, stop & evaluate accumulated speech immediately
+    if (isListeningVoice || isListeningRef.current) {
       clearTimer();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-      }
+      isListeningRef.current = false;
       setIsListeningVoice(false);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+
+      playSoundEffect('click');
+      const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+      setSpokenTranscript(transcript);
+
+      const target = currentQ.targetWord.toLowerCase().trim();
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const targetNorm = normalize(target);
+      const spokenTokens = transcript.toLowerCase().split(/\s+/).map((w: string) => normalize(w));
+
+      const isMatch = spokenTokens.includes(targetNorm) ||
+        normalize(transcript).includes(targetNorm) ||
+        targetNorm.includes(normalize(transcript)) ||
+        checkSpeechAnswerMatch(transcript, currentQ.targetWord);
+
+      if (isMatch) {
+        setSpeechAttempts(0);
+        handleAnswerSuccess(currentQ.targetWord);
+      } else if (transcript) {
+        const newAttempts = speechAttempts + 1;
+        setSpeechAttempts(newAttempts);
+
+        if (newAttempts >= 4) {
+          playSoundEffect('chime');
+          setFeedback({
+            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            isCorrect: null
+          });
+
+          setTimeout(() => {
+            setSpeechAttempts(0);
+            const nextRound = currentRound + 1;
+            if (nextRound >= TOTAL_ROUNDS) {
+              playSoundEffect('celebrate');
+              setShowEcoPopup(true);
+            } else {
+              setCurrentRound(nextRound);
+              setSelectedWord(null);
+              setIsAnswerCorrect(null);
+              setSpokenTranscript('');
+              setFeedback({
+                text: 'Hãy nghe phát âm rồi đọc to từ còn thiếu để giúp bạn động vật về nhà nhé! 🐾',
+                isCorrect: null
+              });
+            }
+          }, 2000);
+        } else {
+          playSoundEffect('fail');
+          setIsAnswerCorrect(false);
+          setFeedback({
+            text: `Try again! Chưa chính xác (Em vừa phát âm: "${transcript}"). Em có thể bấm 'Speak with Mic' để phát âm lại HOẶC chọn từ tương ứng phía dưới! 🎤`,
+            isCorrect: false
+          });
+        }
+      } else {
+        setFeedback({
+          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          isCorrect: false
+        });
+      }
       return;
     }
 
@@ -544,7 +608,6 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      // Fallback for browsers without Web Speech Recognition
       setFeedback({
         text: 'Trình duyệt không hỗ trợ micro trực tiếp. Em hãy bấm chọn từ bên dưới để điền vào chỗ trống nhé! 💡',
         isCorrect: null
@@ -557,128 +620,120 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
         try { recognitionRef.current.abort(); } catch {}
       }
       clearTimer();
+      accumulatedTranscriptRef.current = '';
 
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isListeningRef.current = true;
         setIsListeningVoice(true);
         setSpokenTranscript('');
         setFeedback({
-          text: `Đang lắng nghe... Hãy đọc to từ tiếng Anh: "${currentQ.targetWord}"! 🎤🐾`,
+          text: `🎤 Đang lắng nghe... Đọc hết từ "${currentQ.targetWord}" rồi bấm nút "Dừng & Chấm điểm" nhé! 🐾`,
           isCorrect: null
         });
 
+        // 25s safety timeout
+        clearTimer();
         timeoutRef.current = setTimeout(() => {
-          try { recognition.abort(); } catch {}
-          setIsListeningVoice(false);
-          const newAttempts = speechAttempts + 1;
-          setSpeechAttempts(newAttempts);
+          if (isListeningRef.current) {
+            isListeningRef.current = false;
+            setIsListeningVoice(false);
+            try { recognition.stop(); } catch {}
 
-          if (newAttempts >= 4) {
-            playSoundEffect('chime');
-            setFeedback({
-              text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
-              isCorrect: null
-            });
-            setTimeout(() => {
+            const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+            setSpokenTranscript(transcript);
+
+            const target = currentQ.targetWord.toLowerCase().trim();
+            const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const targetNorm = normalize(target);
+            const spokenTokens = transcript.toLowerCase().split(/\s+/).map((w: string) => normalize(w));
+
+            const isMatch = spokenTokens.includes(targetNorm) ||
+              normalize(transcript).includes(targetNorm) ||
+              targetNorm.includes(normalize(transcript)) ||
+              checkSpeechAnswerMatch(transcript, currentQ.targetWord);
+
+            if (isMatch) {
               setSpeechAttempts(0);
-              const nextRound = currentRound + 1;
-              if (nextRound >= TOTAL_ROUNDS) {
-                playSoundEffect('celebrate');
-                setShowEcoPopup(true);
-              } else {
-                setCurrentRound(nextRound);
-                setSelectedWord(null);
-                setIsAnswerCorrect(null);
-                setSpokenTranscript('');
+              handleAnswerSuccess(currentQ.targetWord);
+            } else {
+              const newAttempts = speechAttempts + 1;
+              setSpeechAttempts(newAttempts);
+
+              if (newAttempts >= 4) {
+                playSoundEffect('chime');
                 setFeedback({
-                  text: 'Hãy nghe phát âm rồi đọc to từ còn thiếu để giúp bạn động vật về nhà nhé! 🐾',
+                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
                   isCorrect: null
                 });
+
+                setTimeout(() => {
+                  setSpeechAttempts(0);
+                  const nextRound = currentRound + 1;
+                  if (nextRound >= TOTAL_ROUNDS) {
+                    playSoundEffect('celebrate');
+                    setShowEcoPopup(true);
+                  } else {
+                    setCurrentRound(nextRound);
+                    setSelectedWord(null);
+                    setIsAnswerCorrect(null);
+                    setSpokenTranscript('');
+                    setFeedback({
+                      text: 'Hãy nghe phát âm rồi đọc to từ còn thiếu để giúp bạn động vật về nhà nhé! 🐾',
+                      isCorrect: null
+                    });
+                  }
+                }, 2000);
+              } else {
+                setFeedback({
+                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm đọc lại nhé! 🎤`,
+                  isCorrect: false
+                });
               }
-            }, 2000);
-          } else {
-            setFeedback({
-              text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm đọc lại nhé! 🎤`,
-              isCorrect: false
-            });
+            }
           }
-        }, 8000);
+        }, 25000);
       };
 
       recognition.onresult = (event: any) => {
-        clearTimer();
-        setIsListeningVoice(false);
-
-        const transcript = (event.results && event.results[0] && event.results[0][0])
-          ? event.results[0][0].transcript.trim().toLowerCase()
-          : '';
-
-        setSpokenTranscript(transcript);
-
-        const target = currentQ.targetWord.toLowerCase().trim();
-        const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const targetNorm = normalize(target);
-        const spokenTokens = transcript.toLowerCase().split(/\s+/).map((w: string) => normalize(w));
-
-        const isMatch = spokenTokens.includes(targetNorm) ||
-          normalize(transcript).includes(targetNorm) ||
-          targetNorm.includes(normalize(transcript)) ||
-          checkSpeechAnswerMatch(transcript, currentQ.targetWord);
-
-        if (isMatch) {
-          setSpeechAttempts(0);
-          handleAnswerSuccess(currentQ.targetWord);
-        } else {
-          const newAttempts = speechAttempts + 1;
-          setSpeechAttempts(newAttempts);
-
-          if (newAttempts >= 4) {
-            playSoundEffect('chime');
-            setFeedback({
-              text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
-              isCorrect: null
-            });
-
-            // Auto-skip to next round without awarding EP
-            setTimeout(() => {
-              setSpeechAttempts(0);
-              const nextRound = currentRound + 1;
-              if (nextRound >= TOTAL_ROUNDS) {
-                playSoundEffect('celebrate');
-                setShowEcoPopup(true);
-              } else {
-                setCurrentRound(nextRound);
-                setSelectedWord(null);
-                setIsAnswerCorrect(null);
-                setSpokenTranscript('');
-                setFeedback({
-                  text: 'Hãy nghe phát âm rồi đọc to từ còn thiếu để giúp bạn động vật về nhà nhé! 🐾',
-                  isCorrect: null
-                });
-              }
-            }, 2000);
-          } else {
-            playSoundEffect('fail');
-            setIsAnswerCorrect(false);
-            setFeedback({
-              text: `Em vừa phát âm: "${transcript || 'chưa rõ'}". Lần thử ${newAttempts}/4. Hãy bấm nút Loa nghe phát âm chuẩn rồi thử đọc lại nhé! 🎤`,
-              isCorrect: false
-            });
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullText += event.results[i][0].transcript + ' ';
           }
+        }
+        const clean = fullText.trim().toLowerCase();
+        if (clean) {
+          accumulatedTranscriptRef.current = clean;
+          setSpokenTranscript(clean);
+          setFeedback({
+            text: `🎙️ "${clean}" (Bấm "Dừng & Chấm điểm" khi đọc xong)`,
+            isCorrect: null
+          });
         }
       };
 
-      recognition.onerror = () => {
+      recognition.onerror = (event: any) => {
+        if (event.error === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          return;
+        }
         clearTimer();
+        isListeningRef.current = false;
         setIsListeningVoice(false);
       };
 
       recognition.onend = () => {
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
         clearTimer();
         setIsListeningVoice(false);
       };
@@ -686,6 +741,8 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
       recognitionRef.current = recognition;
       recognition.start();
     } catch {
+      clearTimer();
+      isListeningRef.current = false;
       setIsListeningVoice(false);
     }
   };
@@ -1152,8 +1209,8 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
               <Mic className={`w-5 h-5 ${isListeningVoice ? 'animate-bounce' : ''}`} />
               <span>
                 {isListeningVoice 
-                  ? 'Listening... Đang nghe, em hãy đọc to từ cần điền!' 
-                  : 'Hold / Click Mic to Speak · Bấm Micro để đọc to từ điền'}
+                  ? '🛑 Dừng & Chấm điểm (Click to Stop)' 
+                  : 'Speak with Mic · Bấm Micro để đọc to từ điền'}
               </span>
             </button>
 

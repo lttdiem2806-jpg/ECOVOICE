@@ -12,8 +12,11 @@ import {
   ArrowRight,
   Heart,
   HelpCircle,
-  RotateCcw
+  RotateCcw,
+  Mic,
+  Square
 } from 'lucide-react';
+import { checkSpeechAnswerMatch } from '../services/pronunciationFeedbackService';
 
 export interface EcoGardenQuestion {
   id: string;
@@ -682,7 +685,7 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; isCorrect: boolean } | null>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; isCorrect: boolean | null } | null>(null);
 
   // Blooming stations state: array of boolean indicating whether station 0..4 is bloomed
   const [bloomedStations, setBloomedStations] = useState<boolean[]>([false, false, false, false, false]);
@@ -691,6 +694,12 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
   const [showEcoPopup, setShowEcoPopup] = useState<boolean>(false);
   const [hasClaimedReward, setHasClaimedReward] = useState<boolean>(false);
   const [claimSuccessMsg, setClaimSuccessMsg] = useState<string | null>(null);
+
+  // Speech Recognition States
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const isListeningRef = useRef<boolean>(false);
+  const recognitionRef = useRef<any>(null);
+  const accumulatedTranscriptRef = useRef<string>('');
 
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<any>(null);
@@ -769,6 +778,171 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
       return () => clearTimeout(t);
     }
   }, [currentIndex, currentQ?.id]);
+
+  // Speech Recognition handler (Click to Start / Click to Stop)
+  const startListening = () => {
+    // If currently active recording, stop & evaluate accumulated speech immediately
+    if (isListening || isListeningRef.current) {
+      clearTimer();
+      isListeningRef.current = false;
+      setIsListening(false);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+
+      playSoundEffect('click');
+      const transcript = accumulatedTranscriptRef.current.trim();
+      
+      if (transcript) {
+        setUserInput(transcript);
+        const normalizedInput = normalizeText(transcript);
+        const normalizedTarget = normalizeText(currentQ.targetWord);
+        const normalizedFull = normalizeText(currentQ.fullSentence);
+
+        const isCorrect = normalizedInput === normalizedTarget || 
+                          normalizedInput === normalizedFull || 
+                          (normalizedTarget.length > 2 && normalizedInput.endsWith(normalizedTarget)) ||
+                          checkSpeechAnswerMatch(transcript, currentQ.targetWord) ||
+                          checkSpeechAnswerMatch(transcript, currentQ.fullSentence);
+
+        if (isCorrect) {
+          setUserInput(currentQ.targetWord);
+          playSoundEffect('success');
+          setIsAnswerCorrect(true);
+          setFeedbackMsg({
+            text: `🌸 Chính xác! Khóm "${currentQ.stationFlowerName}" đã bung nở rực rỡ! (+10 EP)`,
+            isCorrect: true
+          });
+          setBloomedStations(prev => {
+            const next = [...prev];
+            next[currentIndex] = true;
+            return next;
+          });
+        } else {
+          playSoundEffect('fail');
+          setIsAnswerCorrect(false);
+          setFeedbackMsg({
+            text: `Em vừa đọc: "${transcript}". Chưa trùng với đáp án. Hãy nghe lại phát âm rồi đọc lại nhé! 🎤`,
+            isCorrect: false
+          });
+        }
+      }
+      return;
+    }
+
+    playSoundEffect('click');
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      speakAudio(currentQ.audioText);
+      return;
+    }
+
+    try {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
+      clearTimer();
+      accumulatedTranscriptRef.current = '';
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isListeningRef.current = true;
+        setIsListening(true);
+        setFeedbackMsg({
+          text: `🎤 Đang lắng nghe... Hãy đọc to từ hoặc câu mẫu rồi bấm "Dừng & Chấm điểm" nhé!`,
+          isCorrect: null
+        });
+
+        // 25s safety timeout
+        clearTimer();
+        timerRef.current = setTimeout(() => {
+          if (isListeningRef.current) {
+            isListeningRef.current = false;
+            setIsListening(false);
+            try { recognition.stop(); } catch {}
+
+            const transcript = accumulatedTranscriptRef.current.trim();
+            if (transcript) {
+              setUserInput(transcript);
+              const normalizedInput = normalizeText(transcript);
+              const normalizedTarget = normalizeText(currentQ.targetWord);
+              const normalizedFull = normalizeText(currentQ.fullSentence);
+
+              const isCorrect = normalizedInput === normalizedTarget || 
+                                normalizedInput === normalizedFull || 
+                                (normalizedTarget.length > 2 && normalizedInput.endsWith(normalizedTarget)) ||
+                                checkSpeechAnswerMatch(transcript, currentQ.targetWord);
+
+              if (isCorrect) {
+                setUserInput(currentQ.targetWord);
+                playSoundEffect('success');
+                setIsAnswerCorrect(true);
+                setFeedbackMsg({
+                  text: `🌸 Chính xác! Khóm "${currentQ.stationFlowerName}" đã bung nở rực rỡ! (+10 EP)`,
+                  isCorrect: true
+                });
+                setBloomedStations(prev => {
+                  const next = [...prev];
+                  next[currentIndex] = true;
+                  return next;
+                });
+              }
+            }
+          }
+        }, 25000);
+      };
+
+      recognition.onresult = (event: any) => {
+        let fullText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i] && event.results[i][0]) {
+            fullText += event.results[i][0].transcript + ' ';
+          }
+        }
+        const clean = fullText.trim();
+        if (clean) {
+          accumulatedTranscriptRef.current = clean;
+          setUserInput(clean);
+          setFeedbackMsg({
+            text: `🎙️ "${clean}" (Bấm "Dừng & Chấm điểm" khi đọc xong)`,
+            isCorrect: null
+          });
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        if (event.error === 'no-speech' && accumulatedTranscriptRef.current.trim()) {
+          return;
+        }
+        clearTimer();
+        isListeningRef.current = false;
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {}
+        }
+        clearTimer();
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      clearTimer();
+      isListeningRef.current = false;
+      setIsListening(false);
+    }
+  };
 
   // Normalize string for lenient comparison
   const normalizeText = (txt: string): string => {
@@ -1147,6 +1321,29 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
             </div>
           )}
         </div>
+
+        {/* Speak with Mic Button (Click to Start / Click to Stop) */}
+        <button
+          type="button"
+          onClick={startListening}
+          className={`w-full py-3 px-4 rounded-2xl border-2 font-black text-xs sm:text-sm flex items-center justify-between gap-2 cursor-pointer transition-all active:scale-98 ${
+            isListening 
+              ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-500 shadow-lg ring-4 ring-rose-300 animate-pulse' 
+              : 'bg-pink-50 hover:bg-pink-100 text-pink-950 border-pink-300 shadow-2xs'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {isListening ? <Square className="w-4 h-4 fill-white shrink-0" /> : <Mic className="w-4 h-4 text-pink-700 shrink-0" />}
+            <span className="font-extrabold">
+              {isListening ? 'Stop & Evaluate / Dừng & Chấm điểm 🛑' : 'Speak with Mic · Luyện phát âm trực tiếp 🎤'}
+            </span>
+          </div>
+          <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full ${
+            isListening ? 'bg-white/25 text-white' : 'bg-pink-200/80 text-pink-900'
+          }`}>
+            {isListening ? 'Bấm khi đọc xong' : 'Bấm để nói'}
+          </span>
+        </button>
 
         {/* Text Input Box & Action Buttons */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
