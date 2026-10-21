@@ -621,11 +621,13 @@ export default function App() {
           localStorage.setItem('ecovoice_user_name', displayName);
           setMascotBubble(`Xin chào Quản trị viên (${user.email || displayName})! Chúc Thầy/Cô một buổi dạy thật hứng khởi cùng các em học sinh! 👩‍🏫🌿`);
         } else {
-          // LUỒNG 2: Google Sign-In -> Routes into Guest Mode / Demo Interface
+          // LUỒNG 2: Google Sign-In -> Routes into Guest Mode / Demo Interface (Google User)
           setIsGuestMode(true);
+          setUserRole('guest');
+          setCurrentUserRole('guest');
           setTeacherUnlocked(false);
           setShowTeacherDashboard(false);
-          localStorage.setItem('ecovoice_user_role', 'student');
+          localStorage.setItem('ecovoice_user_role', 'guest');
           localStorage.setItem('ecovoice_is_logged_in', 'true');
           localStorage.setItem('ecovoice_user_name', displayName);
           localStorage.setItem('ecovoice_student_class', profile.className);
@@ -748,9 +750,8 @@ export default function App() {
   };
 
   const isOfficialStudentAccount = (name?: string, role?: string): boolean => {
-    if (role === 'teacher') return false;
-    if (role === 'student') return true;
-    if (!name) return false;
+    if (role === 'teacher' || role === 'guest' || isGuestMode) return false;
+    if (!name || isGuestUser(name)) return false;
     const accounts = getStudentAccounts();
     const lower = name.trim().toLowerCase();
     return accounts.some(s => s.name.trim().toLowerCase() === lower);
