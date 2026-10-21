@@ -114,83 +114,134 @@ export const ACCEPTABLE_PHONETIC_VARIATIONS: Record<string, string[]> = {
 /**
  * Checks if a spoken word token matches the target word under primary-school pronunciation tolerances
  */
+/**
+ * Checks if a spoken word token matches the target word under primary-school pronunciation tolerances
+ */
 export const isWordMatchWithTolerances = (spokenWord: string, targetWord: string): boolean => {
   const s = (spokenWord || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
   const t = (targetWord || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
   if (!s || !t) return false;
   if (s === t) return true;
 
-  // Check acceptable variations dictionary
+  // Check acceptable variations dictionary (curated homophones e.g. lane -> lain)
   const variations = ACCEPTABLE_PHONETIC_VARIATIONS[t];
   if (variations && variations.includes(s)) {
     return true;
   }
 
-  // Check if spoken word matches any key's variations
-  for (const [key, variants] of Object.entries(ACCEPTABLE_PHONETIC_VARIATIONS)) {
-    if (key === t && variants.some(v => v === s || (s.length >= 3 && v === s))) {
-      return true;
-    }
+  // Strictly reject suffix additions (e.g. "address" vs "addressed", "play" vs "played", "book" vs "books")
+  if (s.startsWith(t) && (s.endsWith('ed') || s.endsWith('ing') || s.endsWith('es') || s.endsWith('s'))) {
+    return false;
+  }
+  if (t.startsWith(s) && (t.endsWith('ed') || t.endsWith('ing') || t.endsWith('es') || t.endsWith('s'))) {
+    return false;
   }
 
-  // Levenshtein fuzzy tolerance:
-  // For words with length >= 4 (e.g. 'lane' vs 'lay' distance 1), allow dist <= 1
-  // For words with length >= 7, allow dist <= 2
+  // Levenshtein fuzzy tolerance: ONLY allow dist === 1 for long words (length >= 6)
+  // NEVER allow dist >= 2, which would match completely different words (address/addressed, kitchen/chicken)
   const dist = getLevenshteinDistance(s, t);
-  if (t.length >= 4 && dist <= 1) return true;
-  if (t.length >= 7 && dist <= 2) return true;
+  if (t.length >= 6 && dist === 1) return true;
 
   return false;
 };
 
 /**
- * Calculates a fair, encouraging pronunciation accuracy score (0 - 100%)
+ * Calculates a fair, rigorous pronunciation accuracy score (0 - 100%)
  * Incorporates fuzzy matching, phonetic tolerances for 'lane' and other target words,
  * and handles both isolated words and multi-word sentences.
+ * 
+ * CRITICAL RULE: Score = 100% is STRICTLY reserved for exact letter-for-letter matches (or verified homophones).
+ * Inexact words or words with extra suffixes (e.g. "addressed" for "address") are heavily penalized and never reach 100%.
  */
 export const calculatePronunciationScoreWithTolerances = (spoken: string, target: string): number => {
-  const cleanSpoken = (spoken || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-  const cleanTarget = (target || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+  const cleanSpoken = (spoken || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleanTarget = (target || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
   if (!cleanSpoken || !cleanTarget) return 0;
+  // Exact string match is always 100%
   if (cleanSpoken === cleanTarget) return 100;
 
   const spokenWords = cleanSpoken.split(/\s+/).filter(Boolean);
   const targetWords = cleanTarget.split(/\s+/).filter(Boolean);
 
-  // Single word target (e.g. "Lane", "Road", "Water")
+  // Single word target (e.g. "address", "lane", "road")
   if (targetWords.length === 1) {
     const tWord = targetWords[0];
-    for (const sWord of spokenWords) {
-      if (isWordMatchWithTolerances(sWord, tWord)) {
-        return 100;
-      }
-    }
-    if (isWordMatchWithTolerances(cleanSpoken, tWord)) {
+    
+    // Check if any spoken token matches exactly
+    if (spokenWords.includes(tWord)) {
       return 100;
     }
-    if (cleanSpoken.includes(tWord) || tWord.includes(cleanSpoken)) {
+
+    // Check curated phonetic variations (e.g. homophones)
+    const variations = ACCEPTABLE_PHONETIC_VARIATIONS[tWord];
+    if (variations && spokenWords.some(w => variations.includes(w))) {
+      return 95;
+    }
+
+    // Find the spoken word closest to tWord
+    let bestWord = spokenWords[0] || cleanSpoken;
+    let minDistance = getLevenshteinDistance(bestWord, tWord);
+    for (const w of spokenWords) {
+      const d = getLevenshteinDistance(w, tWord);
+      if (d < minDistance) {
+        minDistance = d;
+        bestWord = w;
+      }
+    }
+
+    // Check if user added an unwanted suffix (e.g. target="address", spoken="addressed")
+    const hasUnwantedSuffix = 
+      (bestWord.startsWith(tWord) && bestWord.length > tWord.length) ||
+      (bestWord.endsWith('ed') && !tWord.endsWith('ed')) ||
+      (bestWord.endsWith('ing') && !tWord.endsWith('ing')) ||
+      (bestWord.endsWith('es') && !tWord.endsWith('es')) ||
+      (bestWord.endsWith('s') && !tWord.endsWith('s'));
+
+    const maxLen = Math.max(bestWord.length, tWord.length);
+    const charSimilarity = Math.max(0, (maxLen - minDistance) / maxLen);
+
+    // If unwanted suffix added (like "addressed" for "address"):
+    // Heavily penalize, cap at 68% so it can NEVER get 100% or false 80% passing!
+    if (hasUnwantedSuffix) {
+      return Math.min(68, Math.round(charSimilarity * 80));
+    }
+
+    // Distance 1 on longer words (e.g. minor single-letter typo on long words >= 6)
+    if (minDistance === 1 && tWord.length >= 6) {
       return 85;
     }
-    return 0;
+    if (minDistance === 1 && tWord.length >= 4) {
+      return 75;
+    }
+
+    // Any other distance or general similarity: capped at 60%
+    return Math.min(60, Math.round(charSimilarity * 75));
   }
 
-  // Multi-word sentence target (e.g. "She lives in a quiet lane.")
+  // Multi-word sentence target (e.g. "Where are you from?")
   let matchedCount = 0;
   for (const tWord of targetWords) {
-    const hasMatch = spokenWords.some(sWord => isWordMatchWithTolerances(sWord, tWord));
-    if (hasMatch) {
-      matchedCount += 1;
+    if (spokenWords.includes(tWord)) {
+      matchedCount += 1.0;
     } else {
-      const close = spokenWords.some(sWord => getLevenshteinDistance(sWord, tWord) <= 1 && tWord.length > 3);
-      if (close) {
-        matchedCount += 0.85;
+      const variations = ACCEPTABLE_PHONETIC_VARIATIONS[tWord];
+      if (variations && spokenWords.some(w => variations.includes(w))) {
+        matchedCount += 0.95;
+      } else {
+        const close = spokenWords.some(sWord => getLevenshteinDistance(sWord, tWord) <= 1 && tWord.length >= 4);
+        if (close) {
+          matchedCount += 0.8;
+        }
       }
     }
   }
 
-  const percentage = (matchedCount / targetWords.length) * 100;
-  return Math.min(100, Math.round(percentage));
+  const wordScore = (matchedCount / targetWords.length) * 100;
+  // Penalty if length of spoken words is wildly different from target words
+  const lengthRatio = Math.min(spokenWords.length, targetWords.length) / Math.max(spokenWords.length, targetWords.length);
+  const finalPercentage = lengthRatio < 0.6 ? wordScore * lengthRatio : wordScore;
+  return Math.min(100, Math.round(finalPercentage));
 };
 
 export interface VoiceFillBlankResult {
@@ -497,19 +548,33 @@ export const evaluateSmartPronunciation = (
     };
   }
 
-  // Tier 2: Good Effort (Cố gắng rất tốt) - 50% <= Score < 80% (Passing grade unlocked)
+  // Check if student spoke a single word with unwanted grammatical suffix (e.g. "addressed" for "address")
+  const cleanSpoken = (transcript || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+  const cleanTarget = (target || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+  const hasSuffixError = !isSentence && cleanSpoken.startsWith(cleanTarget) && cleanSpoken.length > cleanTarget.length;
+
+  // Tier 2: Good Effort (Cố gắng rất tốt) - 50% <= Score < 80%
   if (numScore >= 50) {
+    const feedbackVi = hasSuffixError
+      ? `⚠️ Lưu ý âm đuôi: Bạn vừa phát âm là "${transcript}" (bị thừa âm đuôi/hậu tố). Hãy phát âm chuẩn là "${target}" ${phonetic || ''} nhé! (${numScore}%)`
+      : `👍 Cố gắng rất tốt! Bạn đã phát âm đạt yêu cầu (${numScore}%). Bấm 'Next (Tiếp)' để sang từ tiếp theo hoặc luyện nói lại nhé!`;
+    const mascotEncouragement = hasSuffixError
+      ? `Chú ý âm đuôi nhé! Hãy đọc là "${target}" không có âm đuôi thừa nào! 🎧`
+      : `Keep it up! Bạn phát âm đạt yêu cầu rồi, bấm Next để tiếp tục nhé! 🎧`;
+
     return {
       score: numScore,
       tier: 'good',
       tierBadgeEn: 'Good Progress!',
       tierBadgeVi: 'Tiến bộ tốt!',
-      feedbackEn: `Great effort! Almost there! Let's move to the next challenge or practice again! 👍`,
-      feedbackVi: `👍 Cố gắng rất tốt! Bạn đã phát âm đạt yêu cầu (${numScore}%). Bấm 'Next (Tiếp)' để sang từ tiếp theo hoặc luyện nói lại nhé!`,
-      mascotEncouragement: `Keep it up! Bạn phát âm đạt yêu cầu rồi, bấm Next để tiếp tục nhé! 🎧`,
+      feedbackEn: hasSuffixError 
+        ? `Almost there! Watch out for extra suffix sounds: say "${target}" without "-ed" or extra endings! (${numScore}%)`
+        : `Great effort! Almost there! Let's move to the next challenge or practice again! 👍`,
+      feedbackVi,
+      mascotEncouragement,
       tip,
       wordAnalysis,
-      isPassed: true
+      isPassed: !hasSuffixError && (isSentence ? numScore >= 65 : numScore >= 75)
     };
   }
 
