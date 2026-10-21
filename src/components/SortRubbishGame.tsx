@@ -704,10 +704,10 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
         try { recognitionRef.current.stop(); } catch {}
       }
 
-      playSoundEffect('click');
-      const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
-      const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
-      const isMatch = checkSpeechAnswerMatch(transcript, target) || transcript.includes(target) || target.includes(transcript);
+      const transcript = accumulatedTranscriptRef.current.trim();
+      const target = (currentQ.targetWord || currentQ.speechText).trim();
+      const isMatch = checkSpeechAnswerMatch(transcript, target) || 
+        (target.split(/\s+/).length <= 2 && transcript.toLowerCase().includes(target.toLowerCase()));
 
       if (isMatch) {
         setSpeechAttempts(0);
@@ -716,16 +716,17 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
           handleSelectOption(correctOpt);
         }
       } else if (transcript) {
-        const newAttempts = speechAttempts + 1;
-        setSpeechAttempts(newAttempts);
+        const nextAttempts = speechAttempts + 1;
+        setSpeechAttempts(nextAttempts);
 
-        if (newAttempts >= 4) {
+        if (nextAttempts >= 4) {
           playSoundEffect('chime');
           setFeedback({
-            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            text: `Good effort! Let us move on to the next question. 🌟`,
             isCorrect: null
           });
 
+          // Advance with 0 EP: do NOT sort trash or award points!
           setTimeout(() => {
             setSpeechAttempts(0);
             const nextRound = currentRound + 1;
@@ -746,13 +747,13 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
         } else {
           playSoundEffect('fail');
           setFeedback({
-            text: `Try again! Chưa chính xác (Em nói: "${transcript}"). Em có thể bấm 'Speak with Mic' để phát âm lại HOẶC bấm chọn trực tiếp các đáp án A, B, C, D ở phía trên! 🎤`,
+            text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
             isCorrect: false
           });
         }
       } else {
         setFeedback({
-          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          text: 'Bé chưa phát âm xong, hãy bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
           isCorrect: false
         });
       }
@@ -795,9 +796,10 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
             setIsListening(false);
             try { recognition.stop(); } catch {}
 
-            const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
-            const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
-            const isMatch = checkSpeechAnswerMatch(transcript, target) || transcript.includes(target) || target.includes(transcript);
+            const transcript = accumulatedTranscriptRef.current.trim();
+            const target = (currentQ.targetWord || currentQ.speechText).trim();
+            const isMatch = checkSpeechAnswerMatch(transcript, target) || 
+              (target.split(/\s+/).length <= 2 && transcript.toLowerCase().includes(target.toLowerCase()));
 
             if (isMatch) {
               setSpeechAttempts(0);
@@ -805,17 +807,18 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
               if (correctOpt) {
                 handleSelectOption(correctOpt);
               }
-            } else {
-              const newAttempts = speechAttempts + 1;
-              setSpeechAttempts(newAttempts);
+            } else if (transcript) {
+              const nextAttempts = speechAttempts + 1;
+              setSpeechAttempts(nextAttempts);
 
-              if (newAttempts >= 4) {
+              if (nextAttempts >= 4) {
                 playSoundEffect('chime');
                 setFeedback({
-                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+                  text: `Good effort! Let us move on to the next question. 🌟`,
                   isCorrect: null
                 });
 
+                // Advance with 0 EP: do NOT sort trash or award points!
                 setTimeout(() => {
                   setSpeechAttempts(0);
                   const nextRound = currentRound + 1;
@@ -834,8 +837,9 @@ export const SortRubbishGame: React.FC<SortRubbishGameProps> = ({
                   }
                 }, 2000);
               } else {
+                playSoundEffect('fail');
                 setFeedback({
-                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm nói nhé! 🎤`,
+                  text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
                   isCorrect: false
                 });
               }

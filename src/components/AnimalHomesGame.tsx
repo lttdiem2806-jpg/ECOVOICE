@@ -16,7 +16,7 @@ import {
   Check,
   Undo2
 } from 'lucide-react';
-import { checkSpeechAnswerMatch } from '../services/pronunciationFeedbackService';
+import { checkSpeechAnswerMatch, evaluateVoiceFillBlank } from '../services/pronunciationFeedbackService';
 
 export interface AnimalEcoFriend {
   id: string;
@@ -543,41 +543,38 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
       }
 
       playSoundEffect('click');
-      const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+      const transcript = accumulatedTranscriptRef.current.trim();
       setSpokenTranscript(transcript);
 
-      const target = currentQ.targetWord.toLowerCase().trim();
-      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const targetNorm = normalize(target);
-      const spokenTokens = transcript.toLowerCase().split(/\s+/).map((w: string) => normalize(w));
+      const targetWord = currentQ.targetWord.trim();
+      const fullSentence = currentQ.sentenceWithBlank 
+        ? currentQ.sentenceWithBlank.replace('______', targetWord) 
+        : targetWord;
 
-      const isMatch = spokenTokens.includes(targetNorm) ||
-        normalize(transcript).includes(targetNorm) ||
-        targetNorm.includes(normalize(transcript)) ||
-        checkSpeechAnswerMatch(transcript, currentQ.targetWord);
+      const evalResult = evaluateVoiceFillBlank(transcript, targetWord, fullSentence);
 
-      if (isMatch) {
+      if (evalResult.isCorrect) {
         setSpeechAttempts(0);
         handleAnswerSuccess(currentQ.targetWord);
       } else if (transcript) {
-        const newAttempts = speechAttempts + 1;
-        setSpeechAttempts(newAttempts);
+        const nextAttempts = speechAttempts + 1;
+        setSpeechAttempts(nextAttempts);
 
-        if (newAttempts >= 4) {
+        if (nextAttempts >= 4) {
           playSoundEffect('chime');
           setFeedback({
-            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            text: `Good effort! Let us move on to the next sentence. 🌟`,
             isCorrect: null
           });
 
+          // Fallback rule: auto-unlock & advance to next question with 0 EP!
           setTimeout(() => {
             setSpeechAttempts(0);
-            const nextRound = currentRound + 1;
-            if (nextRound >= TOTAL_ROUNDS) {
+            if (currentRound + 1 >= TOTAL_ROUNDS) {
               playSoundEffect('celebrate');
               setShowEcoPopup(true);
             } else {
-              setCurrentRound(nextRound);
+              setCurrentRound(prev => prev + 1);
               setSelectedWord(null);
               setIsAnswerCorrect(null);
               setSpokenTranscript('');
@@ -591,13 +588,13 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
           playSoundEffect('fail');
           setIsAnswerCorrect(false);
           setFeedback({
-            text: `Try again! Chưa chính xác (Em vừa phát âm: "${transcript}"). Em có thể bấm 'Speak with Mic' để phát âm lại HOẶC chọn từ tương ứng phía dưới! 🎤`,
+            text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
             isCorrect: false
           });
         }
       } else {
         setFeedback({
-          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          text: 'Bé chưa phát âm xong, hãy bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
           isCorrect: false
         });
       }
@@ -645,41 +642,37 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
             setIsListeningVoice(false);
             try { recognition.stop(); } catch {}
 
-            const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
+            const transcript = accumulatedTranscriptRef.current.trim();
             setSpokenTranscript(transcript);
 
-            const target = currentQ.targetWord.toLowerCase().trim();
-            const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const targetNorm = normalize(target);
-            const spokenTokens = transcript.toLowerCase().split(/\s+/).map((w: string) => normalize(w));
+            const targetWord = currentQ.targetWord.trim();
+            const fullSentence = currentQ.sentenceWithBlank 
+              ? currentQ.sentenceWithBlank.replace('______', targetWord) 
+              : targetWord;
 
-            const isMatch = spokenTokens.includes(targetNorm) ||
-              normalize(transcript).includes(targetNorm) ||
-              targetNorm.includes(normalize(transcript)) ||
-              checkSpeechAnswerMatch(transcript, currentQ.targetWord);
+            const evalResult = evaluateVoiceFillBlank(transcript, targetWord, fullSentence);
 
-            if (isMatch) {
+            if (evalResult.isCorrect) {
               setSpeechAttempts(0);
               handleAnswerSuccess(currentQ.targetWord);
-            } else {
-              const newAttempts = speechAttempts + 1;
-              setSpeechAttempts(newAttempts);
+            } else if (transcript) {
+              const nextAttempts = speechAttempts + 1;
+              setSpeechAttempts(nextAttempts);
 
-              if (newAttempts >= 4) {
+              if (nextAttempts >= 4) {
                 playSoundEffect('chime');
                 setFeedback({
-                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+                  text: `Good effort! Let us move on to the next sentence. 🌟`,
                   isCorrect: null
                 });
 
                 setTimeout(() => {
                   setSpeechAttempts(0);
-                  const nextRound = currentRound + 1;
-                  if (nextRound >= TOTAL_ROUNDS) {
+                  if (currentRound + 1 >= TOTAL_ROUNDS) {
                     playSoundEffect('celebrate');
                     setShowEcoPopup(true);
                   } else {
-                    setCurrentRound(nextRound);
+                    setCurrentRound(prev => prev + 1);
                     setSelectedWord(null);
                     setIsAnswerCorrect(null);
                     setSpokenTranscript('');
@@ -690,8 +683,10 @@ export const AnimalHomesGame: React.FC<AnimalHomesGameProps> = ({
                   }
                 }, 2000);
               } else {
+                playSoundEffect('fail');
+                setIsAnswerCorrect(false);
                 setFeedback({
-                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm đọc lại nhé! 🎤`,
+                  text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
                   isCorrect: false
                 });
               }

@@ -193,12 +193,103 @@ export const calculatePronunciationScoreWithTolerances = (spoken: string, target
   return Math.min(100, Math.round(percentage));
 };
 
+export interface VoiceFillBlankResult {
+  isCorrect: boolean;
+  score: number;
+  isKeywordCorrect: boolean;
+  isSentenceComplete: boolean;
+  feedbackText: string;
+}
+
 /**
  * Unified game speech check: returns true if pronunciation passes (threshold >= 70%)
  */
 export const checkSpeechAnswerMatch = (spoken: string, target: string): boolean => {
   const score = calculatePronunciationScoreWithTolerances(spoken, target);
   return score >= 70;
+};
+
+/**
+ * Strict evaluation for Fill-in-the-Blank ('Listen & Voice-Fill Blank') questions in Eco-Games.
+ * 
+ * Enforces BOTH:
+ * 1. Strict Keyword Validation: The target blank word MUST be present and correctly pronounced.
+ * 2. Full-Sentence Pronunciation Validation: All remaining words in the sentence MUST also be pronounced clearly.
+ */
+export const evaluateVoiceFillBlank = (
+  spokenText: string,
+  targetKeyword: string,
+  fullSentence: string
+): VoiceFillBlankResult => {
+  const cleanSpoken = (spokenText || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleanKeyword = (targetKeyword || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleanSentence = (fullSentence || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  if (!cleanSpoken) {
+    return {
+      isCorrect: false,
+      score: 0,
+      isKeywordCorrect: false,
+      isSentenceComplete: false,
+      feedbackText: 'Bé chưa phát âm xong, hãy bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤'
+    };
+  }
+
+  const spokenWords = cleanSpoken.split(/\s+/).filter(Boolean);
+  const keywordWords = cleanKeyword.split(/\s+/).filter(Boolean);
+  const sentenceWords = cleanSentence.split(/\s+/).filter(Boolean);
+
+  // 1. Strict Keyword Validation
+  let isKeywordCorrect = false;
+  if (keywordWords.length === 1) {
+    const kWord = keywordWords[0];
+    isKeywordCorrect = spokenWords.some(sWord => isWordMatchWithTolerances(sWord, kWord));
+  } else if (keywordWords.length > 1) {
+    let matchedKWords = 0;
+    for (const kw of keywordWords) {
+      if (spokenWords.some(sWord => isWordMatchWithTolerances(sWord, kw))) {
+        matchedKWords++;
+      }
+    }
+    isKeywordCorrect = (matchedKWords / keywordWords.length) >= 0.75;
+  }
+
+  // 2. Full-Sentence Pronunciation Validation (Remaining context words in full sentence)
+  const contextWords = sentenceWords.filter(w => !keywordWords.includes(w));
+
+  let contextMatchedCount = 0;
+  for (const cWord of contextWords) {
+    if (spokenWords.some(sWord => isWordMatchWithTolerances(sWord, cWord))) {
+      contextMatchedCount++;
+    }
+  }
+
+  // Ratio of remaining context words pronounced
+  const contextRatio = contextWords.length > 0 ? contextMatchedCount / contextWords.length : 1;
+  const isSentenceComplete = contextWords.length === 0 || contextRatio >= 0.65;
+
+  // Total sentence pronunciation score
+  const overallScore = calculatePronunciationScoreWithTolerances(cleanSpoken, cleanSentence);
+
+  // Both must be true for overall success
+  const isCorrect = isKeywordCorrect && isSentenceComplete && (contextWords.length === 0 || overallScore >= 65);
+
+  let feedbackText = '';
+  if (isCorrect) {
+    feedbackText = `🎉 Excellent! Perfect pronunciation! "${fullSentence}"`;
+  } else if (isKeywordCorrect && !isSentenceComplete) {
+    feedbackText = `Almost there! Please remember to speak the whole sentence! 🎤`;
+  } else {
+    feedbackText = `Not quite right! Please try again! 🎤`;
+  }
+
+  return {
+    isCorrect,
+    score: overallScore,
+    isKeywordCorrect,
+    isSentenceComplete,
+    feedbackText
+  };
 };
 
 /**

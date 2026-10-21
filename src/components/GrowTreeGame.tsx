@@ -417,20 +417,19 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
       }
   };
 
-  // Trigger retry speech flow with 4-attempt auto-skip without EP
-  const handleIncorrectSpeech = (spokenText: string, accuracy: number = 0) => {
-    playSoundEffect('fail');
-    const newAttempts = speechAttempts + 1;
-    setSpeechAttempts(newAttempts);
+  // Trigger retry speech flow with attempt tracking and 4-attempt fallback rule
+  const handleIncorrectSpeech = (_spokenText: string, _accuracy: number = 0) => {
+    const nextAttempts = speechAttempts + 1;
+    setSpeechAttempts(nextAttempts);
 
-    if (newAttempts >= 4) {
+    if (nextAttempts >= 4) {
       playSoundEffect('chime');
       setFeedback({
-        text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+        text: `Good effort! Let us move on to the next sentence. 🌟`,
         isCorrect: null
       });
 
-      // Automatically advance to the next challenge after 2 seconds without awarding EP
+      // Advance with 0 EP: tree does not grow for this item!
       setTimeout(() => {
         setSpeechAttempts(0);
         if (currentIndex + 1 >= TOTAL_ITEMS) {
@@ -452,8 +451,9 @@ export const GrowTreeGame: React.FC<GrowTreeGameProps> = ({
         }
       }, 2000);
     } else {
+      playSoundEffect('fail');
       setFeedback({
-        text: `Try again! Chưa chính xác (Em phát âm: "${spokenText || 'chưa rõ'}" - ${accuracy}%). Em hãy bấm 'Speak with Mic' để phát âm lại nhé! 🎤`,
+        text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
         isCorrect: false
       });
     }

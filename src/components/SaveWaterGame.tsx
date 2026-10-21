@@ -462,11 +462,8 @@ export const SaveWaterGame: React.FC<SaveWaterGameProps> = ({
       }
 
       playSoundEffect('click');
-      const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
-      const normalize = (str: string) => str.toLowerCase().replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ').trim();
-      const target = normalize(currentQ.targetSentence);
-
-      const isMatch = checkSpeechAnswerMatch(transcript, currentQ.targetSentence) || transcript.includes(target) || target.includes(transcript);
+      const transcript = accumulatedTranscriptRef.current.trim();
+      const isMatch = checkSpeechAnswerMatch(transcript, currentQ.targetSentence);
 
       if (isMatch) {
         setSpeechAttempts(0);
@@ -475,20 +472,21 @@ export const SaveWaterGame: React.FC<SaveWaterGameProps> = ({
         setBankWords([]);
         playSoundEffect('success');
         setFeedback({
-          text: `🎉 Excellent! Tuyệt vời! Em phát âm rất chuẩn câu: "${currentQ.targetSentence}"! Hãy bấm "Kiểm tra" để khóa van nhé!`,
+          text: `🎉 Excellent! Tuyệt vời! Em phát âm rất chuẩn toàn bộ câu: "${currentQ.targetSentence}"! Hãy bấm "Kiểm tra" để khóa van nhé!`,
           isCorrect: true
         });
       } else if (transcript) {
-        const newAttempts = speechAttempts + 1;
-        setSpeechAttempts(newAttempts);
+        const nextAttempts = speechAttempts + 1;
+        setSpeechAttempts(nextAttempts);
 
-        if (newAttempts >= 4) {
+        if (nextAttempts >= 4) {
           playSoundEffect('chime');
           setFeedback({
-            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            text: `Good effort! Let us move on to the next sentence. 🌟`,
             isCorrect: null
           });
 
+          // Advance with 0 EP!
           setTimeout(() => {
             setSpeechAttempts(0);
             const nextRound = currentRound + 1;
@@ -514,13 +512,13 @@ export const SaveWaterGame: React.FC<SaveWaterGameProps> = ({
         } else {
           playSoundEffect('fail');
           setFeedback({
-            text: `Try again! Chưa chính xác (Em nói: "${transcript}"). Em có thể bấm 'Speak with Mic' để đọc lại HOẶC bấm xếp từ trực tiếp phía dưới! 🎤`,
+            text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
             isCorrect: false
           });
         }
       } else {
         setFeedback({
-          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          text: 'Bé chưa phát âm xong, hãy bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
           isCorrect: false
         });
       }
@@ -563,11 +561,8 @@ export const SaveWaterGame: React.FC<SaveWaterGameProps> = ({
             setIsListening(false);
             try { recognition.stop(); } catch {}
 
-            const transcript = accumulatedTranscriptRef.current.trim().toLowerCase();
-            const normalize = (str: string) => str.toLowerCase().replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ').trim();
-            const target = normalize(currentQ.targetSentence);
-
-            const isMatch = checkSpeechAnswerMatch(transcript, currentQ.targetSentence) || transcript.includes(target) || target.includes(transcript);
+            const transcript = accumulatedTranscriptRef.current.trim();
+            const isMatch = checkSpeechAnswerMatch(transcript, currentQ.targetSentence);
 
             if (isMatch) {
               setSpeechAttempts(0);
@@ -579,14 +574,14 @@ export const SaveWaterGame: React.FC<SaveWaterGameProps> = ({
                 text: `🎉 Giỏi lắm! Em phát âm rất chuẩn câu: "${currentQ.targetSentence}"! Hãy bấm "Kiểm tra" để khóa van nhé!`,
                 isCorrect: true
               });
-            } else {
-              const newAttempts = speechAttempts + 1;
-              setSpeechAttempts(newAttempts);
+            } else if (transcript) {
+              const nextAttempts = speechAttempts + 1;
+              setSpeechAttempts(nextAttempts);
 
-              if (newAttempts >= 4) {
+              if (nextAttempts >= 4) {
                 playSoundEffect('chime');
                 setFeedback({
-                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+                  text: `Good effort! Let us move on to the next sentence. 🌟`,
                   isCorrect: null
                 });
 
@@ -613,8 +608,9 @@ export const SaveWaterGame: React.FC<SaveWaterGameProps> = ({
                   }
                 }, 2000);
               } else {
+                playSoundEffect('fail');
                 setFeedback({
-                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm nói nhé! 🎤`,
+                  text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
                   isCorrect: false
                 });
               }

@@ -536,10 +536,10 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch {}
       }
-      playSoundEffect('click');
-      const textSpoken = accumulatedTranscriptRef.current.trim().toLowerCase();
-      const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
-      const isMatch = checkSpeechAnswerMatch(textSpoken, target) || textSpoken.includes(target) || target.includes(textSpoken);
+      const textSpoken = accumulatedTranscriptRef.current.trim();
+      const target = (currentQ.targetWord || currentQ.speechText).trim();
+      const isMatch = checkSpeechAnswerMatch(textSpoken, target) || 
+        (target.split(/\s+/).length <= 2 && textSpoken.toLowerCase().includes(target.toLowerCase()));
 
       if (isMatch) {
         setSpeechAttempts(0);
@@ -548,19 +548,17 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
           handleSelectOption(correctOpt);
         }
       } else if (textSpoken) {
-        const newAttempts = speechAttempts + 1;
-        setSpeechAttempts(newAttempts);
+        const nextAttempts = speechAttempts + 1;
+        setSpeechAttempts(nextAttempts);
 
-        if (newAttempts >= 4) {
+        if (nextAttempts >= 4) {
           playSoundEffect('chime');
           setFeedback({
-            text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+            text: `Good effort! Let us move on to the next question. 🌟`,
             isCorrect: null
           });
 
-          setJustCleanedIndex(currentIndex);
-          setCleanedCount(prev => Math.min(TOTAL_QUESTIONS, prev + 1));
-
+          // Advance with 0 EP: do NOT increment cleanedCount
           setTimeout(() => {
             setSpeechAttempts(0);
             if (currentIndex + 1 >= TOTAL_QUESTIONS) {
@@ -579,13 +577,13 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
         } else {
           playSoundEffect('fail');
           setFeedback({
-            text: `Try again! Chưa chính xác (Em nói: "${textSpoken}"). Em có thể bấm 'Speak with Mic' để đọc lại HOẶC chọn trực tiếp các đáp án A, B, C, D phía trên! 🎤`,
+            text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
             isCorrect: false
           });
         }
       } else {
         setFeedback({
-          text: 'Bé chưa phát âm xong, bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
+          text: 'Bé chưa phát âm xong, hãy bấm nút và đọc lại thật rõ ràng rồi bấm Dừng nhé! 🎤',
           isCorrect: false
         });
       }
@@ -627,9 +625,10 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
             setIsListening(false);
             try { recognition.stop(); } catch {}
 
-            const textSpoken = accumulatedTranscriptRef.current.trim().toLowerCase();
-            const target = (currentQ.targetWord || currentQ.speechText).trim().toLowerCase();
-            const isMatch = checkSpeechAnswerMatch(textSpoken, target) || textSpoken.includes(target) || target.includes(textSpoken);
+            const textSpoken = accumulatedTranscriptRef.current.trim();
+            const target = (currentQ.targetWord || currentQ.speechText).trim();
+            const isMatch = checkSpeechAnswerMatch(textSpoken, target) || 
+              (target.split(/\s+/).length <= 2 && textSpoken.toLowerCase().includes(target.toLowerCase()));
 
             if (isMatch) {
               setSpeechAttempts(0);
@@ -637,20 +636,18 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
               if (correctOpt) {
                 handleSelectOption(correctOpt);
               }
-            } else {
-              const newAttempts = speechAttempts + 1;
-              setSpeechAttempts(newAttempts);
+            } else if (textSpoken) {
+              const nextAttempts = speechAttempts + 1;
+              setSpeechAttempts(nextAttempts);
 
-              if (newAttempts >= 4) {
+              if (nextAttempts >= 4) {
                 playSoundEffect('chime');
                 setFeedback({
-                  text: "Cố gắng lắm! Em đã rất nỗ lực thử thách 4 lần. Let's move to the next challenge! / Cùng chuyển sang thử thách tiếp theo nhé! 🌟",
+                  text: `Good effort! Let us move on to the next question. 🌟`,
                   isCorrect: null
                 });
 
-                setJustCleanedIndex(currentIndex);
-                setCleanedCount(prev => Math.min(TOTAL_QUESTIONS, prev + 1));
-
+                // Advance with 0 EP: do NOT increment cleanedCount
                 setTimeout(() => {
                   setSpeechAttempts(0);
                   if (currentIndex + 1 >= TOTAL_QUESTIONS) {
@@ -669,7 +666,7 @@ export const CleanOceanGame: React.FC<CleanOceanGameProps> = ({
               } else {
                 playSoundEffect('fail');
                 setFeedback({
-                  text: `Chưa nghe rõ giọng bé (Lần thử ${newAttempts}/4). Hãy nghe lại rồi thử bấm đọc lại nhé! 🎤`,
+                  text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
                   isCorrect: false
                 });
               }

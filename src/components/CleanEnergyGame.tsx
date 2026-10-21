@@ -246,6 +246,7 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
   );
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selectedOptionId, setSelectedOptionId] = useState<'A' | 'B' | 'C' | null>(null);
+  const [attemptCount, setAttemptCount] = useState<number>(0);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [wrongOptionId, setWrongOptionId] = useState<'A' | 'B' | 'C' | null>(null);
@@ -285,6 +286,7 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
   const initGameSession = () => {
     clearTimer();
     setSelectedOptionId(null);
+    setAttemptCount(0);
     setIsAnswerCorrect(null);
     setWrongOptionId(null);
     setCurrentIndex(0);
@@ -341,18 +343,38 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
         // Find matching option
         const correctOpt = currentQ.options.find(o => o.isCorrect);
         const spokenMatchesOption = currentQ.options.find(o => 
-          transcript.includes(o.id.toLowerCase()) ||
-          transcript.includes(o.text.toLowerCase()) ||
-          o.text.toLowerCase().includes(transcript)
+          transcript.toLowerCase().includes(o.id.toLowerCase()) ||
+          checkSpeechAnswerMatch(transcript, o.text)
         );
 
         if (spokenMatchesOption) {
+          setAttemptCount(0);
           handleSelectOption(spokenMatchesOption);
         } else if (correctOpt && checkSpeechAnswerMatch(transcript, correctOpt.text)) {
+          setAttemptCount(0);
           handleSelectOption(correctOpt);
         } else {
-          playSoundEffect('fail');
-          setIsAnswerCorrect(false);
+          const nextAttempts = attemptCount + 1;
+          setAttemptCount(nextAttempts);
+
+          if (nextAttempts >= 4) {
+            playSoundEffect('chime');
+            clearTimer();
+            timeoutRef.current = setTimeout(() => {
+              setAttemptCount(0);
+              if (currentIndex + 1 >= TOTAL_QUESTIONS) {
+                setShowEcoPopup(true);
+              } else {
+                setCurrentIndex(prev => prev + 1);
+                setSelectedOptionId(null);
+                setIsAnswerCorrect(null);
+                setWrongOptionId(null);
+              }
+            }, 2000);
+          } else {
+            playSoundEffect('fail');
+            setIsAnswerCorrect(false);
+          }
         }
       }
       return;
@@ -394,15 +416,38 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
             if (transcript) {
               const correctOpt = currentQ.options.find(o => o.isCorrect);
               const spokenMatchesOption = currentQ.options.find(o => 
-                transcript.includes(o.id.toLowerCase()) ||
-                transcript.includes(o.text.toLowerCase()) ||
-                o.text.toLowerCase().includes(transcript)
+                transcript.toLowerCase().includes(o.id.toLowerCase()) ||
+                checkSpeechAnswerMatch(transcript, o.text)
               );
 
               if (spokenMatchesOption) {
+                setAttemptCount(0);
                 handleSelectOption(spokenMatchesOption);
               } else if (correctOpt && checkSpeechAnswerMatch(transcript, correctOpt.text)) {
+                setAttemptCount(0);
                 handleSelectOption(correctOpt);
+              } else {
+                const nextAttempts = attemptCount + 1;
+                setAttemptCount(nextAttempts);
+
+                if (nextAttempts >= 4) {
+                  playSoundEffect('chime');
+                  clearTimer();
+                  timeoutRef.current = setTimeout(() => {
+                    setAttemptCount(0);
+                    if (currentIndex + 1 >= TOTAL_QUESTIONS) {
+                      setShowEcoPopup(true);
+                    } else {
+                      setCurrentIndex(prev => prev + 1);
+                      setSelectedOptionId(null);
+                      setIsAnswerCorrect(null);
+                      setWrongOptionId(null);
+                    }
+                  }, 2000);
+                } else {
+                  playSoundEffect('fail');
+                  setIsAnswerCorrect(false);
+                }
               }
             }
           }
@@ -495,6 +540,7 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
 
     if (currentIndex + 1 < TOTAL_QUESTIONS) {
       setCurrentIndex(prev => prev + 1);
+      setAttemptCount(0);
       setSelectedOptionId(null);
       setIsAnswerCorrect(null);
       setWrongOptionId(null);
@@ -946,7 +992,7 @@ export const CleanEnergyGame: React.FC<CleanEnergyGameProps> = ({
             {isAnswerCorrect === false && (
               <span className="text-amber-800 flex items-center gap-1.5 font-extrabold animate-fade-in">
                 <Lightbulb className="w-4 h-4 text-amber-600" />
-                <span>Try again! Chưa chính xác. Em có thể bấm 'Speak with Mic' để phát âm lại HOẶC bấm chọn các đáp án A, B, C phía trên! 💡</span>
+                <span>Not quite right! Please try again! 🎤</span>
               </span>
             )}
             {isAnswerCorrect === null && (

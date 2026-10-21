@@ -16,7 +16,7 @@ import {
   Mic,
   Square
 } from 'lucide-react';
-import { checkSpeechAnswerMatch } from '../services/pronunciationFeedbackService';
+import { checkSpeechAnswerMatch, evaluateVoiceFillBlank } from '../services/pronunciationFeedbackService';
 
 export interface EcoGardenQuestion {
   id: string;
@@ -681,6 +681,7 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
     buildEcoGardenTrailQuestions(sentenceList, allUnitSentences, vocabularyList, allUnitVocabularies)
   );
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [attemptCount, setAttemptCount] = useState<number>(0);
   const [userInput, setUserInput] = useState<string>('');
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const [showHint, setShowHint] = useState<boolean>(false);
@@ -723,6 +724,7 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
   const initGameSession = () => {
     clearTimer();
     setCurrentIndex(0);
+    setAttemptCount(0);
     setUserInput('');
     setIsAnswerCorrect(null);
     setShowHint(false);
@@ -795,22 +797,18 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
       
       if (transcript) {
         setUserInput(transcript);
-        const normalizedInput = normalizeText(transcript);
-        const normalizedTarget = normalizeText(currentQ.targetWord);
-        const normalizedFull = normalizeText(currentQ.fullSentence);
+        const targetWord = currentQ.targetWord || '';
+        const fullSentence = currentQ.fullSentence || (currentQ.displaySentence ? currentQ.displaySentence.replace('______', targetWord) : targetWord);
 
-        const isCorrect = normalizedInput === normalizedTarget || 
-                          normalizedInput === normalizedFull || 
-                          (normalizedTarget.length > 2 && normalizedInput.endsWith(normalizedTarget)) ||
-                          checkSpeechAnswerMatch(transcript, currentQ.targetWord) ||
-                          checkSpeechAnswerMatch(transcript, currentQ.fullSentence);
+        const evalResult = evaluateVoiceFillBlank(transcript, targetWord, fullSentence);
 
-        if (isCorrect) {
+        if (evalResult.isCorrect) {
+          setAttemptCount(0);
           setUserInput(currentQ.targetWord);
           playSoundEffect('success');
           setIsAnswerCorrect(true);
           setFeedbackMsg({
-            text: `🌸 Chính xác! Khóm "${currentQ.stationFlowerName}" đã bung nở rực rỡ! (+10 EP)`,
+            text: evalResult.feedbackText || `🌸 Chính xác! Khóm "${currentQ.stationFlowerName}" đã bung nở rực rỡ! (+10 EP)`,
             isCorrect: true
           });
           setBloomedStations(prev => {
@@ -819,12 +817,37 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
             return next;
           });
         } else {
-          playSoundEffect('fail');
-          setIsAnswerCorrect(false);
-          setFeedbackMsg({
-            text: `Em vừa đọc: "${transcript}". Chưa trùng với đáp án. Hãy nghe lại phát âm rồi đọc lại nhé! 🎤`,
-            isCorrect: false
-          });
+          const nextAttempts = attemptCount + 1;
+          setAttemptCount(nextAttempts);
+
+          if (nextAttempts >= 4) {
+            playSoundEffect('chime');
+            setFeedbackMsg({
+              text: `Good effort! Let us move on to the next sentence. 🌟`,
+              isCorrect: null
+            });
+
+            clearTimer();
+            timerRef.current = setTimeout(() => {
+              setAttemptCount(0);
+              if (currentIndex + 1 >= TOTAL_QUESTIONS) {
+                setShowEcoPopup(true);
+              } else {
+                setCurrentIndex(prev => prev + 1);
+                setUserInput('');
+                setIsAnswerCorrect(null);
+                setShowHint(false);
+                setFeedbackMsg(null);
+              }
+            }, 2000);
+          } else {
+            playSoundEffect('fail');
+            setIsAnswerCorrect(false);
+            setFeedbackMsg({
+              text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
+              isCorrect: false
+            });
+          }
         }
       }
       return;
@@ -869,21 +892,18 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
             const transcript = accumulatedTranscriptRef.current.trim();
             if (transcript) {
               setUserInput(transcript);
-              const normalizedInput = normalizeText(transcript);
-              const normalizedTarget = normalizeText(currentQ.targetWord);
-              const normalizedFull = normalizeText(currentQ.fullSentence);
+              const targetWord = currentQ.targetWord || '';
+              const fullSentence = currentQ.fullSentence || (currentQ.displaySentence ? currentQ.displaySentence.replace('______', targetWord) : targetWord);
 
-              const isCorrect = normalizedInput === normalizedTarget || 
-                                normalizedInput === normalizedFull || 
-                                (normalizedTarget.length > 2 && normalizedInput.endsWith(normalizedTarget)) ||
-                                checkSpeechAnswerMatch(transcript, currentQ.targetWord);
+              const evalResult = evaluateVoiceFillBlank(transcript, targetWord, fullSentence);
 
-              if (isCorrect) {
+              if (evalResult.isCorrect) {
+                setAttemptCount(0);
                 setUserInput(currentQ.targetWord);
                 playSoundEffect('success');
                 setIsAnswerCorrect(true);
                 setFeedbackMsg({
-                  text: `🌸 Chính xác! Khóm "${currentQ.stationFlowerName}" đã bung nở rực rỡ! (+10 EP)`,
+                  text: evalResult.feedbackText || `🌸 Chính xác! Khóm "${currentQ.stationFlowerName}" đã bung nở rực rỡ! (+10 EP)`,
                   isCorrect: true
                 });
                 setBloomedStations(prev => {
@@ -891,6 +911,38 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
                   next[currentIndex] = true;
                   return next;
                 });
+              } else {
+                const nextAttempts = attemptCount + 1;
+                setAttemptCount(nextAttempts);
+
+                if (nextAttempts >= 4) {
+                  playSoundEffect('chime');
+                  setFeedbackMsg({
+                    text: `Good effort! Let us move on to the next sentence. 🌟`,
+                    isCorrect: null
+                  });
+
+                  clearTimer();
+                  timerRef.current = setTimeout(() => {
+                    setAttemptCount(0);
+                    if (currentIndex + 1 >= TOTAL_QUESTIONS) {
+                      setShowEcoPopup(true);
+                    } else {
+                      setCurrentIndex(prev => prev + 1);
+                      setUserInput('');
+                      setIsAnswerCorrect(null);
+                      setShowHint(false);
+                      setFeedbackMsg(null);
+                    }
+                  }, 2000);
+                } else {
+                  playSoundEffect('fail');
+                  setIsAnswerCorrect(false);
+                  setFeedbackMsg({
+                    text: `Incorrect! Please try again! 🎤 (Attempt ${nextAttempts}/4)`,
+                    isCorrect: false
+                  });
+                }
               }
             }
           }
@@ -1004,7 +1056,7 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
       playSoundEffect('fail');
       setIsAnswerCorrect(false);
       setFeedbackMsg({
-        text: `🌱 Chưa chính xác lắm. Bé hãy bấm "Listen / Nghe" lại thật kỹ và thử gõ lại nhé! 🌸`,
+        text: `Not quite right! Please try again! 🎤`,
         isCorrect: false
       });
     }
@@ -1017,6 +1069,7 @@ export const EcoGardenTrailGame: React.FC<EcoGardenTrailGameProps> = ({
 
     if (currentIndex + 1 < TOTAL_QUESTIONS) {
       setCurrentIndex(prev => prev + 1);
+      setAttemptCount(0);
       setUserInput('');
       setIsAnswerCorrect(null);
       setShowHint(false);
