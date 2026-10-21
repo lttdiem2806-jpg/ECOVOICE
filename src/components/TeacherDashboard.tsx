@@ -224,6 +224,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [defaultImportPassword, setDefaultImportPassword] = useState<string>('123456');
   const [editingPasswordStudentId, setEditingPasswordStudentId] = useState<string | null>(null);
   const [tempPasswordInput, setTempPasswordInput] = useState<string>('');
+  const [editingNameStudentId, setEditingNameStudentId] = useState<string | null>(null);
+  const [tempNameInput, setTempNameInput] = useState<string>('');
 
   // -----------------------------------------------------------------
   // CONTENT EDITOR / ILLUSTRATIONS FILTER STATE
@@ -1079,6 +1081,62 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     setEditingPasswordStudentId(null);
     setTempPasswordInput('');
     showToast(`Đã cập nhật mật khẩu cho học sinh "${student.name}" thành: ${newPass}`, 'success');
+    if (playSoundEffect) playSoundEffect('celebrate');
+  };
+
+  const handleSaveStudentName = (studentId: string) => {
+    const student = studentsList.find(s => s.id === studentId);
+    if (!student) return;
+
+    const trimmedName = tempNameInput.trim();
+    if (!trimmedName) {
+      showToast('Tên học sinh không được để trống!', 'error');
+      if (playSoundEffect) playSoundEffect('fail');
+      return;
+    }
+
+    if (trimmedName === student.name) {
+      setEditingNameStudentId(null);
+      setTempNameInput('');
+      return;
+    }
+
+    // Check if another student in the same class has the exact same name
+    const isDuplicate = studentsList.some(
+      s => s.id !== studentId && 
+           s.className.toLowerCase() === student.className.toLowerCase() && 
+           s.name.toLowerCase().trim() === trimmedName.toLowerCase()
+    );
+    if (isDuplicate) {
+      showToast(`Lớp ${student.className} đã có học sinh tên "${trimmedName}"! Vui lòng đặt tên phân biệt (ví dụ thêm họ hoặc tên đệm).`, 'error');
+      if (playSoundEffect) playSoundEffect('fail');
+      return;
+    }
+
+    const oldName = student.name;
+    const updated: StudentAccount = {
+      ...student,
+      name: trimmedName
+    };
+
+    saveStudentAccount(updated);
+    setStudentsList(getStudentAccounts());
+
+    // Update active login session if current student is edited
+    if (typeof window !== 'undefined') {
+      const activeName = localStorage.getItem('ecovoice_user_name');
+      if (activeName && activeName.toLowerCase() === oldName.toLowerCase()) {
+        localStorage.setItem('ecovoice_user_name', trimmedName);
+      }
+      const savedStudentName = localStorage.getItem('ecovoice_saved_student_name');
+      if (savedStudentName && savedStudentName.toLowerCase() === oldName.toLowerCase()) {
+        localStorage.setItem('ecovoice_saved_student_name', trimmedName);
+      }
+    }
+
+    setEditingNameStudentId(null);
+    setTempNameInput('');
+    showToast(`Đã đổi tên học sinh từ "${oldName}" thành "${trimmedName}" thành công!`, 'success');
     if (playSoundEffect) playSoundEffect('celebrate');
   };
 
@@ -3865,12 +3923,71 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       key={st.id}
                       className="bg-white p-3 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-2xs"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 shadow-2xs">
                           {idx + 1}
                         </div>
-                        <div>
-                          <span className="font-bold text-emerald-950 block">{st.name}</span>
+                        <div className="flex-1 min-w-0">
+                          {editingNameStudentId === st.id ? (
+                            <div className="flex items-center gap-1.5 bg-emerald-50 p-1 rounded-xl border-2 border-emerald-400 shadow-xs animate-in zoom-in-95 duration-100 max-w-full">
+                              <input
+                                type="text"
+                                autoFocus
+                                value={tempNameInput}
+                                onChange={(e) => setTempNameInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveStudentName(st.id);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingNameStudentId(null);
+                                  }
+                                }}
+                                className="w-36 sm:w-48 px-2 py-0.5 text-xs font-bold bg-white text-emerald-950 border border-emerald-300 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500"
+                                placeholder="Nhập tên học sinh..."
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveStudentName(st.id)}
+                                className="p-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition-colors shadow-2xs active:scale-95 shrink-0"
+                                title="Lưu tên học sinh"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingNameStudentId(null)}
+                                className="p-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 cursor-pointer transition-colors active:scale-95 shrink-0"
+                                title="Hủy"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 group/editname">
+                              <span 
+                                onClick={() => {
+                                  setEditingNameStudentId(st.id);
+                                  setTempNameInput(st.name);
+                                }}
+                                className="font-bold text-emerald-950 hover:text-emerald-700 cursor-pointer transition-colors truncate block"
+                                title="Bấm để chỉnh sửa tên học sinh"
+                              >
+                                {st.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingNameStudentId(st.id);
+                                  setTempNameInput(st.name);
+                                }}
+                                className="p-1 rounded-md text-emerald-600 hover:text-emerald-900 hover:bg-emerald-100 cursor-pointer transition-colors opacity-80 group-hover/editname:opacity-100"
+                                title={`Đổi tên học sinh ${st.name}`}
+                              >
+                                <Pencil className="w-3 h-3 text-emerald-700" />
+                              </button>
+                            </div>
+                          )}
                           <div className="flex items-center gap-2 text-[10px] text-gray-500 mt-0.5">
                             <span>Luyện: {st.lastPractice}</span>
                             <span>•</span>
